@@ -1,7 +1,14 @@
 <script lang="ts">
 	import { page } from '$app/stores';
+	import AnimatedRoute from '$lib/components/AnimatedRoute.svelte';
+	import { user } from '$lib/firebase';
 </script>
 
+{#if $user}
+	<a href="/login" class="step step-primary">{$user.displayName}</a>
+{:else}
+	<a href="/login" class="step step-primary">Login</a>
+{/if}
 <nav class="flex justify-center my-6">
 	<ul class="steps">
 		<a href="/decision" class="step step-primary">Decision Summary</a>
@@ -29,8 +36,10 @@
 	</ul>
 </nav>
 
-<main class="card w-4/6 bg-neutral text-neutral-content mx-auto">
-	<div class="card-body items-center text-center">
-		<slot />
-	</div>
-</main>
+<AnimatedRoute>
+	<main class="card w-4/6 bg-neutral text-neutral-content mx-auto">
+		<div class="card-body items-center text-center">
+			<slot />
+		</div>
+	</main>
+</AnimatedRoute>
