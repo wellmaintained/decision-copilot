@@ -11,10 +11,10 @@
 	</div>
 	<div class="navbar-center">
 		<ul class="menu menu-horizontal px-1">
-			<li><a href="/">Link</a></li>
+			<li><a href="/decision">Decisions</a></li>
 			<li>
 				<details>
-					<summary> Parent </summary>
+					<summary>Parent</summary>
 					<ul class="p-2 bg-primary rounded-t-none">
 						<li><a href="/">Link 1</a></li>
 						<li><a href="/">Link 2</a></li>
