@@ -8,7 +8,14 @@
 <AuthCheck>
 	<nav class="flex justify-center my-6">
 		<ul class="steps">
-			<a href="/decision" class="step step-primary">Decision Summary</a>
+			<a href="/decision" class="step step-primary">Decision List</a>
+			<a
+				href="/decision/summary"
+				class="step"
+				class:step-primary={$page.route.id?.match(/summary|matrix|details|workflow/g)}
+			>
+				Decision Summary
+			</a>
 			<a
 				href="/decision/matrix"
 				class="step"
