@@ -24,11 +24,11 @@
 
 <h2>Decision Summary</h2>
 <form class="w-2/5" on:submit|preventDefault={saveDecision}>
-	<label class="input input-bordered flex items-center gap-2">
+	<label class="input flex items-center gap-2">
 		Name
 		<input type="text" class="grow" bind:value={name} />
 	</label>
-	<label class="input input-bordered flex items-center gap-2">
+	<label class="input flex items-center gap-2">
 		Description
 		<input type="text" class="grow" bind:value={description} />
 	</label>
