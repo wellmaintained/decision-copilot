@@ -16,6 +16,11 @@
 	function editDecision(id: string) {
 		goto(`/decision/${id}/edit`);
 	}
+		if (confirm('Are you sure you want to delete this decision?')) {
+			await deleteDoc(doc(db, 'decisions', id));
+			decisions = decisions.filter(decision => decision.id !== id);
+		}
+	}
 </script>
 
 <button class="btn btn-primary mb-4" on:click={() => goto('/decision/new')}
