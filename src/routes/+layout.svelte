@@ -6,6 +6,7 @@
 </script>
 
 <div class="navbar bg-base-200 text-primary-content">
+<div class="navbar bg-base-200 text-primary-content shadow-md">
 	<div class="navbar-start">
 		<a class="btn btn-ghost text-xl" href="/">Decision Copilot</a>
 	</div>
