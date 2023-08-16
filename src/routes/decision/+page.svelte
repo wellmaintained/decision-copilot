@@ -14,6 +14,7 @@
 </script>
 
 <h1>Decision list</h1>
+<button class="btn btn-primary mb-4" on:click={() => goto('/decision/new')}>Create New Decision</button>
 
 {#if $user}
 	{#if decisions.length > 0}
