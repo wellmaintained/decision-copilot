@@ -25,6 +25,7 @@
 				<tr>
 					<th>Name</th>
 					<th>Description</th>
+					<th>Actions</th>
 				</tr>
 			</thead>
 			<tbody>
@@ -32,6 +33,7 @@
 					<tr>
 						<td>{decision.name}</td>
 						<td>{decision.description}</td>
+						<td><button class="btn btn-xs btn-accent" on:click={() => editDecision(decision.id)}>Edit</button></td>
 					</tr>
 				{/each}
 			</tbody>
@@ -40,3 +42,6 @@
 		<p>No decisions found.</p>
 	{/if}
 {/if}
+function editDecision(id: string) {
+	goto(`/decision/${id}/edit`);
+}
