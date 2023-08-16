@@ -12,6 +12,10 @@
 		const querySnapshot = await getDocs(q);
 		decisions = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
 	});
+
+	function editDecision(id: string) {
+		goto(`/decision/${id}/edit`);
+	}
 </script>
 
 <button class="btn btn-primary mb-4" on:click={() => goto('/decision/new')}
@@ -33,7 +37,11 @@
 					<tr>
 						<td>{decision.name}</td>
 						<td>{decision.description}</td>
-						<td><button class="btn btn-xs btn-accent" on:click={() => editDecision(decision.id)}>Edit</button></td>
+						<td
+							><button class="btn btn-xs btn-accent" on:click={() => editDecision(decision.id)}
+								>Edit</button
+							></td
+						>
 					</tr>
 				{/each}
 			</tbody>
@@ -42,6 +50,3 @@
 		<p>No decisions found.</p>
 	{/if}
 {/if}
-function editDecision(id: string) {
-	goto(`/decision/${id}/edit`);
-}
