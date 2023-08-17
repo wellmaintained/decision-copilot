@@ -31,11 +31,11 @@
 	</label>
 	<label class="input flex items-center gap-2">
 		Description
-		<input
+		<textarea
 			type="text"
 			class="grow"
 			value={$decisionStore?.description}
-			on:blur={(event) => updateDecisionField('description', event)}
+			on:blur={(event) => updateDecisionField('description', event)}></textarea>
 		/>
 	</label>
 	<div class="divider"></div>
