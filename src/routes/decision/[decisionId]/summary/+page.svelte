@@ -5,7 +5,7 @@
 	import { page } from '$app/stores';
 	import type { Decision } from '$lib/types';
 
-	const decisionId = $page.url.searchParams.get('id') || 'new';
+	const decisionId = $page.params.decisionId;
 	const decisionRef = doc(decisions, decisionId);
 	const decisionStore = docStore<Decision>(firestore, decisionRef);
 
