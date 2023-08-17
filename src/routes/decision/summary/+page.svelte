@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { docStore } from 'sveltefire';
 	import { firestore, decisions } from '$lib/firebase';
-	import { doc, updateDoc } from 'firebase/firestore';
+	import { doc, updateDoc, DocumentReference } from 'firebase/firestore';
 	import { page } from '$app/stores';
 	import type { Decision } from '$lib/types';
 
@@ -9,22 +9,12 @@
 	const decisionRef = doc(decisions, decisionId);
 	const decisionStore = docStore<Decision>(firestore, decisionRef);
 
-	async function updateName(event: Event) {
+	async function updateDecisionField(field: string, event: Event) {
 		const formElement = event.target as HTMLInputElement;
 		const newValue = formElement.value;
-		await updateDoc(decisionRef, {
-			name: newValue
-		});
-		console.log('Name updated to:', newValue);
-	}
 
-	async function updateDescription(event: Event) {
-		const formElement = event.target as HTMLInputElement;
-		const newValue = formElement.value;
-		await updateDoc(decisionRef, {
-			description: newValue
-		});
-		console.log('Description updated to:', newValue);
+		await updateDoc(decisionRef, { [field]: newValue });
+		console.log(`${field} updated to:`, newValue);
 	}
 </script>
 
@@ -32,7 +22,12 @@
 <form class="w-2/5" on:submit|preventDefault>
 	<label class="input flex items-center gap-2">
 		Name
-		<input type="text" class="grow" value={$decisionStore?.name} on:blur={updateName} />
+		<input
+			type="text"
+			class="grow"
+			value={$decisionStore?.name}
+			on:blur={(event) => updateDecisionField('name', event)}
+		/>
 	</label>
 	<label class="input flex items-center gap-2">
 		Description
@@ -40,7 +35,7 @@
 			type="text"
 			class="grow"
 			value={$decisionStore?.description}
-			on:blur={updateDescription}
+			on:blur={(event) => updateDecisionField('description', event)}
 		/>
 	</label>
 	<div class="divider"></div>
