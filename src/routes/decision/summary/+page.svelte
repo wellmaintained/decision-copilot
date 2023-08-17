@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { docStore } from 'sveltefire';
 	import { firestore, decisions } from '$lib/firebase';
-	import { doc, updateDoc, DocumentReference } from 'firebase/firestore';
+	import { doc, updateDoc } from 'firebase/firestore';
 	import { page } from '$app/stores';
 	import type { Decision } from '$lib/types';
 
