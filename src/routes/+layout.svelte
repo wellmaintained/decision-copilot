@@ -6,7 +6,7 @@
 </script>
 
 <FirebaseApp {auth} {firestore}>
-	<div class="navbar bg-base-200 text-primary-content shadow-md">
+	<div class="navbar bg-base-200 shadow-xl">
 		<div class="navbar-start">
 			<a class="btn btn-ghost text-xl" href="/">Decision Copilot</a>
 		</div>

@@ -29,11 +29,12 @@
 			on:blur={(event) => updateDecisionField('name', event)}
 		/>
 	</label>
-	<label class="input flex gap-2">
-	Description
-	<textarea
-		class="textarea textarea-bordered w-full"
-		rows="5"
+	<label class="form-control">
+		<div class="label">
+			<span class="label-text text-neutral-content">Details</span>
+		</div>
+		<textarea
+			class="textarea textarea-bordered h-24"
 			value={$decisionStore?.description}
 			on:blur={(event) => updateDecisionField('description', event)}
 		></textarea>
