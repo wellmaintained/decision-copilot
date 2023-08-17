@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { onMount } from 'svelte';
 	import { db, user } from '$lib/firebase';
 	import { collection, doc, setDoc, getDoc, updateDoc } from 'firebase/firestore';
 	import { page } from '$app/stores';
@@ -8,12 +9,13 @@
 	const decisionsRef = collection(db, 'decisions');
 	let decisionId: string;
 
-	$: decisionId = $page.params.id;
+	$: decisionId = $page.url.searchParams.get('id') || 'new';
 
 	onMount(async () => {
 		if (decisionId) {
 			const decisionRef = doc(decisionsRef, decisionId);
 			const docSnap = await getDoc(decisionRef);
+
 			if (docSnap.exists()) {
 				const data = docSnap.data();
 				name = data.name;
@@ -31,7 +33,6 @@
 				name: name,
 				description: description,
 				user: $user!.uid
-			});
 			};
 			if (decisionId) {
 				await updateDoc(decisionRef, data);
