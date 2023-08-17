@@ -19,9 +19,9 @@
 </script>
 
 <h2>Decision Summary</h2>
-<form class="flex flex-col gap-4" on:submit|preventDefault>
+<div class="flex flex-col gap-4 text-base-content">
 	<label class="input input-bordered flex items-center gap-2">
-		Name
+		<span class="label-text text-neutral-content">Name</span>
 		<input
 			type="text"
 			class="grow"
@@ -40,5 +40,5 @@
 		></textarea>
 	</label>
 	<div class="divider"></div>
-	<button class="btn btn-success">Next</button>
-</form>
+	<button class="btn btn-primary">Next</button>
+</div>

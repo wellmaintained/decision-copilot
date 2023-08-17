@@ -40,10 +40,10 @@
 	</nav>
 
 	<AnimatedRoute>
-		<main class="card w-4/6 bg-neutral text-neutral-content mx-auto">
+		<div class="card w-4/6 mx-auto bg-base-100">
 			<div class="card-body items-center text-center">
 				<slot />
 			</div>
-		</main>
+		</div>
 	</AnimatedRoute>
 </AuthCheck>

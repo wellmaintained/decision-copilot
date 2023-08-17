@@ -6,7 +6,7 @@
 </script>
 
 <FirebaseApp {auth} {firestore}>
-	<div class="navbar bg-base-200 shadow-xl">
+	<div class="navbar bg-base-300">
 		<div class="navbar-start">
 			<a class="btn btn-ghost text-xl" href="/">Decision Copilot</a>
 		</div>
@@ -47,12 +47,12 @@
 				</div>
 			</SignedIn>
 			<SignedOut>
-				<button class="btn btn-secondary" on:click={() => goto('/login')}>Login</button>
+				<button class="btn btn-primary" on:click={() => goto('/login')}>Login</button>
 			</SignedOut>
 		</div>
 	</div>
 
-	<div class="min-h-screen flex flex-col">
+	<div class="min-h-screen flex flex-col bg-base-200">
 		<slot />
 	</div>
 </FirebaseApp>
