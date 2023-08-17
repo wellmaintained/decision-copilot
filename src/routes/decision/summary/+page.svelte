@@ -1,55 +1,48 @@
 <script lang="ts">
 	import { docStore } from 'sveltefire';
-	import { firestore } from '$lib/firebase';
-	import { updateDoc } from 'firebase/firestore';
+	import { firestore, decisions } from '$lib/firebase';
+	import { doc, updateDoc } from 'firebase/firestore';
 	import { page } from '$app/stores';
-
-	interface Decision {
-		id?: string;
-		name?: string;
-		description?: string;
-		user?: string;
-		[x: string]: any; // Allow for any other properties.  TODO - remove this
-	}
-
-	let decision: Decision = {};
+	import type { Decision } from '$lib/types';
 
 	const decisionId = $page.url.searchParams.get('id') || 'new';
-	const decisionStore = docStore<Decision>(firestore, `decisions/${decisionId}`);
+	const decisionRef = doc(decisions, decisionId);
+	const decisionStore = docStore<Decision>(firestore, decisionRef);
 
-	$: if (decisionStore) {
-		decision.id = decisionStore.id;
-		decision.name = $decisionStore?.name;
-		decision.description = $decisionStore?.description;
-		decision.user = $decisionStore?.user;
+	async function updateName(event: Event) {
+		const formElement = event.target as HTMLInputElement;
+		const newValue = formElement.value;
+		await updateDoc(decisionRef, {
+			name: newValue
+		});
+		console.log('Name updated to:', newValue);
 	}
 
-	async function saveDecision() {
-		try {
-			if (decisionStore.ref) {
-				await updateDoc(decisionStore.ref, decision);
-				console.log('Decision saved: ', decision);
-			}
-		} catch (e) {
-			console.error('Error adding decision: ', e);
-		}
+	async function updateDescription(event: Event) {
+		const formElement = event.target as HTMLInputElement;
+		const newValue = formElement.value;
+		await updateDoc(decisionRef, {
+			description: newValue
+		});
+		console.log('Description updated to:', newValue);
 	}
 </script>
 
 <h2>Decision Summary</h2>
-ID: {$decisionStore?.id}
-Name: {$decisionStore?.name}
-Description: {$decisionStore?.description}
-<a href="/decision/matrix" class="btn btn-success">Next</a>
-
-<form class="w-2/5" on:submit|preventDefault={saveDecision}>
+<form class="w-2/5" on:submit|preventDefault>
 	<label class="input flex items-center gap-2">
 		Name
-		<input type="text" class="grow" bind:value={decision.name} />
+		<input type="text" class="grow" value={$decisionStore?.name} on:blur={updateName} />
 	</label>
 	<label class="input flex items-center gap-2">
 		Description
-		<input type="text" class="grow" bind:value={decision.description} />
+		<input
+			type="text"
+			class="grow"
+			value={$decisionStore?.description}
+			on:blur={updateDescription}
+		/>
 	</label>
 	<div class="divider"></div>
+	<button class="btn btn-success">Next</button>
 </form>
