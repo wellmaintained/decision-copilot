@@ -6,7 +6,7 @@
 
 	$: decisionsForUserQuery = query(
 		collection(firestore, `decisions`),
-		where('user', '==', $user?.uid)
+		where('user', '==', $user ? $user.uid : 'unknown-user')
 	);
 
 	async function createDecision() {
