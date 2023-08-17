@@ -19,8 +19,8 @@
 </script>
 
 <h2>Decision Summary</h2>
-<form class="w-2/5" on:submit|preventDefault>
-	<label class="input flex items-center gap-2">
+<form class="flex flex-col gap-4" on:submit|preventDefault>
+	<label class="input input-bordered flex items-center gap-2">
 		Name
 		<input
 			type="text"
@@ -29,14 +29,13 @@
 			on:blur={(event) => updateDecisionField('name', event)}
 		/>
 	</label>
-	<label class="input flex items-center gap-2">
+	<label class="input flex gap-2">
 		Description
-		<textarea rows="5"
-			type="text"
-			class="grow"
+		<textarea
+			class="textarea textarea-bordered textarea-lg w-full max-w-xs"
 			value={$decisionStore?.description}
-			on:blur={(event) => updateDecisionField('description', event)}></textarea>
-		/>
+			on:blur={(event) => updateDecisionField('description', event)}
+		></textarea>
 	</label>
 	<div class="divider"></div>
 	<button class="btn btn-success">Next</button>
