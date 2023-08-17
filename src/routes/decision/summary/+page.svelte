@@ -30,9 +30,10 @@
 		/>
 	</label>
 	<label class="input flex gap-2">
-		Description
-		<textarea
-			class="textarea textarea-bordered textarea-lg w-full max-w-xs"
+	Description
+	<textarea
+		class="textarea textarea-bordered w-full"
+		rows="5"
 			value={$decisionStore?.description}
 			on:blur={(event) => updateDecisionField('description', event)}
 		></textarea>
