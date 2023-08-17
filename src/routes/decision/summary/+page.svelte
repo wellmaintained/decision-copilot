@@ -31,7 +31,7 @@
 	</label>
 	<label class="input flex items-center gap-2">
 		Description
-		<textarea
+		<textarea rows="5"
 			type="text"
 			class="grow"
 			value={$decisionStore?.description}
