@@ -1,25 +1,20 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
-	import { db } from '$lib/firebase';
-	import { collection, query, where, getDocs, deleteDoc, doc } from 'firebase/firestore';
-	import { user } from '$lib/firebase';
+	import { Collection } from 'sveltefire';
+	import { collection, query, where, deleteDoc, doc } from 'firebase/firestore';
+	import { user, firestore } from '$lib/firebase';
 	import { goto } from '$app/navigation';
 
-	let decisions: any[] = [];
-
-	onMount(async () => {
-		const q = query(collection(db, 'decisions'), where('user', '==', $user?.uid));
-		const querySnapshot = await getDocs(q);
-		decisions = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
-	});
+	$: decisionsForUserQuery = query(
+		collection(firestore, `decisions`),
+		where('user', '==', $user?.uid)
+	);
 
 	function editDecision(id: string) {
 		goto(`/decision/summary?id=${id}`);
 	}
 	async function deleteDecision(id: string) {
 		if (confirm('Are you sure you want to delete this decision?')) {
-			await deleteDoc(doc(db, 'decisions', id));
-			decisions = decisions.filter((decision) => decision.id !== id);
+			await deleteDoc(doc(firestore, 'decisions', id));
 		}
 	}
 </script>
@@ -28,7 +23,7 @@
 	Create New Decision
 </button>
 
-{#if $user}
+<Collection ref={decisionsForUserQuery} let:data={decisions}>
 	{#if decisions.length > 0}
 		<table class="table w-full">
 			<thead>
@@ -61,4 +56,4 @@
 	{:else}
 		<p>No decisions found.</p>
 	{/if}
-{/if}
+</Collection>

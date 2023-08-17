@@ -2,7 +2,6 @@
 	import { page } from '$app/stores';
 	import AnimatedRoute from '$lib/components/AnimatedRoute.svelte';
 	import AuthCheck from '$lib/components/AuthCheck.svelte';
-	import { user } from '$lib/firebase';
 </script>
 
 <AuthCheck>

@@ -1,46 +1,35 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
-	import { db, user } from '$lib/firebase';
-	import { collection, doc, setDoc, getDoc, updateDoc } from 'firebase/firestore';
+	import { docStore } from 'sveltefire';
+	import { firestore } from '$lib/firebase';
+	import { updateDoc } from 'firebase/firestore';
 	import { page } from '$app/stores';
 
-	let name = '';
-	let description = '';
-	const decisionsRef = collection(db, 'decisions');
-	let decisionId: string;
+	interface Decision {
+		id?: string;
+		name?: string;
+		description?: string;
+		user?: string;
+		[x: string]: any; // Allow for any other properties.  TODO - remove this
+	}
 
-	$: decisionId = $page.url.searchParams.get('id') || 'new';
+	let decision: Decision = {};
 
-	onMount(async () => {
-		if (decisionId) {
-			const decisionRef = doc(decisionsRef, decisionId);
-			const docSnap = await getDoc(decisionRef);
+	const decisionId = $page.url.searchParams.get('id') || 'new';
+	const decisionStore = docStore<Decision>(firestore, `decisions/${decisionId}`);
 
-			if (docSnap.exists()) {
-				const data = docSnap.data();
-				name = data.name;
-				description = data.description;
-			} else {
-				console.error('No such decision!');
-			}
-		}
-	});
+	$: if (decisionStore) {
+		decision.id = decisionStore.id;
+		decision.name = $decisionStore?.name;
+		decision.description = $decisionStore?.description;
+		decision.user = $decisionStore?.user;
+	}
 
 	async function saveDecision() {
 		try {
-			const decisionRef = decisionId ? doc(decisionsRef, decisionId) : doc(decisionsRef);
-			const data = {
-				name: name,
-				description: description,
-				user: $user!.uid
-			};
-			if (decisionId) {
-				await updateDoc(decisionRef, data);
-			} else {
-				await setDoc(decisionRef, data);
+			if (decisionStore.ref) {
+				await updateDoc(decisionStore.ref, decision);
+				console.log('Decision saved: ', decision);
 			}
-			const docSnap = await getDoc(decisionRef);
-			console.log('Decision saved: ', docSnap.data());
 		} catch (e) {
 			console.error('Error adding decision: ', e);
 		}
@@ -48,15 +37,19 @@
 </script>
 
 <h2>Decision Summary</h2>
+ID: {$decisionStore?.id}
+Name: {$decisionStore?.name}
+Description: {$decisionStore?.description}
+<a href="/decision/matrix" class="btn btn-success">Next</a>
+
 <form class="w-2/5" on:submit|preventDefault={saveDecision}>
 	<label class="input flex items-center gap-2">
 		Name
-		<input type="text" class="grow" bind:value={name} />
+		<input type="text" class="grow" bind:value={decision.name} />
 	</label>
 	<label class="input flex items-center gap-2">
 		Description
-		<input type="text" class="grow" bind:value={description} />
+		<input type="text" class="grow" bind:value={decision.description} />
 	</label>
 	<div class="divider"></div>
-	<button class="btn btn-success">Next</button>
 </form>
