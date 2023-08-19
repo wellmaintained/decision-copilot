@@ -11,8 +11,6 @@
 
 	async function createDecision() {
 		const decisionRef = await addDoc(decisions, {
-			name: 'New Decision',
-			description: 'TODO: Add decision description here.',
 			user: $user!.uid
 		});
 		// Update the decision with its own ID
@@ -34,16 +32,17 @@
 		<table class="table w-full">
 			<thead>
 				<tr>
-					<th>Name</th>
-					<th>Description</th>
+					<th>Decision</th>
 					<th>Actions</th>
 				</tr>
 			</thead>
 			<tbody>
 				{#each decisions as decision}
 					<tr>
-						<td>{decision.name}</td>
-						<td>{decision.description}</td>
+						<td>
+							<h2 class="font-semibold">{decision.title}</h2>
+							<p>{decision.description}</p>
+						</td>
 						<td>
 							<button
 								class="btn btn-ghost btn-sm btn-accent"

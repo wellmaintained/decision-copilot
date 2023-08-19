@@ -18,15 +18,17 @@
 	}
 </script>
 
-<h2>Decision Summary</h2>
+<h2 class="card-title">Decision Summary</h2>
+<em class="text-neutral-content">Enter the basics of the decision below</em>
 <div class="flex flex-col gap-4 text-base-content">
 	<label class="input input-bordered flex items-center gap-2">
-		<span class="label-text text-neutral-content">Name</span>
+		<span class="label-text text-neutral-content">Title</span>
 		<input
 			type="text"
 			class="grow"
-			value={$decisionStore?.name}
-			on:blur={(event) => updateDecisionField('name', event)}
+			value={$decisionStore?.title || ''}
+			placeholder="How you would describe what this decision is about in a few words"
+			on:blur={(event) => updateDecisionField('title', event)}
 		/>
 	</label>
 	<label class="form-control">
@@ -35,10 +37,11 @@
 		</div>
 		<textarea
 			class="textarea textarea-bordered h-24"
-			value={$decisionStore?.description}
+			value={$decisionStore?.description || ''}
+			placeholder="Explain the decision being made in more detail"
 			on:blur={(event) => updateDecisionField('description', event)}
 		></textarea>
 	</label>
 	<div class="divider"></div>
-	<button class="btn btn-primary">Next</button>
+	<a class="btn btn-primary" href="/decision/{decisionStore?.id}/matrix">Next</a>
 </div>

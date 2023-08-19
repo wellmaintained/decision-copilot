@@ -1,6 +1,7 @@
 export type Decision = {
-	id?: string;
 	user: string;
-	name?: string;
+	id?: string;
+	key?: string;
+	title?: string;
 	description?: string;
 };
