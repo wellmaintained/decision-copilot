@@ -4,4 +4,5 @@ export type Decision = {
 	key?: string;
 	title?: string;
 	description?: string;
+	reversibility?: string;
 };

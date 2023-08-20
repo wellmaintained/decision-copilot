@@ -16,6 +16,14 @@
 		await updateDoc(decisionRef, { [field]: newValue });
 		console.log(`${field} updated to:`, newValue);
 	}
+
+	const reversibility_options = [
+		{ id: 'hat', value: 'Hat' },
+		{ id: 'haircut', value: 'Haircut' },
+		{ id: 'tattoo', value: 'Tattoo' }
+	];
+
+	$: selected_reversibility = $decisionStore?.reversibility;
 </script>
 
 <h2 class="card-title">Decision Summary</h2>
@@ -41,6 +49,23 @@
 			placeholder="Explain the decision being made in more detail"
 			on:blur={(event) => updateDecisionField('description', event)}
 		></textarea>
+	</label>
+	<div class="divider"></div>
+	<label class="input input-bordered flex items-center gap-2">
+		<span class="label-text text-neutral-content">Like choosing a &nbsp;</span>
+		{#each reversibility_options as option}
+			<label class="label cursor-pointer">
+				<input
+					type="radio"
+					class="radio"
+					name="reversibility"
+					value={option.id}
+					bind:group={selected_reversibility}
+					on:change={(event) => updateDecisionField('reversibility', event)}
+				/>
+				<span class="label-text pl-1">{option.value}</span>
+			</label>
+		{/each}
 	</label>
 	<div class="divider"></div>
 	<a class="btn btn-primary" href="/decision/{decisionStore?.id}/matrix">Next</a>
