@@ -1,16 +1,34 @@
 <script lang="ts">
-	import { Collection } from 'sveltefire';
-	import { collection, query, where, deleteDoc, doc, addDoc, updateDoc } from 'firebase/firestore';
+	import { Collection, docStore } from 'sveltefire';
+	import {
+		collection,
+		query,
+		where,
+		deleteDoc,
+		doc,
+		addDoc,
+		updateDoc,
+		limit,
+		getDoc,
+		getDocs,
+		orderBy
+	} from 'firebase/firestore';
 	import { user, firestore, decisions } from '$lib/firebase';
 	import { goto } from '$app/navigation';
+	import { get } from 'svelte/store';
+	import type { Project } from '$lib/types';
 
-	$: decisionsForUserQuery = query(
-		collection(firestore, `decisions`),
-		where('user', '==', $user ? $user.uid : 'unknown-user')
-	);
+	async function getSelectedProjectId() {
+		const querySnapshot = await getDocs(query(collection(firestore, `projects`), limit(1)));
+		querySnapshot.forEach((doc) => {
+			console.log(doc.data());
+			return doc.id;
+		});
+	}
 
 	async function createDecision() {
-		const decisionRef = await addDoc(decisions, {
+		const decisionRef = await addDoc(collection(firestore, `decisions`), {
+			project_id: 'project_one',
 			user: $user!.uid
 		});
 		// Update the decision with its own ID
@@ -23,11 +41,44 @@
 			console.log('Decision deleted:', id);
 		}
 	}
+
+	function handleChange(event: any) {
+		console.log('changing value of currentProjectId');
+		currentProjectId = event.target.value;
+		decisionsQuery = decisionsQuery;
+		console.log(currentProjectId);
+	}
+
+	let currentProjectId = 'kjd1cLU9VoT7yZvZszeO';
+
+	$: projectsQuery = query(collection(firestore, `projects`), orderBy('name'));
+
+	$: decisionsQuery = query(
+		collection(firestore, `decisions`)
+	);
 </script>
 
-<button class="btn btn-primary mb-4" on:click={createDecision}> Create New Decision </button>
+<div>{currentProjectId}</div>
+<div class="flex flex-row">
+	<div class="basis-3/4">
+		<select
+			class="select select-bordered w-full max-w-xs"
+			bind:value={currentProjectId}
+			on:change={handleChange}
+		>
+			<Collection ref={projectsQuery} let:data={projects}>
+				{#each projects as project}
+					<option value={project.id}>{project.name}</option>
+				{/each}
+			</Collection>
+		</select>
+	</div>
+	<div class="basis-1/4">
+		<button class="btn btn-primary mb-4" on:click={createDecision}> Create New Decision </button>
+	</div>
+</div>
 
-<Collection ref={decisionsForUserQuery} let:data={decisions}>
+<Collection ref={decisionsQuery} let:data={decisions}>
 	{#if decisions.length > 0}
 		<table class="table w-full">
 			<thead>
