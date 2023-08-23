@@ -45,10 +45,6 @@
 	function handleChange(event: any) {
 		console.log('changing value of currentProjectId');
 		currentProjectId = event.target.value;
-		decisionsQuery = query(
-			collection(firestore, `decisions`),
-			where('project_id', '==', currentProjectId)
-		);
 		console.log(currentProjectId);
 	}
 
