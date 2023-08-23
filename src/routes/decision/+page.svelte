@@ -46,7 +46,7 @@
 		collection(firestore, `projects`), 
 		orderBy('name')
 	));
-	
+
 	function changeSelectedProject (event: any) {
 		currentProjectId = event.target.value;
 		decisionsForProject = getDecisionsForProject(currentProjectId);
@@ -84,8 +84,8 @@
 	<table class="table w-full">
 		<thead>
 			<tr>
-				<th>Decision</th>
-				<th>Actions</th>
+				<th style="width: 70%;">Decision</th>
+				<th style="width: 30%;">Actions</th>
 			</tr>
 		</thead>
 		<tbody>
