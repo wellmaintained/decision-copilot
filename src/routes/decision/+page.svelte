@@ -15,6 +15,7 @@
 	import { user, firestore } from '$lib/firebase';
 	import { goto } from '$app/navigation';
 	import { onMount } from 'svelte';
+	import { fade } from 'svelte/transition';
 
 	async function createDecision() {
 		const decisionRef = await addDoc(collection(firestore, `decisions`), {
