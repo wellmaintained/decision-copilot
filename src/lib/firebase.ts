@@ -1,14 +1,8 @@
 import { initializeApp } from 'firebase/app';
-import {
-	getFirestore,
-	type DocumentData,
-	CollectionReference,
-	collection
-} from 'firebase/firestore';
+import { getFirestore } from 'firebase/firestore';
 import { getAuth } from 'firebase/auth';
 import { getStorage } from 'firebase/storage';
 import { userStore } from 'sveltefire';
-import type { Decision } from './types';
 
 const firebaseConfig = {
 	apiKey: 'AIzaSyCdxfhEXgjcvIFF5GUUnFwnAscUj4HNsMY',
@@ -25,10 +19,3 @@ export const firestore = getFirestore();
 export const auth = getAuth();
 export const storage = getStorage();
 export const user = userStore(auth);
-
-// This is just a helper to add the type to the db responses
-const createCollection = <T = DocumentData>(collectionName: string) => {
-	return collection(firestore, collectionName) as CollectionReference<T>;
-};
-
-export const decisions = createCollection<Decision>('decisions');
