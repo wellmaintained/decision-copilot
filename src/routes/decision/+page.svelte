@@ -84,8 +84,8 @@
 	<table class="table w-full">
 		<thead>
 			<tr>
-				<th style="width: 70%;">Decision</th>
-				<th style="width: 30%;">Actions</th>
+				<th>Decision</th>
+				<th style="width: 140px">Actions</th>
 			</tr>
 		</thead>
 		<tbody>
