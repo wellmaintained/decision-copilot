@@ -52,10 +52,14 @@
 
 	$: projectsQuery = query(collection(firestore, `projects`), orderBy('name'));
 
-	$: decisionsQuery = query(
-		collection(firestore, `decisions`),
+	let decisionsQuery;
+	$: decisionsQuery = currentProjectId && query(
+		collection(firestore, 'decisions'),
 		where('project_id', '==', currentProjectId)
 	);
+
+	function handleChange(event: any) {
+		console.log('changing value of currentProjectId');
 </script>
 
 <div>{currentProjectId}</div>
