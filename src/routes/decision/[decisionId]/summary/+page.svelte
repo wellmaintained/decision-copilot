@@ -1,20 +1,17 @@
 <script lang="ts">
 	import { docStore } from 'sveltefire';
-	import { firestore, decisions } from '$lib/firebase';
+	import { firestore } from '$lib/firebase';
 	import { doc, updateDoc } from 'firebase/firestore';
 	import { page } from '$app/stores';
 	import type { Decision } from '$lib/types';
 
 	const decisionId = $page.params.decisionId;
-	const decisionRef = doc(decisions, decisionId);
-	const decisionStore = docStore<Decision>(firestore, decisionRef);
+	const decisionStore = docStore<Decision>(firestore, `decisions/${decisionId}`);
 
 	async function updateDecisionField(field: string, event: Event) {
 		const formElement = event.target as HTMLInputElement;
 		const newValue = formElement.value;
-
-		await updateDoc(decisionRef, { [field]: newValue });
-		console.log(`${field} updated to:`, newValue);
+		await updateDoc(decisionStore.ref!, { [field]: newValue });
 	}
 
 	const reversibility_options = [
