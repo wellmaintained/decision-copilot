@@ -6,6 +6,13 @@ export type Decision = {
 	title?: string;
 	description?: string;
 	reversibility?: string;
+	options?: DecisionOption[];
+};
+
+export type DecisionOption = {
+	id?: string;
+	title?: string;
+	url?: string;
 };
 
 export type Project = {
