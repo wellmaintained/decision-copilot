@@ -96,14 +96,13 @@
 		></textarea>
 	</label>
 	<p>Stakeholders</p>
-	<div class="flex flex-row gap-2">
+	<div class="flex flex-col gap-2">
 		<div class="text-neutral-content">Options</div>
-		<ol class="list-decimal">
+		<ol class="list-inside list-decimal">
 		{#each $decisionStore?.options ?? [] as option}
 			<li><DecisionOption title={option.title} /></li>
 		{/each}
 		</ol>
-		<div class="">
 		{#if showOptionsForm}
         <form
           on:submit|preventDefault={addOption}
@@ -131,7 +130,6 @@
               <p class="text-error text-xs">Must have a valid URL</p>
             {/if}
            </div>
-  
           <button
             disabled={!optionFormIsValid}
             type="submit"
@@ -141,13 +139,15 @@
         </form>
       {:else}
         <button
+		  aria-label="Add decision option"
           on:click={() => (showOptionsForm = true)}
-          class="btn btn-outline btn-info block mx-auto my-4"
+          class="btn btn-ghost btn-sm btn-accent w-min"
         >
-          Add an Option
+			<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+  <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v6m3-3H9m12 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+</svg>
         </button>
       {/if}
-	  </div>
 	</div>
 	<label class="input input-bordered flex items-center gap-2">
 		<span class="label-text text-neutral-content">Like choosing a &nbsp;</span>
