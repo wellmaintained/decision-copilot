@@ -8,18 +8,17 @@
 		doc,
 		addDoc,
 		updateDoc,
-		limit,
-		getDocs,
 		orderBy
 	} from 'firebase/firestore';
 	import { user, firestore } from '$lib/firebase';
 	import { goto } from '$app/navigation';
-	import { onMount } from 'svelte';
-	import { fade } from 'svelte/transition';
+	import type { PageData } from "./$types";
+    
+    export let data: PageData;
 
 	async function createDecision() {
 		const decisionRef = await addDoc(collection(firestore, `decisions`), {
-			project_id: currentProjectId,
+			project_id: data.currentProjectId,
 			user: $user!.uid
 		});
 		// Update the decision with its own ID
@@ -33,42 +32,22 @@
 		}
 	}
 
-	function getDecisionsForProject(projectId: string) {
-		return collectionStore(firestore, query(
-			collection(firestore, 'decisions'),
-			where('project_id', '==', projectId)
-		));
-	}
-	let	currentProjectId = 'unknown';
-	let decisionsForProject = getDecisionsForProject(currentProjectId);
-
 	let projects = collectionStore(firestore, query(
 		collection(firestore, `projects`), 
 		orderBy('name')
 	));
 
-	function changeSelectedProject (event: any) {
-		currentProjectId = event.target.value;
-		decisionsForProject = getDecisionsForProject(currentProjectId);
-	}
-
-	onMount(async () => {
-		const projectsSnapshot = await getDocs(
-			query(collection(firestore, `projects`), orderBy('name'), limit(1))
-		);
-		projectsSnapshot.forEach((project) => {
-			currentProjectId = project.id;
-		});
-		decisionsForProject = getDecisionsForProject(currentProjectId);
-	});
+	$: decisionsForProject = collectionStore(firestore, query(
+			collection(firestore, 'decisions'),
+			where('project_id', '==', data.currentProjectId)
+		));
 </script>
 
 <div class="flex flex-row">
 	<div class="basis-3/4">
 		<select
 			class="select select-bordered w-full max-w-xs"
-			bind:value={currentProjectId}
-			on:change={changeSelectedProject}
+			bind:value={data.currentProjectId}
 		>
 		{#each $projects as project}
 			<option value={project.id}>{project.name}</option>
@@ -138,5 +117,5 @@
 		</tbody>
 	</table>
 {:else}
-	<p>No decisions found.</p>
+	<p>No decisions</p>
 {/if}
