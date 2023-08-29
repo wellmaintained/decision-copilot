@@ -37,7 +37,7 @@
 							</div>
 						</div>
 						<ul
-							class="mt-3 z-[1] p-2 shadow menu menu-sm dropdown-content bg-primary rounded-box w-52"
+							class="z-[1] p-2 shadow menu menu-sm dropdown-content w-52 bg-base-300"
 						>
 							<li>
 								<a href="/" class="justify-between">
