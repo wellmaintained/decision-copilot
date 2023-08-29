@@ -1,13 +1,13 @@
 <script lang="ts">
 	import { docStore } from 'sveltefire';
 	import { firestore } from '$lib/firebase';
-	import { arrayRemove,
-      arrayUnion,
-      setDoc, doc, updateDoc } from 'firebase/firestore';
+	import { arrayUnion,
+      doc, updateDoc } from 'firebase/firestore';
 	import { page } from '$app/stores';
 	import type { Decision } from '$lib/types';
 	import DecisionOption from '$lib/components/DecisionOption.svelte';
     import { writable } from "svelte/store";
+	import { onMount } from 'svelte';
 
 	const decisionId = $page.params.decisionId;
 	const decisionRef = doc(firestore, 'decisions', decisionId);
@@ -69,6 +69,22 @@
       optionFormData.set(optionFormDefaults);
       showOptionsForm = false;
     }
+
+	onMount(async () => {
+		const easyMDE_module = await import('easymde');
+		const element = document.getElementById('decision_description') as HTMLTextAreaElement;
+		const easyMDE = new easyMDE_module.default({
+			element: element,
+			sideBySideFullscreen: false,
+		});
+		decisionStore.subscribe((decision) => {
+			easyMDE.value(decision?.description || '');
+		})
+		easyMDE.codemirror.on("blur", () => {
+			updateDoc(decisionStore.ref!, { description: easyMDE.value() });
+		});
+	});
+
 </script>
 
 <h2 class="card-title">Decision Summary</h2>
@@ -89,10 +105,7 @@
 			<span class="label-text text-neutral-content">Details</span>
 		</div>
 		<textarea
-			class="textarea textarea-bordered h-24"
-			value={$decisionStore?.description || ''}
-			placeholder="Explain the decision being made in more detail"
-			on:blur={(event) => updateDecisionField('description', event)}
+			id="decision_description"
 		></textarea>
 	</label>
 	<p>Stakeholders</p>
