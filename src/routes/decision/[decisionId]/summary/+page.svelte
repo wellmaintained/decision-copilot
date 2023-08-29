@@ -80,18 +80,22 @@
     }
 
 	onMount(async () => {
-		const easyMDE_module = await import('easymde');
 		const element = document.getElementById('decision_description') as HTMLTextAreaElement;
-		const easyMDE = new easyMDE_module.default({
-			element: element,
-			sideBySideFullscreen: false,
-		});
-		decisionStore.subscribe((decision) => {
-			easyMDE.value(decision?.description || '');
-		})
-		easyMDE.codemirror.on("blur", () => {
-			updateDoc(decisionStore.ref!, { description: easyMDE.value() });
-		});
+		if (element.nextElementSibling==null) {
+			const easyMDE_module = await import('easymde');
+			const easyMDE = new easyMDE_module.default({
+				element: element,
+				sideBySideFullscreen: false,
+			});
+			decisionStore.subscribe((decision) => {
+				easyMDE.value(decision?.description || '');
+			})
+			easyMDE.codemirror.on("blur", () => {
+				updateDoc(decisionStore.ref!, { description: easyMDE.value() });
+			});
+		} else {
+			console.log('EasyMDE already initialized for', element);
+		}
 	});
 
 </script>
