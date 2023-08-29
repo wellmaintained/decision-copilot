@@ -1,10 +1,10 @@
 <script lang="ts">
-	import { docStore } from 'sveltefire';
+	import { collectionStore, docStore } from 'sveltefire';
 	import { firestore } from '$lib/firebase';
-	import { arrayUnion,
+	import { arrayRemove, arrayUnion,
       doc, updateDoc } from 'firebase/firestore';
 	import { page } from '$app/stores';
-	import type { Decision } from '$lib/types';
+	import type { Decision, User } from '$lib/types';
 	import DecisionOption from '$lib/components/DecisionOption.svelte';
     import { writable } from "svelte/store";
 	import { onMount } from 'svelte';
@@ -12,6 +12,7 @@
 	const decisionId = $page.params.decisionId;
 	const decisionRef = doc(firestore, 'decisions', decisionId);
 	const decisionStore = docStore<Decision>(firestore, `decisions/${decisionId}`);
+	const usersStore = collectionStore<User>(firestore, 'users');
 
 	async function updateDecisionField(field: string, event: Event) {
 		const formElement = event.target as HTMLInputElement;
@@ -26,6 +27,21 @@
 	];
 
 	$: selected_reversibility = $decisionStore?.reversibility;
+	$: selected_stakholders = $decisionStore?.stakeholders;
+
+	async function changeStakeholder(event: Event) {
+		const user_id = (event.target as HTMLInputElement).value;
+		const isChecked = (event.target as HTMLInputElement).checked;
+		if (isChecked) {
+			await updateDoc(decisionRef, {
+				stakeholders: arrayUnion(user_id)
+			});
+		} else {
+			await updateDoc(decisionRef, {
+				stakeholders: arrayRemove(user_id)
+			});
+		}
+	}
 
     const optionFormDefaults = {
       title: "",
@@ -59,7 +75,7 @@
     }
  
     // async function deleteLink(item: any) {
-    //   const userRef = doc(db, "users", $user!.uid);
+    //   const userRef = doc(db, "users", $authenticatedUser!.uid);
     //   await updateDoc(userRef, {
     //     links: arrayRemove(item),
     //   });
@@ -108,7 +124,44 @@
 			id="decision_description"
 		></textarea>
 	</label>
-	<p>Stakeholders</p>
+	<label class="input input-bordered flex items-center gap-2">
+		<span class="label-text text-neutral-content">Like choosing a &nbsp;</span>
+		{#each reversibility_options as option}
+		<div class="tooltip" data-tip="{option.explaination}">
+			<label class="label cursor-pointer tooltop">
+				<input
+					type="radio"
+					class="radio"
+					name="reversibility"
+					value={option.id}
+					bind:group={selected_reversibility}
+					on:change={(event) => updateDecisionField('reversibility', event)}
+				/>
+				<span class="label-text pl-1">{option.value}</span>
+			</label>
+		</div>
+		{/each}
+	</label>
+	<div class="flex flex-col gap-2">
+		<div class="text-neutral-content">Stakeholders</div>
+		<div class="form-control w-max">
+		{#each $usersStore ?? [] as stakeholder}
+			<label class="label cursor-pointer flex flex-row gap-2 w-max">
+				<input type="checkbox" class="checkbox" 
+					value={stakeholder.id}
+					checked={$decisionStore?.stakeholders?.includes(stakeholder.id)}
+					on:change={(event) => changeStakeholder(event)}
+				/>
+				<div class="flex flex-row items-center gap-2">
+					<div class="w-6 h-6 rounded-full overflow-hidden">
+						<img alt="Avatar for {stakeholder.displayName}" src={stakeholder.photoURL.toString()} />
+					</div>
+					<div class="label-text">{stakeholder.displayName}</div>
+				</div> 
+			</label>
+		{/each}
+		</div>
+	</div>
 	<div class="flex flex-col gap-2">
 		<div class="text-neutral-content">Options</div>
 		<ol class="list-inside list-decimal">
@@ -157,29 +210,11 @@
           class="btn btn-ghost btn-sm btn-accent w-min"
         >
 			<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
-  <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v6m3-3H9m12 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
-</svg>
+				<path stroke-linecap="round" stroke-linejoin="round" d="M12 9v6m3-3H9m12 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+			</svg>
         </button>
       {/if}
 	</div>
-	<label class="input input-bordered flex items-center gap-2">
-		<span class="label-text text-neutral-content">Like choosing a &nbsp;</span>
-		{#each reversibility_options as option}
-		<div class="tooltip" data-tip="{option.explaination}">
-			<label class="label cursor-pointer tooltop">
-				<input
-					type="radio"
-					class="radio"
-					name="reversibility"
-					value={option.id}
-					bind:group={selected_reversibility}
-					on:change={(event) => updateDecisionField('reversibility', event)}
-				/>
-				<span class="label-text pl-1">{option.value}</span>
-			</label>
-		</div>
-		{/each}
-	</label>
 	<div class="divider"></div>
 	<a class="btn btn-primary" href="/decision/{decisionStore?.id}/matrix">Next</a>
 </div>

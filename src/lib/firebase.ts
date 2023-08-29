@@ -1,6 +1,6 @@
 import { initializeApp } from 'firebase/app';
-import { getFirestore } from 'firebase/firestore';
-import { getAuth } from 'firebase/auth';
+import { doc, getDoc, getFirestore, setDoc, updateDoc } from 'firebase/firestore';
+import { getAuth, onAuthStateChanged } from 'firebase/auth';
 import { getStorage } from 'firebase/storage';
 import { userStore } from 'sveltefire';
 
@@ -18,4 +18,15 @@ export const app = initializeApp(firebaseConfig);
 export const firestore = getFirestore();
 export const auth = getAuth();
 export const storage = getStorage();
-export const user = userStore(auth);
+export const authenticatedUser = userStore(auth);
+
+onAuthStateChanged(auth, (user) => {
+	if (user) {
+		const storedUserRef = doc(firestore, 'users', user.uid);
+		setDoc(storedUserRef, {
+			email: user.email,
+			displayName: user.displayName,
+			photoURL: user.photoURL
+		});
+	}
+});

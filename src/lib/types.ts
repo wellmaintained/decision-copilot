@@ -7,6 +7,7 @@ export type Decision = {
 	description?: string;
 	reversibility?: string;
 	options?: DecisionOption[];
+	stakeholders?: string[];
 };
 
 export type DecisionOption = {
@@ -18,4 +19,11 @@ export type DecisionOption = {
 export type Project = {
 	id?: string;
 	name?: string;
+};
+
+export type User = {
+	id: string;
+	email: string;
+	displayName: string;
+	photoURL: URL;
 };

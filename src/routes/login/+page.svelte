@@ -1,20 +1,21 @@
 <script lang="ts">
-	import { auth, user } from '$lib/firebase';
+	import { auth, authenticatedUser } from '$lib/firebase';
 	import { GoogleAuthProvider, signInWithPopup, signOut } from 'firebase/auth';
-
+	
 	async function signInWithGoogle() {
 		const provider = new GoogleAuthProvider();
-		const user = await signInWithPopup(auth, provider);
-		console.log(user);
+		await signInWithPopup(auth, provider);
 	}
+
+	
 </script>
 
 <main class="card w-4/6 bg-base-100 text-base-content mx-auto">
 	<div class="card-body items-center text-center">
 		<h2>Login</h2>
 
-		{#if $user}
-			<h2 class="card-title">Welcome, {$user.displayName}</h2>
+		{#if $authenticatedUser}
+			<h2 class="card-title">Welcome, {$authenticatedUser.displayName}</h2>
 			<p class="text-center text-success">You are logged in</p>
 			<button class="btn btn-primary" on:click={() => signOut(auth)}>Sign out</button>
 		{:else}

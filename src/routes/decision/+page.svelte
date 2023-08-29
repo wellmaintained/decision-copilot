@@ -10,7 +10,7 @@
 		updateDoc,
 		orderBy
 	} from 'firebase/firestore';
-	import { user, firestore } from '$lib/firebase';
+	import { authenticatedUser, firestore } from '$lib/firebase';
 	import { goto } from '$app/navigation';
 	import type { PageData } from "./$types";
     
@@ -19,7 +19,7 @@
 	async function createDecision() {
 		const decisionRef = await addDoc(collection(firestore, `decisions`), {
 			project_id: data.currentProjectId,
-			user: $user!.uid
+			user: $authenticatedUser!.uid
 		});
 		// Update the decision with its own ID
 		await updateDoc(decisionRef, { id: decisionRef.id });
