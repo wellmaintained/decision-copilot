@@ -5,9 +5,7 @@
 	async function signInWithGoogle() {
 		const provider = new GoogleAuthProvider();
 		await signInWithPopup(auth, provider);
-	}
-
-	
+	}	
 </script>
 
 <main class="card w-4/6 bg-base-100 text-base-content mx-auto">

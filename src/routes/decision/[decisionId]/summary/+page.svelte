@@ -73,13 +73,6 @@
   
       showOptionsForm = false;
     }
- 
-    // async function deleteLink(item: any) {
-    //   const userRef = doc(db, "users", $authenticatedUser!.uid);
-    //   await updateDoc(userRef, {
-    //     links: arrayRemove(item),
-    //   });
-    // }
   
     function cancelOption() {
       optionFormData.set(optionFormDefaults);
