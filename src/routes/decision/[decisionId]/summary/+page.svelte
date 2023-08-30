@@ -140,23 +140,25 @@
 		{/each}
 	</label>
 	<div class="flex flex-col gap-2">
-		<div class="text-neutral-content">Stakeholders</div>
-		<div class="form-control w-max">
-		{#each $usersStore ?? [] as stakeholder}
-			<label class="label cursor-pointer flex flex-row gap-2 w-max">
-				<input type="checkbox" class="checkbox" 
-					value={stakeholder.id}
-					checked={$decisionStore?.stakeholders?.includes(stakeholder.id)}
-					on:change={(event) => changeStakeholder(event)}
-				/>
-				<div class="flex flex-row items-center gap-2">
-					<div class="w-6 h-6 rounded-full overflow-hidden">
-						<img alt="Avatar for {stakeholder.displayName}" src={stakeholder.photoURL.toString()} />
-					</div>
-					<div class="label-text">{stakeholder.displayName}</div>
-				</div> 
-			</label>
-		{/each}
+		<div class="text-neutral-content">Stakeholders - <em>who has an interest in - or is impacted by - this decision?</em></div>
+		<div class="input input-bordered h-max">
+			<div class="grid grid-cols-3 gap-2">
+				{#each $usersStore ?? [] as stakeholder}
+					<label class="label cursor-pointer flex flex-row gap-2 w-max">
+						<input type="checkbox" class="checkbox" 
+							value={stakeholder.id}
+							checked={$decisionStore?.stakeholders?.includes(stakeholder.id)}
+							on:change={(event) => changeStakeholder(event)}
+						/>
+						<div class="flex flex-row items-center gap-2">
+							<div class="w-8 h-8 rounded-full overflow-hidden">
+								<img alt="Avatar for {stakeholder.displayName}" src={stakeholder.photoURL.toString()} />
+							</div>
+							<div class="label-text">{stakeholder.displayName}</div>
+						</div> 
+					</label>
+				{/each}
+			</div>
 		</div>
 	</div>
 	<div class="flex flex-col gap-2">
