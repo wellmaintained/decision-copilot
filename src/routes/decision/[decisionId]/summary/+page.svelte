@@ -21,13 +21,12 @@
 	}
 
 	const reversibility_options = [
-		{ id: 'hat', value: 'Hat', explaination: 'Easy & reversable - like chooseing a hat' },
+		{ id: 'hat', value: 'Hat', explaination: 'Easy & reversable - like choosing a hat' },
 		{ id: 'haircut', value: 'Haircut', explaination: 'A bad decision here will grow out with time' },
 		{ id: 'tattoo', value: 'Tattoo', explaination: 'Better think this through carefully!' }
 	];
 
 	$: selected_reversibility = $decisionStore?.reversibility;
-	$: selected_stakholders = $decisionStore?.stakeholders;
 
 	async function changeStakeholder(event: Event) {
 		const user_id = (event.target as HTMLInputElement).value;
@@ -121,24 +120,26 @@
 			id="decision_description"
 		></textarea>
 	</label>
-	<label class="input input-bordered flex items-center gap-2">
-		<span class="label-text text-neutral-content">Like choosing a &nbsp;</span>
+	<div class="flex flex-col gap-2">
+		<div class="text-neutral-content">Reversibility - <em>like choosing a</em></div>
+		<div class="input input-bordered h-max">
 		{#each reversibility_options as option}
-		<div class="tooltip" data-tip="{option.explaination}">
-			<label class="label cursor-pointer tooltop">
-				<input
-					type="radio"
-					class="radio"
-					name="reversibility"
-					value={option.id}
-					bind:group={selected_reversibility}
-					on:change={(event) => updateDecisionField('reversibility', event)}
-				/>
-				<span class="label-text pl-1">{option.value}</span>
-			</label>
-		</div>
+			<div class="tooltip" data-tip="{option.explaination}">
+				<label class="label cursor-pointer tooltop">
+					<input
+						type="radio"
+						class="radio"
+						name="reversibility"
+						value={option.id}
+						bind:group={selected_reversibility}
+						on:change={(event) => updateDecisionField('reversibility', event)}
+					/>
+					<span class="label-text pl-1">{option.value}</span>
+				</label>
+			</div>
 		{/each}
-	</label>
+		</div>
+	</div>
 	<div class="flex flex-col gap-2">
 		<div class="text-neutral-content">Stakeholders - <em>who has an interest in - or is impacted by - this decision?</em></div>
 		<div class="input input-bordered h-max">
