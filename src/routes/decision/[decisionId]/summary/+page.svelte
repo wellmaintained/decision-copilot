@@ -2,7 +2,7 @@
 	import { collectionStore, docStore } from 'sveltefire';
 	import { firestore } from '$lib/firebase';
 	import { arrayRemove, arrayUnion,
-      doc, updateDoc } from 'firebase/firestore';
+      doc, updateDoc, writeBatch } from 'firebase/firestore';
 	import { page } from '$app/stores';
 	import type { Decision, User } from '$lib/types';
 	import DecisionOption from '$lib/components/DecisionOption.svelte';
@@ -41,43 +41,36 @@
 			});
 		}
 	}
+  
+	$: decisionOptions = $decisionStore?.options?.sort((a,b)=>Number(a.id)-Number(b.id)) ?? [];
 
-    const optionFormDefaults = {
-      title: "",
-      url: "https://",
-    };
-
-    const optionFormData = writable(optionFormDefaults);
-  
-    let showOptionsForm = false;
-  
-    $: urlIsValid = $optionFormData.url.match(/^(ftp|http|https):\/\/[^ "]+$/);
-    $: titleIsValid = $optionFormData.title.length < 20 && $optionFormData.title.length > 0;
-    $: optionFormIsValid = urlIsValid && titleIsValid;
-
-  
-    async function addOption(e: SubmitEvent) {
-  
+    async function addOption() {
       await updateDoc(decisionRef, {
         options: arrayUnion({
-          ...$optionFormData,
-          id: Date.now().toString(),
+          id: Date.now(),
+		  title: '',
         }),
       });
-  
-      optionFormData.set({
-        title: "",
-        url: "",
-      });
-  
-      showOptionsForm = false;
-    }
-  
-    function cancelOption() {
-      optionFormData.set(optionFormDefaults);
-      showOptionsForm = false;
     }
 
+	async function updateOption(option: any, event: Event) {
+		const updatedOption = {
+			id: option.id,
+			title:(event.target as HTMLInputElement).value ?? ''
+		};
+		if (JSON.stringify(updatedOption) === JSON.stringify(option)) return;
+
+		const batch = writeBatch(firestore);
+		batch.update(decisionRef, {
+			options: arrayRemove(option)
+		});
+		batch.update(decisionRef, {
+			options: arrayUnion(updatedOption)
+		});
+
+		await batch.commit();
+    }
+  
 	onMount(async () => {
 		const element = document.getElementById('decision_description') as HTMLTextAreaElement;
 		if (element.nextElementSibling==null) {
@@ -125,6 +118,32 @@
 		></textarea>
 	</label>
 	<div class="flex flex-col gap-2">
+		<div class="flex flex-row items-center">
+			<span class="text-neutral-content">Options</span>
+			<button
+				aria-label="Add decision option"
+				on:click={(_) => addOption()}
+				class="btn btn-ghost btn-sm btn-accent w-min h-min"
+				>
+				<svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="black">
+					<path stroke-linecap="round" stroke-linejoin="round" d="M12 9v6m3-3H9m12 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+				</svg>
+			</button>
+		</div>
+		{#each decisionOptions as option, index (option.id)}
+		<label class="input input-bordered flex items-center gap-2">
+			<span class="label-text text-neutral-content">{index+1}</span>
+			<input
+				type="text"
+				class="grow"
+				value={option.title}
+				placeholder="Describe the option in a few words"
+				on:blur={(event) => updateOption(option, event)}
+			/>
+		</label>
+		{/each}
+	</div>
+	<div class="flex flex-col gap-2">
 		<div class="text-neutral-content">Reversibility - <em>like choosing a</em></div>
 		<div class="input input-bordered h-max">
 		{#each reversibility_options as option}
@@ -165,59 +184,6 @@
 				{/each}
 			</div>
 		</div>
-	</div>
-	<div class="flex flex-col gap-2">
-		<div class="text-neutral-content">Options</div>
-		<ol class="list-inside list-decimal">
-		{#each $decisionStore?.options ?? [] as option}
-			<li><DecisionOption title={option.title} /></li>
-		{/each}
-		</ol>
-		{#if showOptionsForm}
-        <form
-          on:submit|preventDefault={addOption}
-          class="bg-base-200 p-6 w-full mx-auto rounded-xl"
-        >
-          <input
-            name="title"
-            type="text"
-            placeholder="Title"
-            class="input input-sm"
-            bind:value={$optionFormData.title}
-          />
-          <input
-            name="url"
-            type="text"
-            placeholder="URL"
-            class="input input-sm"
-            bind:value={$optionFormData.url}
-          />
-          <div class="my-4">
-            {#if !titleIsValid}
-              <p class="text-error text-xs">Must have valid title</p>
-            {/if}
-            {#if !urlIsValid}
-              <p class="text-error text-xs">Must have a valid URL</p>
-            {/if}
-           </div>
-          <button
-            disabled={!optionFormIsValid}
-            type="submit"
-            class="btn btn-success">Add</button
-          >
-          <button type="button" class="btn btn-xs my-4" on:click={cancelOption}>Cancel</button>
-        </form>
-      {:else}
-        <button
-		  aria-label="Add decision option"
-          on:click={() => (showOptionsForm = true)}
-          class="btn btn-ghost btn-sm btn-accent w-min"
-        >
-			<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
-				<path stroke-linecap="round" stroke-linejoin="round" d="M12 9v6m3-3H9m12 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
-			</svg>
-        </button>
-      {/if}
 	</div>
 	<div class="divider"></div>
 	<a class="btn btn-primary" href="/decision/{decisionStore?.id}/matrix">Next</a>

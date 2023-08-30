@@ -11,7 +11,7 @@ export type Decision = {
 };
 
 export type DecisionOption = {
-	id?: string;
+	id: string;
 	title?: string;
 	url?: string;
 };
