@@ -82,9 +82,13 @@
 		const element = document.getElementById('decision_description') as HTMLTextAreaElement;
 		if (element.nextElementSibling==null) {
 			const easyMDE_module = await import('easymde');
+			// config instructions: https://github.com/Ionaru/easy-markdown-editor?tab=readme-ov-file#configuration
 			const easyMDE = new easyMDE_module.default({
 				element: element,
 				sideBySideFullscreen: false,
+				spellChecker: false,
+				status: false,
+				minHeight: '200px',
 			});
 			decisionStore.subscribe((decision) => {
 				easyMDE.value(decision?.description || '');
