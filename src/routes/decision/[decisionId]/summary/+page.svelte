@@ -61,13 +61,12 @@
 		if (JSON.stringify(updatedOption) === JSON.stringify(option)) return;
 
 		const batch = writeBatch(firestore);
-		batch.update(decisionRef, {
-			options: arrayRemove(option)
-		});
-		batch.update(decisionRef, {
-			options: arrayUnion(updatedOption)
-		});
-
+			batch.update(decisionRef, {
+				options: arrayRemove(option)
+			});
+			batch.update(decisionRef, {
+				options: arrayUnion(updatedOption)
+			});
 		await batch.commit();
     }
   
