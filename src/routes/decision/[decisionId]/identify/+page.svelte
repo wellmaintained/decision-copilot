@@ -101,8 +101,8 @@
 
 </script>
 
-<h2 class="card-title">Decision Summary</h2>
-<em class="text-neutral-content">Enter the basics of the decision below</em>
+<h2 class="card-title">Identify the Decision</h2>
+<em class="text-neutral-content">Capture information about the decision being made and who is involved</em>
 <div class="flex flex-col gap-4 text-base-content">
 	<label class="input input-bordered flex items-center gap-2">
 		<span class="label-text text-neutral-content">Title</span>

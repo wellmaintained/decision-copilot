@@ -13,11 +13,11 @@
 				<a href="/decision" class="step step-primary">Decision List</a>
 
 				<a
-					href="/decision/{decisionId}/summary"
+					href="/decision/{decisionId}/identify"
 					class="step"
-					class:step-primary={$page.route.id?.match(/summary|matrix|details|workflow/g)}
+					class:step-primary={$page.route.id?.match(/identify|matrix|details|workflow/g)}
 				>
-					Decision Summary
+					Identify
 				</a>
 				<a
 					href="/decision/{decisionId}/matrix"

@@ -23,7 +23,7 @@
 		});
 		// Update the decision with its own ID
 		await updateDoc(decisionRef, { id: decisionRef.id });
-		goto(`/decision/${decisionRef.id}/summary`);
+		goto(`/decision/${decisionRef.id}/identify`);
 	}
 	async function deleteDecision(id: string) {
 		if (confirm('Are you sure you want to delete this decision?')) {
@@ -78,7 +78,7 @@
 						<button
 							class="btn btn-ghost btn-sm btn-accent"
 							aria-label="Edit decision"
-							on:click={() => goto(`/decision/${decision.id}/summary`)}
+							on:click={() => goto(`/decision/${decision.id}/identify`)}
 						>
 							<svg
 								xmlns="http://www.w3.org/2000/svg"
