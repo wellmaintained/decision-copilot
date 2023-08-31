@@ -15,30 +15,30 @@
 				<a
 					href="/decision/{decisionId}/identify"
 					class="step"
-					class:step-primary={$page.route.id?.match(/identify|process|details|workflow/g)}
+					class:step-primary={$page.route.id?.match(/identify|process|details|view/g)}
 				>
 					Identify
 				</a>
 				<a
 					href="/decision/{decisionId}/process"
 					class="step"
-					class:step-primary={$page.route.id?.match(/process|details|workflow/g)}
+					class:step-primary={$page.route.id?.match(/process|details|view/g)}
 				>
 					Process
 				</a>
 				<a
 					href="/decision/{decisionId}/details"
 					class="step"
-					class:step-primary={$page.route.id?.match(/details|workflow/g)}
+					class:step-primary={$page.route.id?.match(/details|view/g)}
 				>
 					Details
 				</a>
 				<a
-					href="/decision/{decisionId}/workflow"
+					href="/decision/{decisionId}/view"
 					class="step"
-					class:step-primary={$page.route.id?.includes('workflow')}
+					class:step-primary={$page.route.id?.includes('view')}
 				>
-					Workflow
+					View
 				</a>
 			</ul>
 		</nav>
