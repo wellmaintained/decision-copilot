@@ -8,45 +8,39 @@
 
 <AuthCheck>
 	{#if decisionId}
-		<nav class="flex justify-center my-6">
-			<ul class="steps">
-				<a href="/decision" class="step step-primary">Decision List</a>
-
-				<a
-					href="/decision/{decisionId}/identify"
-					class="step"
-					class:step-primary={$page.route.id?.match(/identify|process|decide|view/g)}
-				>
-					Identify
-				</a>
-				<a
-					href="/decision/{decisionId}/process"
-					class="step"
-					class:step-primary={$page.route.id?.match(/process|decide|view/g)}
-				>
-					Process
-				</a>
-				<a
-					href="/decision/{decisionId}/decide"
-					class="step"
-					class:step-primary={$page.route.id?.match(/decide|view/g)}
-				>
-					Decide
-				</a>
-				<a
-					href="/decision/{decisionId}/view"
-					class="step"
-					class:step-primary={$page.route.id?.includes('view')}
-				>
-					View
-				</a>
-			</ul>
-		</nav>
+		<div role="tablist" class="tabs tabs-lifted">
+			<a  role="tab"
+				href="/decision/{decisionId}/identify"
+				class="tab h-10"
+				class:tab-active={$page.route.id?.includes('identify')}
+			>
+				Identify
+			</a>
+			<a  role="tab"
+				href="/decision/{decisionId}/process"
+				class="tab h-10"
+				class:tab-active={$page.route.id?.includes('process')}
+			>
+				Process
+			</a>
+			<a  role="tab"
+				href="/decision/{decisionId}/decide"
+				class="tab h-10"
+				class:tab-active={$page.route.id?.includes('decide')}
+			>
+				Decide
+			</a>
+			<a  role="tab"
+				href="/decision/{decisionId}/view"
+				class="tab h-10"
+				class:tab-active={$page.route.id?.includes('view')}
+			>
+				View
+			</a>
+		</div>				
 	{/if}
 
-	<div class="card card-compact bg-base-100 shadow">
-		<div class="card-body">
-			<slot />
-		</div>
+	<div role="tabpanel" class="p-4 bg-base-100">
+		<slot />
 	</div>
 </AuthCheck>
