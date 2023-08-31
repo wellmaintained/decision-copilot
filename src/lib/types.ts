@@ -7,13 +7,18 @@ export type Decision = {
 	description?: string;
 	reversibility?: string;
 	options?: DecisionOption[];
+	criteria?: DecisionCriteria[];
 	stakeholders?: string[];
 };
 
 export type DecisionOption = {
 	id: string;
 	title?: string;
-	url?: string;
+};
+
+export type DecisionCriteria = {
+	id: string;
+	title?: string;
 };
 
 export type Project = {
