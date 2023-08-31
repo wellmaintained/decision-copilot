@@ -44,7 +44,7 @@
 		</nav>
 	{/if}
 
-	<div class="card w-4/6 mx-auto bg-base-100">
+	<div class="card card-compact bg-base-100 shadow">
 		<div class="card-body">
 			<slot />
 		</div>
