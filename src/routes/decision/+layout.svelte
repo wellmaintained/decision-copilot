@@ -15,16 +15,16 @@
 				<a
 					href="/decision/{decisionId}/identify"
 					class="step"
-					class:step-primary={$page.route.id?.match(/identify|matrix|details|workflow/g)}
+					class:step-primary={$page.route.id?.match(/identify|process|details|workflow/g)}
 				>
 					Identify
 				</a>
 				<a
-					href="/decision/{decisionId}/matrix"
+					href="/decision/{decisionId}/process"
 					class="step"
-					class:step-primary={$page.route.id?.match(/matrix|details|workflow/g)}
+					class:step-primary={$page.route.id?.match(/process|details|workflow/g)}
 				>
-					Decision Matrix
+					Process
 				</a>
 				<a
 					href="/decision/{decisionId}/details"
