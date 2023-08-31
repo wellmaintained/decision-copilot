@@ -6,6 +6,7 @@
 	import { page } from '$app/stores';
 	import type { Decision, User } from '$lib/types';
 	import { onMount } from 'svelte';
+	import SortableList from "$lib/components/SortableList.svelte";
 
 	const decisionId = $page.params.decisionId;
 	const decisionRef = doc(firestore, 'decisions', decisionId);
@@ -40,7 +41,7 @@
 		}
 	}
   
-	$: decisionOptions = $decisionStore?.options?.sort((a,b)=>Number(a.id)-Number(b.id)) ?? [];
+	$: decisionOptions = $decisionStore?.options ?? [];
 
     async function addOption() {
       await updateDoc(decisionRef, {
@@ -52,20 +53,14 @@
     }
 
 	async function updateOption(option: any, event: Event) {
-		const updatedOption = {
-			id: option.id,
-			title:(event.target as HTMLInputElement).value ?? ''
-		};
-		if (JSON.stringify(updatedOption) === JSON.stringify(option)) return;
+		const newTitle = (event.target as HTMLInputElement).value;
+		if (option.title === newTitle) return;
 
-		const batch = writeBatch(firestore);
-			batch.update(decisionRef, {
-				options: arrayRemove(option)
-			});
-			batch.update(decisionRef, {
-				options: arrayUnion(updatedOption)
-			});
-		await batch.commit();
+		option.title = newTitle;
+		await updateDoc(decisionRef, {
+			options: decisionOptions
+		});
+		
     }
 
 	async function deleteOption(option: any) {
@@ -73,6 +68,13 @@
 			options: arrayRemove(option)
 		});
 	}
+
+	function sortOptions(e: CustomEvent) {
+		const newList = e.detail;
+		updateDoc(decisionRef, {
+			options: newList
+		});
+    }
   
 	onMount(async () => {
 		const element = document.getElementById('decision_description') as HTMLTextAreaElement;
@@ -133,7 +135,7 @@
 				</svg>
 			</button>
 		</div>
-		{#each decisionOptions as option, index (option.id)}
+		<SortableList list={decisionOptions} on:sort={sortOptions} let:item={option} let:index>
 		<label class="input input-bordered flex items-center gap-2">
 			<span class="label-text text-neutral-content cursor-move">{index+1}</span>
 			<input
@@ -143,7 +145,7 @@
 				placeholder="Describe the option in a few words"
 				on:blur={(event) => updateOption(option, event)}
 			/>
-			<button class="btn btn-ghost btn-xs" on:click={() => deleteOption(option)}>
+			<button class="btn btn-ghost btn-xs" tabindex=-1 on:click={() => deleteOption(option)}>
 				<svg
 					xmlns="http://www.w3.org/2000/svg"
 					fill="none"
@@ -160,7 +162,7 @@
 				</svg>
 			</button>
 		</label>
-		{/each}
+		</SortableList>
 	</div>
 	<div class="flex flex-col gap-2">
 		<div class="text-neutral-content">Reversibility - <em>like choosing a</em></div>
