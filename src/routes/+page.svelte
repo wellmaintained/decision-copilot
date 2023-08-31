@@ -1,4 +1,4 @@
-<div class="hero bg-base-100 shadow-md">
+<div class="hero bg-base-100 shadow-md p-8">
   <div class="hero-content flex-col lg:flex-row-reverse">
     <img src="/making-a-great-decision.webp" alt="A team making a great decision" class="max-w-sm rounded-lg shadow-2xl" />
     <div>
