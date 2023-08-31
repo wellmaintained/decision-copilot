@@ -11,7 +11,7 @@
 
 	const decisionId = $page.params.decisionId;
 	const decisionStore = docStore<Decision>(firestore, `decisions/${decisionId}`);
-	const usersStore = collectionStore<User>(firestore, 'users');
+	const stakeholdersStore = collectionStore<User>(firestore, 'stakeholders');
 
 	async function updateDecisionField(field: string, event: Event) {
 		const formElement = event.target as HTMLInputElement;
@@ -112,7 +112,7 @@
 		<div class="text-neutral-content">Stakeholders - <em>who has an interest in - or is impacted by - this decision?</em></div>
 		<div class="input input-bordered h-max">
 			<div class="grid grid-cols-3 gap-2">
-				{#each $usersStore ?? [] as stakeholder}
+				{#each $stakeholdersStore ?? [] as stakeholder}
 					<label class="label cursor-pointer flex flex-row gap-2 w-max">
 						<input type="checkbox" class="checkbox" 
 							value={stakeholder.id}

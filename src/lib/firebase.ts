@@ -22,8 +22,8 @@ export const authenticatedUser = userStore(auth);
 
 onAuthStateChanged(auth, (user) => {
 	if (user) {
-		const storedUserRef = doc(firestore, 'users', user.uid);
-		setDoc(storedUserRef, {
+		const storedStakehoderRef = doc(firestore, 'stakeholders', user.uid);
+		setDoc(storedStakehoderRef, {
 			email: user.email,
 			displayName: user.displayName,
 			photoURL: user.photoURL
