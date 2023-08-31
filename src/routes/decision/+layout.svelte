@@ -44,11 +44,9 @@
 		</nav>
 	{/if}
 
-	<AnimatedRoute>
-		<div class="card w-4/6 mx-auto bg-base-100">
-			<div class="card-body">
-				<slot />
-			</div>
+	<div class="card w-4/6 mx-auto bg-base-100">
+		<div class="card-body">
+			<slot />
 		</div>
-	</AnimatedRoute>
+	</div>
 </AuthCheck>

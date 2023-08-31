@@ -8,6 +8,7 @@
 	import { onMount } from 'svelte';
 
 	import DecisionCriteria from '$lib/components/DecisionCriteria.svelte';
+	import MarkdownEditor from '$lib/components/MarkdownEditor.svelte';
 
 	const decisionId = $page.params.decisionId;
 	const decisionStore = docStore<Decision>(firestore, `decisions/${decisionId}`);
@@ -41,28 +42,12 @@
 		}
 	}
   
-  	onMount(async () => {
-		const element = document.getElementById('decision_description') as HTMLTextAreaElement;
-		if (element.nextElementSibling==null) {
-			const easyMDE_module = await import('easymde');
-			// config instructions: https://github.com/Ionaru/easy-markdown-editor?tab=readme-ov-file#configuration
-			const easyMDE = new easyMDE_module.default({
-				element: element,
-				sideBySideFullscreen: false,
-				spellChecker: false,
-				status: false,
-				minHeight: '200px',
-			});
-			decisionStore.subscribe((decision) => {
-				easyMDE.value(decision?.description || '');
-			})
-			easyMDE.codemirror.on("blur", () => {
-				updateDoc(decisionStore.ref!, { description: easyMDE.value() });
-			});
-		} else {
-			console.log('EasyMDE already initialized for', element);
-		}
-	});
+	function handleDescriptionUpdate(e: CustomEvent) {
+		const newDescription = e.detail;
+		updateDoc(decisionStore.ref!, {
+			description: newDescription
+		});
+    }	
 
 </script>
 
@@ -79,14 +64,13 @@
 			on:blur={(event) => updateDecisionField('title', event)}
 		/>
 	</label>
-	<label class="form-control">
-		<div class="label">
-			<span class="label-text text-neutral-content">Details</span>
-		</div>
-		<textarea
-			id="decision_description"
-		></textarea>
-	</label>
+	<div class="flex flex-col gap-2">
+		<div class="text-neutral-content">Details</div>
+		<MarkdownEditor 
+			value={$decisionStore?.description} 
+			on:blur={handleDescriptionUpdate} 
+		/>
+	</div>
 	<div class="flex flex-col gap-2">
 		<div class="text-neutral-content">Reversibility - <em>like choosing a</em></div>
 		<div class="input input-bordered h-max">
