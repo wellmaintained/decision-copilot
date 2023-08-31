@@ -5,6 +5,7 @@ export type Decision = {
 	key?: string;
 	title?: string;
 	description?: string;
+	decision?: string;
 	reversibility?: string;
 	options?: DecisionOption[];
 	criteria?: DecisionCriteria[];
