@@ -6,6 +6,7 @@
 	import DecisionOptions from '$lib/components/DecisionOptions.svelte';
 	import MarkdownEditor from '$lib/components/MarkdownEditor.svelte';
 	import { updateDoc } from 'firebase/firestore';
+	import DecisionCriteria from '$lib/components/DecisionCriteria.svelte';
 
     const decisionId = $page.params.decisionId;
    	const decisionStore = docStore<Decision>(firestore, `decisions/${decisionId}`);
@@ -21,6 +22,7 @@
 <h1 class="font-bold text-2xl">Decide</h1>
 
 <DecisionOptions {decisionStore}/>
+<DecisionCriteria {decisionStore}/>
 
 <h2 class="font-semibold text-xl">Decision</h2>
 <MarkdownEditor 

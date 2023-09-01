@@ -1,13 +1,10 @@
 <script lang="ts">
 	import { collectionStore, docStore } from 'sveltefire';
 	import { firestore } from '$lib/firebase';
-	import { arrayRemove, arrayUnion,
-      doc, updateDoc } from 'firebase/firestore';
+	import { arrayRemove, arrayUnion, updateDoc } from 'firebase/firestore';
 	import { page } from '$app/stores';
 	import type { Decision, User } from '$lib/types';
-	import { onMount } from 'svelte';
-
-	import DecisionCriteria from '$lib/components/DecisionCriteria.svelte';
+	
 	import MarkdownEditor from '$lib/components/MarkdownEditor.svelte';
 
 	const decisionId = $page.params.decisionId;
@@ -91,7 +88,6 @@
 		{/each}
 		</div>
 	</div>
-	<DecisionCriteria {decisionStore}/>
 	<div class="flex flex-col gap-2">
 		<div class="text-neutral-content">Stakeholders - <em>who has an interest in - or is impacted by - this decision?</em></div>
 		<div class="input input-bordered h-max">
@@ -115,5 +111,5 @@
 		</div>
 	</div>
 	<div class="divider"></div>
-	<a class="btn btn-primary" href="/decision/{decisionStore?.id}/matrix">Next</a>
+	<a class="btn btn-primary" href="/decision/{decisionStore?.id}/process">Next</a>
 </div>
