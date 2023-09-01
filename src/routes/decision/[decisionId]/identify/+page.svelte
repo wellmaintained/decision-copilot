@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { collectionStore, docStore } from 'sveltefire';
 	import { firestore } from '$lib/firebase';
-	import { arrayRemove, arrayUnion, updateDoc } from 'firebase/firestore';
+	import { arrayRemove, arrayUnion, serverTimestamp, updateDoc } from 'firebase/firestore';
 	import { page } from '$app/stores';
 	import type { Decision, User } from '$lib/types';
 	
@@ -14,7 +14,10 @@
 	async function updateDecisionField(field: string, event: Event) {
 		const formElement = event.target as HTMLInputElement;
 		const newValue = formElement.value;
-		await updateDoc(decisionStore.ref!, { [field]: newValue });
+		await updateDoc(decisionStore.ref!, { 
+			[field]: newValue,
+			updatedAt: serverTimestamp()
+		});
 	}
 
 	const reversibility_options = [
