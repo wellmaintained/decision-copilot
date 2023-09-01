@@ -1,43 +1,12 @@
 <script lang="ts">
-    export let decisionStore; 
-
-    import { arrayRemove, arrayUnion, updateDoc } from 'firebase/firestore';
     import SortableList from "$lib/components/SortableList.svelte";
+	import type { DecisionRepo } from '$lib/decisionRepo';
+	import { docStore } from 'sveltefire';
+	import type { Decision } from '$lib/types';
+	import { firestore } from '$lib/firebase';
 
-    const decisionRef = decisionStore.ref;
-
-    async function add() {
-      await updateDoc(decisionRef, {
-        criteria: arrayUnion({
-          id: Date.now(),
-		  title: '',
-        }),
-      });
-    }
-
-	async function update(criterion: any, event: Event) {
-		const newTitle = (event.target as HTMLInputElement).value;
-		if (criterion.title === newTitle) return;
-
-		criterion.title = newTitle;
-		await updateDoc(decisionRef, {
-			criteria: criteria
-		});
-		
-    }
-
-	async function remove(criterion: any) {
-		await updateDoc(decisionRef, {
-			criteria: arrayRemove(criterion)
-		});
-	}
-
-	function sort(e: CustomEvent) {
-		const newList = e.detail;
-		updateDoc(decisionRef, {
-			criteria: newList
-		});
-    }
+    export let decisionRepo: DecisionRepo; 
+    const decisionStore = docStore<Decision>(firestore, `decisions/${decisionRepo.decisionId}`);
 
     $: criteria = $decisionStore?.criteria ?? [];
 </script>
@@ -47,7 +16,7 @@
         <span class="text-neutral-content">Criteria</span>
         <button
             aria-label="Add criteria"
-            on:click={(_) => add()}
+            on:click={(_) => decisionRepo.addCriterion()}
             class="btn btn-ghost btn-sm btn-accent w-min h-min"
             >
             <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="black">
@@ -55,7 +24,7 @@
             </svg>
         </button>
     </div>
-    <SortableList list={criteria} on:sort={sort} let:item={criterion} let:index>
+    <SortableList list={criteria} on:sort={decisionRepo.sortCriteria} let:item={criterion} let:index>
         <label class="input input-bordered flex items-center gap-2">
             <span class="label-text text-neutral-content cursor-move">{index+1}</span>
             <input
@@ -63,9 +32,9 @@
                 class="grow"
                 value={criterion.title}
                 placeholder="Describe the criterion in a few words"
-                on:blur={(event) => update(criterion, event)}
+                on:blur={(event) => decisionRepo.updateCriterion(criterion, event)}
             />
-            <button class="btn btn-ghost btn-xs" tabindex=-1 on:click={() => remove(criterion)}>
+            <button class="btn btn-ghost btn-xs" tabindex=-1 on:click={() => decisionRepo.deleteCriterion(criterion)}>
                 <svg
                     xmlns="http://www.w3.org/2000/svg"
                     fill="none"

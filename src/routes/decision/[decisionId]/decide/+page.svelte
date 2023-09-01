@@ -1,24 +1,25 @@
 <script lang="ts">
     import { docStore } from 'sveltefire';
 	import { firestore } from '$lib/firebase';
-	import type { Decision, DecisionContext } from '$lib/types';
 	import DecisionOptions from '$lib/components/DecisionOptions.svelte';
 	import MarkdownEditor from '$lib/components/MarkdownEditor.svelte';
 	import DecisionCriteria from '$lib/components/DecisionCriteria.svelte';
 	import { getContext } from 'svelte';
+	import type { Decision } from '$lib/types';
+	import type { DecisionRepo } from '$lib/decisionRepo';
 
-	const decisionContext = getContext('decisionContext') as DecisionContext;
-   	const decisionStore = docStore<Decision>(firestore, `decisions/${decisionContext.decisionId}`);
-
+	const decisionRepo = getContext('decisionRepo') as DecisionRepo;
+    const decisionStore = docStore<Decision>(firestore, `decisions/${decisionRepo.decisionId}`);
+	
 </script>
 
 <h1 class="font-bold text-2xl">Decide</h1>
 
-<DecisionOptions {decisionStore}/>
-<DecisionCriteria {decisionStore}/>
+<DecisionOptions {decisionRepo}/>
+<DecisionCriteria {decisionRepo}/>
 
 <h2 class="font-semibold text-xl">Decision</h2>
 <MarkdownEditor 
-	value={$decisionContext.decision} 
-	on:blur={decisionContext.handleDecisionUpdate} 
+	value={$decisionStore?.decision} 
+	on:blur={decisionRepo.handleDecisionUpdate} 
 />

@@ -1,11 +1,13 @@
 <script lang="ts">
 	import { getContext } from 'svelte';
-	import type { DecisionContext, User } from '$lib/types';
+	import type { Decision, User } from '$lib/types';
 	import MarkdownEditor from '$lib/components/MarkdownEditor.svelte';
-	import { collectionStore } from 'sveltefire';
+	import { collectionStore, docStore } from 'sveltefire';
 	import { firestore } from '$lib/firebase';
+	import type { DecisionRepo } from '$lib/decisionRepo';
 
-	const decisionContext = getContext('decisionContext') as DecisionContext;
+	const decisionRepo = getContext('decisionRepo') as DecisionRepo;
+    const decisionData = docStore<Decision>(firestore, `decisions/${decisionRepo.decisionId}`);
 	const stakeholdersStore = collectionStore<User>(firestore, 'stakeholders');
 
 	const reversibility_options = [
@@ -13,8 +15,7 @@
 		{ id: 'haircut', value: 'Haircut', explaination: 'A bad decision here will grow out with time' },
 		{ id: 'tattoo', value: 'Tattoo', explaination: 'Better think this through carefully!' }
 	];
-
-	$: selected_reversibility = $decisionContext.reversibility;
+	$: reversibility = $decisionData?.reversibility;
 
 </script>
 
@@ -26,16 +27,16 @@
 		<input
 			type="text"
 			class="grow"
-			value={$decisionContext.title || ''}
+			value={$decisionData?.title || ''}
 			placeholder="How you would describe what this decision is about in a few words"
-			on:blur={(event) => decisionContext.updateDecisionField('title', event)}
+			on:blur={(event) => decisionRepo.updateDecisionField('title', event)}
 		/>
 	</label>
 	<div class="flex flex-col gap-2">
 		<div class="text-neutral-content">Details</div>
 		<MarkdownEditor 
-			value={$decisionContext.description} 
-			on:blur={decisionContext.handleDescriptionUpdate} 
+			value={$decisionData?.description} 
+			on:blur={decisionRepo.handleDescriptionUpdate} 
 		/>
 	</div>
 	<div class="flex flex-col gap-2">
@@ -48,9 +49,9 @@
 						type="radio"
 						class="radio"
 						name="reversibility"
+						bind:group={reversibility}
 						value={option.id}
-						bind:group={selected_reversibility}
-						on:change={(event) => decisionContext.updateDecisionField('reversibility', event)}
+						on:change={(event) => decisionRepo.updateDecisionField('reversibility', event)}
 					/>
 					<span class="label-text pl-1">{option.value}</span>
 				</label>
@@ -66,8 +67,8 @@
 					<label class="label cursor-pointer flex flex-row gap-2 w-max">
 						<input type="checkbox" class="checkbox" 
 							value={stakeholder.id}
-							checked={$decisionContext.stakeholders?.includes(stakeholder.id)}
-							on:change={(event) => decisionContext.changeStakeholder(event)}
+							checked={$decisionData?.stakeholders?.includes(stakeholder.id)}
+							on:change={(event) => decisionRepo.changeStakeholder(event)}
 						/>
 						<div class="flex flex-row items-center gap-2">
 							<div class="avatar w-8 h-8 rounded-full overflow-hidden border-base-300 border">
@@ -81,5 +82,5 @@
 		</div>
 	</div>
 	<div class="divider"></div>
-	<a class="btn btn-primary" href="/decision/{decisionContext.decisionId}/process">Next</a>
+	<a class="btn btn-primary" href="/decision/{decisionRepo.decisionId}/process">Next</a>
 </div>

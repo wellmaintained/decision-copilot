@@ -24,15 +24,6 @@ export type DecisionCriteria = {
 	title?: string;
 };
 
-export type DecisionContext = {
-	subscribe: (fn: (value: Decision) => void) => () => void;
-	decisionId: string;
-	updateDecisionField: (field: string, event: Event) => void;
-	changeStakeholder: (event: Event) => void;
-	handleDescriptionUpdate: (e: CustomEvent) => void;
-	handleDecisionUpdate: (e: CustomEvent) => void;
-};
-
 export type Project = {
 	id?: string;
 	name?: string;

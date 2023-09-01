@@ -1,43 +1,12 @@
 <script lang="ts">
-    export let decisionStore; 
-
-    import { arrayRemove, arrayUnion, updateDoc } from 'firebase/firestore';
     import SortableList from "$lib/components/SortableList.svelte";
+	import type { DecisionRepo } from '$lib/decisionRepo';
+	import { docStore } from 'sveltefire';
+	import type { Decision } from '$lib/types';
+	import { firestore } from '$lib/firebase';
 
-    const decisionRef = decisionStore.ref;
-
-    async function addOption() {
-      await updateDoc(decisionRef, {
-        options: arrayUnion({
-          id: Date.now(),
-		  title: '',
-        }),
-      });
-    }
-
-	async function updateOption(option: any, event: Event) {
-		const newTitle = (event.target as HTMLInputElement).value;
-		if (option.title === newTitle) return;
-
-		option.title = newTitle;
-		await updateDoc(decisionRef, {
-			options: decisionOptions
-		});
-		
-    }
-
-	async function deleteOption(option: any) {
-		await updateDoc(decisionRef, {
-			options: arrayRemove(option)
-		});
-	}
-
-	function sortOptions(e: CustomEvent) {
-		const newList = e.detail;
-		updateDoc(decisionRef, {
-			options: newList
-		});
-    }
+    export let decisionRepo: DecisionRepo; 
+    const decisionStore = docStore<Decision>(firestore, `decisions/${decisionRepo.decisionId}`);
 
     $: decisionOptions = $decisionStore?.options ?? [];
 </script>
@@ -47,7 +16,7 @@
         <span class="text-neutral-content">Options</span>
         <button
             aria-label="Add decision option"
-            on:click={(_) => addOption()}
+            on:click={(_) => decisionRepo.addOption()}
             class="btn btn-ghost btn-sm btn-accent w-min h-min"
             >
             <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="black">
@@ -55,7 +24,7 @@
             </svg>
         </button>
     </div>
-    <SortableList list={decisionOptions} on:sort={sortOptions} let:item={option} let:index>
+    <SortableList list={decisionOptions} on:sort={decisionRepo.sortOptions} let:item={option} let:index>
         <label class="input input-bordered flex items-center gap-2">
             <span class="label-text text-neutral-content cursor-move">{index+1}</span>
             <input
@@ -63,9 +32,9 @@
                 class="grow"
                 value={option.title}
                 placeholder="Describe the option in a few words"
-                on:blur={(event) => updateOption(option, event)}
+                on:blur={(event) => decisionRepo.updateOption(option, event)}
             />
-            <button class="btn btn-ghost btn-xs" tabindex=-1 on:click={() => deleteOption(option)}>
+            <button class="btn btn-ghost btn-xs" tabindex=-1 on:click={() => decisionRepo.deleteOption(option)}>
                 <svg
                     xmlns="http://www.w3.org/2000/svg"
                     fill="none"
