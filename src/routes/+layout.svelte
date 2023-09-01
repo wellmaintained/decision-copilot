@@ -22,7 +22,7 @@
 			<div class="navbar-end">
 				<SignedIn let:user let:signOut>
 					<div class="dropdown dropdown-end">
-						<div tabindex="0" role="button" class="btn btn-ghost btn-circle avatar">
+						<div tabindex="0" role="button" class="btn btn-ghost btn-circle avatar border-base-300 border">
 							<div class="w-10 rounded-full">
 								<img alt="Avatar for {user.displayName}" src={user.photoURL} />
 							</div>

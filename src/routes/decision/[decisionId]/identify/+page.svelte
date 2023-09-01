@@ -100,7 +100,7 @@
 							on:change={(event) => changeStakeholder(event)}
 						/>
 						<div class="flex flex-row items-center gap-2">
-							<div class="w-8 h-8 rounded-full overflow-hidden">
+							<div class="avatar w-8 h-8 rounded-full overflow-hidden border-base-300 border">
 								<img alt="Avatar for {stakeholder.displayName}" src={stakeholder.photoURL.toString()} />
 							</div>
 							<div class="label-text">{stakeholder.displayName}</div>
