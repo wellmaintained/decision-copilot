@@ -1,24 +1,12 @@
 <script lang="ts">
-	import { collectionStore, docStore } from 'sveltefire';
-	import { firestore } from '$lib/firebase';
-	import { arrayRemove, arrayUnion, serverTimestamp, updateDoc } from 'firebase/firestore';
-	import { page } from '$app/stores';
-	import type { Decision, User } from '$lib/types';
-	
+	import { getContext } from 'svelte';
+	import type { DecisionContext, User } from '$lib/types';
 	import MarkdownEditor from '$lib/components/MarkdownEditor.svelte';
+	import { collectionStore } from 'sveltefire';
+	import { firestore } from '$lib/firebase';
 
-	const decisionId = $page.params.decisionId;
-	const decisionStore = docStore<Decision>(firestore, `decisions/${decisionId}`);
+	const decisionContext = getContext('decisionContext') as DecisionContext;
 	const stakeholdersStore = collectionStore<User>(firestore, 'stakeholders');
-
-	async function updateDecisionField(field: string, event: Event) {
-		const formElement = event.target as HTMLInputElement;
-		const newValue = formElement.value;
-		await updateDoc(decisionStore.ref!, { 
-			[field]: newValue,
-			updatedAt: serverTimestamp()
-		});
-	}
 
 	const reversibility_options = [
 		{ id: 'hat', value: 'Hat', explaination: 'Easy & reversable - like choosing a hat' },
@@ -26,28 +14,7 @@
 		{ id: 'tattoo', value: 'Tattoo', explaination: 'Better think this through carefully!' }
 	];
 
-	$: selected_reversibility = $decisionStore?.reversibility;
-
-	async function changeStakeholder(event: Event) {
-		const user_id = (event.target as HTMLInputElement).value;
-		const isChecked = (event.target as HTMLInputElement).checked;
-		if (isChecked) {
-			await updateDoc(decisionStore.ref!, {
-				stakeholders: arrayUnion(user_id)
-			});
-		} else {
-			await updateDoc(decisionStore.ref!, {
-				stakeholders: arrayRemove(user_id)
-			});
-		}
-	}
-  
-	function handleDescriptionUpdate(e: CustomEvent) {
-		const newDescription = e.detail;
-		updateDoc(decisionStore.ref!, {
-			description: newDescription
-		});
-    }	
+	$: selected_reversibility = $decisionContext.reversibility;
 
 </script>
 
@@ -59,16 +26,16 @@
 		<input
 			type="text"
 			class="grow"
-			value={$decisionStore?.title || ''}
+			value={$decisionContext.title || ''}
 			placeholder="How you would describe what this decision is about in a few words"
-			on:blur={(event) => updateDecisionField('title', event)}
+			on:blur={(event) => decisionContext.updateDecisionField('title', event)}
 		/>
 	</label>
 	<div class="flex flex-col gap-2">
 		<div class="text-neutral-content">Details</div>
 		<MarkdownEditor 
-			value={$decisionStore?.description} 
-			on:blur={handleDescriptionUpdate} 
+			value={$decisionContext.description} 
+			on:blur={decisionContext.handleDescriptionUpdate} 
 		/>
 	</div>
 	<div class="flex flex-col gap-2">
@@ -83,7 +50,7 @@
 						name="reversibility"
 						value={option.id}
 						bind:group={selected_reversibility}
-						on:change={(event) => updateDecisionField('reversibility', event)}
+						on:change={(event) => decisionContext.updateDecisionField('reversibility', event)}
 					/>
 					<span class="label-text pl-1">{option.value}</span>
 				</label>
@@ -99,8 +66,8 @@
 					<label class="label cursor-pointer flex flex-row gap-2 w-max">
 						<input type="checkbox" class="checkbox" 
 							value={stakeholder.id}
-							checked={$decisionStore?.stakeholders?.includes(stakeholder.id)}
-							on:change={(event) => changeStakeholder(event)}
+							checked={$decisionContext.stakeholders?.includes(stakeholder.id)}
+							on:change={(event) => decisionContext.changeStakeholder(event)}
 						/>
 						<div class="flex flex-row items-center gap-2">
 							<div class="avatar w-8 h-8 rounded-full overflow-hidden border-base-300 border">
@@ -114,5 +81,5 @@
 		</div>
 	</div>
 	<div class="divider"></div>
-	<a class="btn btn-primary" href="/decision/{decisionStore?.id}/process">Next</a>
+	<a class="btn btn-primary" href="/decision/{decisionContext.decisionId}/process">Next</a>
 </div>

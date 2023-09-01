@@ -10,6 +10,8 @@ export type Decision = {
 	options?: DecisionOption[];
 	criteria?: DecisionCriteria[];
 	stakeholders?: string[];
+	createdAt?: Date;
+	updatedAt?: Date;
 };
 
 export type DecisionOption = {
@@ -20,6 +22,15 @@ export type DecisionOption = {
 export type DecisionCriteria = {
 	id: string;
 	title?: string;
+};
+
+export type DecisionContext = {
+	subscribe: (fn: (value: Decision) => void) => () => void;
+	decisionId: string;
+	updateDecisionField: (field: string, event: Event) => void;
+	changeStakeholder: (event: Event) => void;
+	handleDescriptionUpdate: (e: CustomEvent) => void;
+	handleDecisionUpdate: (e: CustomEvent) => void;
 };
 
 export type Project = {
