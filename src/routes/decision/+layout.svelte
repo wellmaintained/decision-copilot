@@ -40,7 +40,7 @@
 		</div>				
 	{/if}
 
-	<div role="tabpanel" class="p-4 bg-base-100">
+	<div role="tabpanel" class="p-4 bg-base-100 border-base-300 border-l border-b border-r">
 		<slot />
 	</div>
 </AuthCheck>
