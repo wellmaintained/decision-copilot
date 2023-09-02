@@ -1,14 +1,11 @@
 <script lang="ts">
     import SortableList from "$lib/components/SortableList.svelte";
 	import type { DecisionRepo } from '$lib/decisionRepo';
-	import { docStore } from 'sveltefire';
-	import type { Decision } from '$lib/types';
-	import { firestore } from '$lib/firebase';
-
+	
     export let decisionRepo: DecisionRepo; 
-    const decisionStore = docStore<Decision>(firestore, `decisions/${decisionRepo.decisionId}`);
+    const decisionData = decisionRepo.latestDecisionData;
 
-    $: criteria = $decisionStore?.criteria ?? [];
+    $: criteria = $decisionData?.criteria ?? [];
 </script>
 
 <div class="flex flex-col gap-2">

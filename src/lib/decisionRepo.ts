@@ -1,5 +1,6 @@
 import { firestore } from '$lib/firebase';
 import {
+	DocumentReference,
 	arrayRemove,
 	arrayUnion,
 	doc,
@@ -7,9 +8,17 @@ import {
 	serverTimestamp,
 	updateDoc
 } from 'firebase/firestore';
+import type { Decision } from './types';
+import { docStore } from 'sveltefire';
+interface DocStore<T> {
+	subscribe: (cb: (value: T | null) => void) => void | (() => void);
+	ref: DocumentReference<T> | null;
+	id: string;
+}
 
 export type DecisionRepo = {
 	decisionId: string;
+	latestDecisionData: DocStore<Decision>;
 	updateDecisionField: (field: string, event: Event) => Promise<void>;
 	changeStakeholder: (event: Event) => Promise<void>;
 	handleDescriptionUpdate: (e: CustomEvent) => Promise<void>;
@@ -29,6 +38,7 @@ export function createDecisionRepo(decisionId: string): DecisionRepo {
 
 	return {
 		decisionId: decisionId,
+		latestDecisionData: docStore<Decision>(firestore, `decisions/${decisionId}`),
 		updateDecisionField: async function (field: string, event: Event) {
 			const formElement = event.target as HTMLInputElement;
 			const newValue = formElement.value;
