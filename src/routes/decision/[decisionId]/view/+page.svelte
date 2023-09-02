@@ -6,7 +6,7 @@
 	import { fade } from "svelte/transition";
 	import { collectionStore } from "sveltefire";
 
-    const decisionRepo = getContext('decisionRepo') as DecisionRepo;
+	const decisionRepo = getContext<DecisionRepo>('decisionRepo');
     const decisionData = decisionRepo.latestDecisionData;
 
     $: involvedStakeholders = collectionStore(firestore,

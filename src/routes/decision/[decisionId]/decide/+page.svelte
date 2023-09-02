@@ -5,7 +5,7 @@
 	import { getContext } from 'svelte';
 	import type { DecisionRepo } from '$lib/decisionRepo';
 
-	const decisionRepo = getContext('decisionRepo') as DecisionRepo;
+	const decisionRepo = getContext<DecisionRepo>('decisionRepo');
     const decisionData = decisionRepo.latestDecisionData;
 </script>
 

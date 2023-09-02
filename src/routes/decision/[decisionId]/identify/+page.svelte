@@ -7,7 +7,7 @@
 	import type { DecisionRepo } from '$lib/decisionRepo';
 	import { fade } from 'svelte/transition';
 
-	const decisionRepo = getContext('decisionRepo') as DecisionRepo;
+	const decisionRepo = getContext<DecisionRepo>('decisionRepo');
 	const decisionData = decisionRepo.latestDecisionData;
 	const stakeholdersStore = collectionStore<User>(firestore, 'stakeholders');
 
