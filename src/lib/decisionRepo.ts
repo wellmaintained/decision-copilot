@@ -8,7 +8,7 @@ import {
 	serverTimestamp,
 	updateDoc
 } from 'firebase/firestore';
-import type { Decision } from './types';
+import type { Decision, DecisionCriteria, DecisionOption } from './types';
 import { docStore } from 'sveltefire';
 interface DocStore<T> {
 	subscribe: (cb: (value: T | null) => void) => void | (() => void);
@@ -24,12 +24,12 @@ export type DecisionRepo = {
 	handleDescriptionUpdate: (e: CustomEvent) => Promise<void>;
 	handleDecisionUpdate: (e: CustomEvent) => Promise<void>;
 	addOption: () => Promise<void>;
-	updateOption: (option: any, event: Event) => Promise<void>;
-	deleteOption: (option: any) => Promise<void>;
+	updateOption: (option: DecisionOption, event: Event) => Promise<void>;
+	deleteOption: (option: DecisionOption) => Promise<void>;
 	sortOptions: (e: CustomEvent) => Promise<void>;
 	addCriterion: () => Promise<void>;
-	updateCriterion: (criterion: any, event: Event) => Promise<void>;
-	deleteCriterion: (criterion: any) => Promise<void>;
+	updateCriterion: (criterion: DecisionCriteria, event: Event) => Promise<void>;
+	deleteCriterion: (criterion: DecisionCriteria) => Promise<void>;
 	sortCriteria: (e: CustomEvent) => Promise<void>;
 };
 
@@ -82,19 +82,19 @@ export function createDecisionRepo(decisionId: string): DecisionRepo {
 				})
 			});
 		},
-		updateOption: async function (option: any, event: Event) {
+		updateOption: async function (option: DecisionOption, event: Event) {
 			const newTitle = (event.target as HTMLInputElement).value;
 			if (option.title === newTitle) return;
 
 			const decisionSnapshot = await getDoc(decisionRef);
 			const decisionOptions = decisionSnapshot.data()?.options;
-			const currentOption = decisionOptions.find((o: any) => o.id === option.id);
+			const currentOption = decisionOptions.find((o: DecisionOption) => o.id === option.id);
 			currentOption.title = newTitle;
 			await updateDoc(decisionRef, {
 				options: decisionOptions
 			});
 		},
-		deleteOption: async function (option: any) {
+		deleteOption: async function (option: DecisionOption) {
 			await updateDoc(decisionRef, {
 				options: arrayRemove(option)
 			});
@@ -113,19 +113,21 @@ export function createDecisionRepo(decisionId: string): DecisionRepo {
 				})
 			});
 		},
-		updateCriterion: async function (criterion: any, event: Event) {
+		updateCriterion: async function (criterion: DecisionCriteria, event: Event) {
 			const newTitle = (event.target as HTMLInputElement).value;
 			if (criterion.title === newTitle) return;
 
 			const decisionSnapshot = await getDoc(decisionRef);
 			const decisionCriteria = decisionSnapshot.data()?.criteria;
-			const currentCriterion = decisionCriteria.find((c: any) => c.id === criterion.id);
+			const currentCriterion = decisionCriteria.find(
+				(c: DecisionCriteria) => c.id === criterion.id
+			);
 			currentCriterion.title = newTitle;
 			await updateDoc(decisionRef, {
 				criteria: decisionCriteria
 			});
 		},
-		deleteCriterion: async function (criterion: any) {
+		deleteCriterion: async function (criterion: DecisionCriteria) {
 			await updateDoc(decisionRef, {
 				criteria: arrayRemove(criterion)
 			});
