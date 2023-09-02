@@ -20,5 +20,5 @@
 		on:blur={decisionRepo.handleDecisionUpdate} 
 	/>
 {:else}
-	<p>loading...</p>
+	<span class="loading loading-dots loading-md"></span>
 {/if}

@@ -79,6 +79,8 @@
 								<div class="label-text w-14">{stakeholder.displayName}</div>
 							</div> 
 						</label>
+					{:else}
+            			<span class="loading loading-dots loading-md"></span>
 					{/each}
 				</div>
 			</div>
@@ -87,5 +89,5 @@
 		<a class="btn btn-primary" href="/decision/{decisionRepo.decisionId}/process">Next</a>
 	</div>
 {:else}
-	<p>loading...</p>
+	<span class="loading loading-dots loading-md"></span>
 {/if}

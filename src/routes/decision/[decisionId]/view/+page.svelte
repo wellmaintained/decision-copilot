@@ -45,8 +45,10 @@
                 </div>
                 <div class="label-text w-16">{stakeholder.displayName}</div>
             </li>
+        {:else}
+            <span class="loading loading-dots loading-md"></span>
         {/each}
     </ul>
 {:else}
-    <p>loading...</p>
+    <span class="loading loading-dots loading-md"></span>
 {/if}
