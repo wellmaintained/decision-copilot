@@ -1,23 +1,16 @@
 <script lang="ts">
 	import { getContext } from 'svelte';
 	import type { User } from '$lib/types';
-	import MarkdownEditor from '$lib/components/MarkdownEditor.svelte';
 	import { collectionStore } from 'sveltefire';
 	import { firestore } from '$lib/firebase';
 	import type { DecisionRepo } from '$lib/decisionRepo';
 	import { fade } from 'svelte/transition';
+	import MarkdownEditor from '$lib/components/MarkdownEditor.svelte';
+  	import RadioButtonOptions from '$lib/components/RadioButtonOptions.svelte';
 
 	const decisionRepo = getContext<DecisionRepo>('decisionRepo');
 	const decisionData = decisionRepo.latestDecisionData;
 	const stakeholdersStore = collectionStore<User>(firestore, 'stakeholders');
-
-	const reversibility_options = [
-		{ id: 'hat', value: 'Hat', explaination: 'Easy & reversable - like choosing a hat' },
-		{ id: 'haircut', value: 'Haircut', explaination: 'A bad decision here will grow out with time' },
-		{ id: 'tattoo', value: 'Tattoo', explaination: 'Better think this through carefully!' }
-	];
-	$: reversibility = $decisionData?.reversibility;
-
 </script>
 
 {#if $decisionData}
@@ -31,7 +24,7 @@
 				class="grow"
 				value={$decisionData.title || ''}
 				placeholder="How you would describe what this decision is about in a few words"
-				on:blur={(event) => decisionRepo.updateDecisionField('title', event)}
+				on:blur={(event) => decisionRepo.updateDecisionField('title', event.target?.value)}
 			/>
 		</label>
 		<div class="flex flex-col gap-2">
@@ -42,23 +35,31 @@
 			/>
 		</div>
 		<div class="flex flex-col gap-2">
+			<div class="text-neutral-content">Cost - <em>how much will it cost (in effort, time or money) to implement?</em></div>
+			<div class="input input-bordered h-max">
+				<RadioButtonOptions 
+					options={[
+						{key: 'low', label: 'Low', explaination: 'Quick, cheap and easy to implement' },
+						{key: 'medium', label: 'Medium', explaination: 'A bit of on-off work' },
+						{key: 'high', label: 'High', explaination: 'Difficult to implement; lots of knock on effects and/or repeated effort' }
+					]}
+					selected={$decisionData?.cost} 
+					on:changeOption={(event) => decisionRepo.updateDecisionField('cost', event.detail)}>
+				</RadioButtonOptions>
+			</div>
+		</div>
+		<div class="flex flex-col gap-2">
 			<div class="text-neutral-content">Reversibility - <em>like choosing a</em></div>
 			<div class="input input-bordered h-max">
-			{#each reversibility_options as option}
-				<div class="tooltip" data-tip="{option.explaination}">
-					<label class="label cursor-pointer tooltop">
-						<input
-							type="radio"
-							class="radio"
-							name="reversibility"
-							bind:group={reversibility}
-							value={option.id}
-							on:change={(event) => decisionRepo.updateDecisionField('reversibility', event)}
-						/>
-						<span class="label-text pl-1">{option.value}</span>
-					</label>
-				</div>
-			{/each}
+				<RadioButtonOptions 
+					options={[
+						{ key: 'hat', label: 'Hat', explaination: 'Easy & reversable - like choosing a hat' },
+						{ key: 'haircut', label: 'Haircut', explaination: 'A bad decision here will grow out with time' },
+						{ key: 'tattoo', label: 'Tattoo', explaination: 'Better think this through carefully!' }
+					]} 
+					selected={$decisionData?.reversibility}
+					on:changeOption={(event) => decisionRepo.updateDecisionField('reversibility', event.detail)}>
+				</RadioButtonOptions>
 			</div>
 		</div>
 		<div class="flex flex-col gap-2">

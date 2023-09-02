@@ -39,11 +39,9 @@ export function createDecisionRepo(decisionId: string): DecisionRepo {
 	return {
 		decisionId: decisionId,
 		latestDecisionData: docStore<Decision>(firestore, `decisions/${decisionId}`),
-		updateDecisionField: async function (field: string, event: Event) {
-			const formElement = event.target as HTMLInputElement;
-			const newValue = formElement.value;
+		updateDecisionField: async function (field: string, value) {
 			await updateDoc(decisionRef, {
-				[field]: newValue,
+				[field]: value,
 				updatedAt: serverTimestamp()
 			});
 		},
