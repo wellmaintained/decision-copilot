@@ -19,7 +19,7 @@ interface DocStore<T> {
 export type DecisionRepo = {
 	decisionId: string;
 	latestDecisionData: DocStore<Decision>;
-	updateDecisionField: (field: string, event: Event) => Promise<void>;
+	updateDecisionField: (field: string, value: any) => Promise<void>;
 	changeStakeholder: (event: Event) => Promise<void>;
 	handleDescriptionUpdate: (e: CustomEvent) => Promise<void>;
 	handleDecisionUpdate: (e: CustomEvent) => Promise<void>;

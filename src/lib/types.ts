@@ -11,6 +11,7 @@ export type Decision = {
 	options?: DecisionOption[];
 	criteria?: DecisionCriteria[];
 	stakeholders?: string[];
+	decisionMethod?: string;
 	createdAt?: Date;
 	updatedAt?: Date;
 };

@@ -22,6 +22,9 @@
     <h2 class="font-semibold text-xl">Decision</h2>
     <p>{$decisionData.decision ?? 'undecided'}</p>
 
+    <h2 class="font-semibold text-xl">Method</h2>
+    <p>{$decisionData.decisionMethod}</p>
+
     <h2 class="font-semibold text-xl">Options considered</h2>
     <ol class="list-inside list-decimal">
         {#each $decisionData.options ?? [] as option}
