@@ -77,7 +77,8 @@ export function createDecisionRepo(decisionId: string): DecisionRepo {
 				options: arrayUnion({
 					id: Date.now(),
 					title: ''
-				})
+				}),
+				updatedAt: serverTimestamp()
 			});
 		},
 		updateOption: async function (option: DecisionOption, event: Event) {
@@ -89,7 +90,8 @@ export function createDecisionRepo(decisionId: string): DecisionRepo {
 			const currentOption = decisionOptions.find((o: DecisionOption) => o.id === option.id);
 			currentOption.title = newTitle;
 			await updateDoc(decisionRef, {
-				options: decisionOptions
+				options: decisionOptions,
+				updatedAt: serverTimestamp()
 			});
 		},
 		deleteOption: async function (option: DecisionOption) {
@@ -100,7 +102,8 @@ export function createDecisionRepo(decisionId: string): DecisionRepo {
 		sortOptions: async function (e: CustomEvent) {
 			const newList = e.detail;
 			await updateDoc(decisionRef, {
-				options: newList
+				options: newList,
+				updatedAt: serverTimestamp()
 			});
 		},
 		addCriterion: async function () {
@@ -108,7 +111,8 @@ export function createDecisionRepo(decisionId: string): DecisionRepo {
 				criteria: arrayUnion({
 					id: Date.now(),
 					title: ''
-				})
+				}),
+				updatedAt: serverTimestamp()
 			});
 		},
 		updateCriterion: async function (criterion: DecisionCriteria, event: Event) {
@@ -122,18 +126,21 @@ export function createDecisionRepo(decisionId: string): DecisionRepo {
 			);
 			currentCriterion.title = newTitle;
 			await updateDoc(decisionRef, {
-				criteria: decisionCriteria
+				criteria: decisionCriteria,
+				updatedAt: serverTimestamp()
 			});
 		},
 		deleteCriterion: async function (criterion: DecisionCriteria) {
 			await updateDoc(decisionRef, {
-				criteria: arrayRemove(criterion)
+				criteria: arrayRemove(criterion),
+				updatedAt: serverTimestamp()
 			});
 		},
 		sortCriteria: async function (e: CustomEvent) {
 			const newList = e.detail;
 			updateDoc(decisionRef, {
-				criteria: newList
+				criteria: newList,
+				updatedAt: serverTimestamp()
 			});
 		}
 	};
