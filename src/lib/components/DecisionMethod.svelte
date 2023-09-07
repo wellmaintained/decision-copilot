@@ -10,7 +10,7 @@
    	const dispatch = createEventDispatcher();
 </script>
 
- <div class="card w-96 bg-base-100 shadow-xl border rounded-md"
+ <div class="card lg:w-96 w-full bg-base-100 shadow-xl border rounded-md"
     class:border-primary={isSelected}>
     <div class="card-body">
         <h2 class="card-title">{title}</h2>
