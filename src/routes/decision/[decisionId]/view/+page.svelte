@@ -3,18 +3,21 @@
 	import { firestore } from "$lib/firebase";
 	import { collection, documentId, query, where } from "firebase/firestore";
 	import { getContext } from "svelte";
+	import { writable } from "svelte/store";
 	import { fade } from "svelte/transition";
 	import { collectionStore } from "sveltefire";
+    import type { User } from "$lib/types";
 
 	const decisionRepo = getContext<DecisionRepo>('decisionRepo');
     const decisionData = decisionRepo.latestDecisionData;
 
-    $: involvedStakeholders = collectionStore(firestore,
-        query(
-            collection(firestore, 'stakeholders'), 
-            where(documentId(), 'in', $decisionData?.stakeholders ?? ['1'])
-        )
-    );
+    let involvedStakeholders = writable([] as User[]);
+    decisionData.subscribe(async (value) => {
+        if (value?.stakeholders && value?.stakeholders.length>0) {
+            const selectedStakeholderIds = value?.stakeholders.map((s) => s.stakeholder_id);
+            involvedStakeholders.set(await decisionRepo.fetchDecisionStakeholderData($decisionData?.stakeholders));
+        }
+    });
 </script>
 {#if $decisionData}
     <h1 class="font-bold text-2xl">{$decisionData.title}</h1>

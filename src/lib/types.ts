@@ -10,10 +10,15 @@ export type Decision = {
 	reversibility?: string;
 	options?: DecisionOption[];
 	criteria?: DecisionCriteria[];
-	stakeholders?: string[];
+	stakeholders?: DecisionStakeholder[];
 	decisionMethod?: string;
 	createdAt?: Date;
 	updatedAt?: Date;
+};
+
+export type DecisionStakeholder = {
+	stakeholder_id: string;
+	role?: string;
 };
 
 export type DecisionOption = {

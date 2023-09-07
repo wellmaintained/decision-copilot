@@ -3,12 +3,23 @@ import {
 	DocumentReference,
 	arrayRemove,
 	arrayUnion,
+	collection,
 	doc,
+	documentId,
 	getDoc,
+	getDocs,
+	query,
 	serverTimestamp,
-	updateDoc
+	updateDoc,
+	where
 } from 'firebase/firestore';
-import type { Decision, DecisionCriteria, DecisionOption } from './types';
+import type {
+	Decision,
+	DecisionCriteria,
+	DecisionOption,
+	DecisionStakeholder,
+	User
+} from './types';
 import { docStore } from 'sveltefire';
 interface DocStore<T> {
 	subscribe: (cb: (value: T | null) => void) => void | (() => void);
@@ -19,8 +30,12 @@ interface DocStore<T> {
 export type DecisionRepo = {
 	decisionId: string;
 	latestDecisionData: DocStore<Decision>;
+	fetchDecisionStakeholderData: (
+		decisionStakeholder: DecisionStakeholder[] | undefined
+	) => Promise<User[]>;
 	updateDecisionField: (field: string, value: any) => Promise<void>;
 	changeStakeholder: (event: Event) => Promise<void>;
+	updateStakeholderRole: (stakeholder_id: string, role: string) => Promise<void>;
 	handleDescriptionUpdate: (e: CustomEvent) => Promise<void>;
 	handleDecisionUpdate: (e: CustomEvent) => Promise<void>;
 	addOption: () => Promise<void>;
@@ -35,10 +50,32 @@ export type DecisionRepo = {
 
 export function createDecisionRepo(decisionId: string): DecisionRepo {
 	const decisionRef = doc(firestore, `decisions/${decisionId}`);
-
 	return {
 		decisionId: decisionId,
 		latestDecisionData: docStore<Decision>(firestore, `decisions/${decisionId}`),
+		fetchDecisionStakeholderData: async function (
+			decisionStakeholder: DecisionStakeholder[] | undefined
+		): Promise<User[]> {
+			const decisionStakeholderIds = decisionStakeholder?.map((o) => o.stakeholder_id) ?? [
+				'ignore'
+			];
+			const decisionStakeholdersResult = await getDocs(
+				query(
+					collection(firestore, 'stakeholders'),
+					where(documentId(), 'in', decisionStakeholderIds)
+				)
+			);
+			if (!decisionStakeholdersResult.empty) {
+				return decisionStakeholdersResult.docs.map((doc) => {
+					return {
+						id: doc.id,
+						...doc.data()
+					} as User;
+				});
+			} else {
+				return [];
+			}
+		},
 		updateDecisionField: async function (field: string, value) {
 			await updateDoc(decisionRef, {
 				[field]: value,
@@ -46,19 +83,38 @@ export function createDecisionRepo(decisionId: string): DecisionRepo {
 			});
 		},
 		changeStakeholder: async function (event: Event) {
-			const user_id = (event.target as HTMLInputElement).value;
+			const stakeholder_id = (event.target as HTMLInputElement).value;
 			const isChecked = (event.target as HTMLInputElement).checked;
-			if (isChecked) {
-				await updateDoc(decisionRef, {
-					stakeholders: arrayUnion(user_id),
-					updatedAt: serverTimestamp()
-				});
-			} else {
-				await updateDoc(decisionRef, {
-					stakeholders: arrayRemove(user_id),
-					updatedAt: serverTimestamp()
-				});
+			const decisionSnapshot = await getDoc(decisionRef);
+			const decisionStakeholders = decisionSnapshot.data()?.stakeholders ?? [];
+			const currentStakeholder = decisionStakeholders?.find(
+				(o: DecisionStakeholder) => o.stakeholder_id === stakeholder_id
+			);
+			if (!currentStakeholder && isChecked) {
+				// add stakeholder to decision
+				decisionStakeholders.push({ stakeholder_id: stakeholder_id });
+			} else if (currentStakeholder && !isChecked) {
+				// remove stakeholder from decision
+				const index = decisionStakeholders.indexOf(currentStakeholder);
+				decisionStakeholders.splice(index, 1);
 			}
+
+			await updateDoc(decisionRef, {
+				stakeholders: decisionStakeholders,
+				updatedAt: serverTimestamp()
+			});
+		},
+		updateStakeholderRole: async function (stakeholder_id: string, role: string) {
+			const decisionSnapshot = await getDoc(decisionRef);
+			const decisionStakeholders = decisionSnapshot.data()?.stakeholders;
+			const currentStakeholder = decisionStakeholders.find(
+				(o: DecisionStakeholder) => o.stakeholder_id === stakeholder_id
+			);
+			currentStakeholder.role = role;
+			await updateDoc(decisionRef, {
+				stakeholders: decisionStakeholders,
+				updatedAt: serverTimestamp()
+			});
 		},
 		handleDescriptionUpdate: async function (e: CustomEvent) {
 			await updateDoc(decisionRef, {

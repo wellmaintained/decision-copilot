@@ -7,6 +7,8 @@
 	import { firestore } from '$lib/firebase';
 	import { collection, documentId, query, where } from 'firebase/firestore';
 	import RadioButtonOptions from '$lib/components/RadioButtonOptions.svelte';
+	import { writable } from 'svelte/store';
+	import type { User } from '$lib/types';
 	
 	const decisionRepo = getContext<DecisionRepo>('decisionRepo');
 	const decisionData = decisionRepo.latestDecisionData;
@@ -29,19 +31,13 @@
         // }
         completed_steps = completed_steps
     }
-    let involvedStakeholders
-    $: {
-        let selectedStakeholderIds = $decisionData?.stakeholders;
-        if (!selectedStakeholderIds || selectedStakeholderIds?.length==0) {
-            selectedStakeholderIds = ['1']
+    let involvedStakeholders = writable([] as User[]);
+    decisionData.subscribe(async (value) => {
+        if (value?.stakeholders && value?.stakeholders.length>0) {
+            const selectedStakeholderIds = value?.stakeholders.map((s) => s.stakeholder_id);
+            involvedStakeholders.set(await decisionRepo.fetchDecisionStakeholderData($decisionData?.stakeholders));
         }
-        involvedStakeholders = collectionStore(firestore,
-            query(
-                collection(firestore, 'stakeholders'), 
-                where(documentId(), 'in', selectedStakeholderIds)
-            )
-        );
-     }
+    });
 
 	async function handleDecisionMethodSelect(decisionMethod: string): Promise<void> {
 		await decisionRepo.updateDecisionField('decisionMethod', decisionMethod);
@@ -49,8 +45,8 @@
         openAccordianStep = openAccordianStep;
 	}
 
-	function handleStakeholderRoleChange(id: any, detail: any): void {
-		console.log("handleStakeholderRoleChange", id, detail);
+	function handleStakeholderRoleChange(stakeholder_id: string, role: string): void {
+        decisionRepo.updateStakeholderRole(stakeholder_id, role);
 	}
 </script>
 <ul class="steps w-full mb-4">
@@ -108,7 +104,7 @@
       <div class="flex flex-col gap-2">
 			<div class="input input-bordered h-max">
                 <table class="table w-full"><tbody>
-					{#each $involvedStakeholders ?? [] as stakeholder (stakeholder.id)}
+					{#each $involvedStakeholders as stakeholder (stakeholder.id)}
                     <tr><td>
                         <div class="flex flex-row items-center gap-2">
                             <div class="avatar w-8 h-8 rounded-full overflow-hidden border-base-300 border">
@@ -124,7 +120,7 @@
                                     {key: "advisor", label: "Advisor", explaination: "The person providing advice"},
                                     {key: "observer", label: "Observer", explaination: "The person being informed"}
                                 ]}
-                                selected={$decisionData?.roles?.[stakeholder.id]}
+                                selected={$decisionData?.stakeholders?.find((s) => s.stakeholder_id === stakeholder.id)?.role}
                                 on:changeOption={(e) => handleStakeholderRoleChange(stakeholder.id, e.detail)}
                             />
 					</td></tr>

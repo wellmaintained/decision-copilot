@@ -11,6 +11,16 @@
 	const decisionRepo = getContext<DecisionRepo>('decisionRepo');
 	const decisionData = decisionRepo.latestDecisionData;
 	const stakeholdersStore = collectionStore<User>(firestore, 'stakeholders');
+
+
+	function isDecisionStakeholder(stakeholder_id: string): boolean {
+		if (!$decisionData?.stakeholders) return false;
+		if ($decisionData.stakeholders.length === 0) return false;
+		if ($decisionData.stakeholders?.findIndex((s) => s.stakeholder_id === stakeholder_id) > -1) {
+			return true;
+		}
+		return false
+	}
 </script>
 
 {#if $decisionData}
@@ -70,7 +80,7 @@
 						<label class="label cursor-pointer flex flex-row gap-2 w-max" transition:fade>
 							<input type="checkbox" class="checkbox" 
 								value={stakeholder.id}
-								checked={$decisionData.stakeholders?.includes(stakeholder.id)}
+								checked={isDecisionStakeholder(stakeholder.id)}
 								on:change={(event) => decisionRepo.changeStakeholder(event)}
 							/>
 							<div class="flex flex-row items-center gap-2">
