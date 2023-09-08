@@ -3,8 +3,16 @@
 	import { GoogleAuthProvider, signInWithPopup, signOut } from 'firebase/auth';
 	
 	async function signInWithGoogle() {
-		const provider = new GoogleAuthProvider();
-		await signInWithPopup(auth, provider);
+		try {
+			const provider = new GoogleAuthProvider();
+			await signInWithPopup(auth, provider);
+			// Handle additional logic if beforeUserCreated function exists and returns an error
+			// This is a placeholder for the actual error handling logic
+			// Replace with your actual error handling code
+		} catch (error) {
+			console.error('Error during sign-in:', error);
+			// Display an error message to the user or handle the error as needed
+		}
 	}	
 </script>
 
