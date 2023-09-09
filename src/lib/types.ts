@@ -42,3 +42,7 @@ export type User = {
 	displayName: string;
 	photoURL: URL;
 };
+
+export type Stakeholder = User & {
+	role?: string;
+};

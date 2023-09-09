@@ -5,7 +5,8 @@
 	import type { DecisionRepo } from '$lib/decisionRepo';
 	import RadioButtonOptions from '$lib/components/RadioButtonOptions.svelte';
 	import { writable } from 'svelte/store';
-	import type { User } from '$lib/types';
+	import type { Stakeholder } from '$lib/types';
+	import StakeholderAvatar from '$lib/components/StakeholderAvatar.svelte';
 	
 	const decisionRepo = getContext<DecisionRepo>('decisionRepo');
 	const decisionData = decisionRepo.latestDecisionData;
@@ -24,7 +25,7 @@
         openAccordianStep = "schedule";
     }
 
-    let involvedStakeholders = writable([] as User[]);
+    let involvedStakeholders = writable([] as Stakeholder[]);
     decisionData.subscribe(async (value) => {
         if (value?.stakeholders && value?.stakeholders.length>0) {
             involvedStakeholders.set(await decisionRepo.fetchDecisionStakeholderData($decisionData?.stakeholders));
@@ -92,25 +93,20 @@
 			<div class="input input-bordered h-max">
                 <table class="table w-full"><tbody>
 					{#each $involvedStakeholders as stakeholder (stakeholder.id)}
-                    <tr><td>
-                        <div class="flex flex-row items-center gap-2">
-                            <div class="avatar w-8 h-8 rounded-full overflow-hidden border-base-300 border">
-                                <img alt="Avatar for {stakeholder.displayName}" src={stakeholder.photoURL.toString()} />
-                            </div>
-                            <div class="label-text w-max">{stakeholder.displayName}</div>
-                        </div> 
-                    </td>
-                    <td>
-                        <RadioButtonOptions 
-                                options={[
-                                    {key: "decider", label: "Decider", explaination: "The person making the decision"},
-                                    {key: "advisor", label: "Advisor", explaination: "The person providing advice"},
-                                    {key: "observer", label: "Observer", explaination: "The person being informed"}
-                                ]}
-                                selected={$decisionData?.stakeholders?.find((s) => s.stakeholder_id === stakeholder.id)?.role}
-                                on:changeOption={(e) => handleStakeholderRoleChange(stakeholder.id, e.detail)}
-                            />
-					</td></tr>
+                        <tr>
+                            <td><StakeholderAvatar {stakeholder} /></td>
+                            <td>
+                                <RadioButtonOptions 
+                                        options={[
+                                            {key: "decider", label: "Decider", explaination: "The person making the decision"},
+                                            {key: "advisor", label: "Advisor", explaination: "The person providing advice"},
+                                            {key: "observer", label: "Observer", explaination: "The person being informed"}
+                                        ]}
+                                        selected={$decisionData?.stakeholders?.find((s) => s.stakeholder_id === stakeholder.id)?.role}
+                                        on:changeOption={(e) => handleStakeholderRoleChange(stakeholder.id, e.detail)}
+                                    />
+                            </td>
+                        </tr>
 					{:else}
             			<tr><td><span class="loading loading-dots loading-md"></span></td></tr>
 					{/each}

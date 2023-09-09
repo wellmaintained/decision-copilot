@@ -18,7 +18,7 @@ import type {
 	DecisionCriteria,
 	DecisionOption,
 	DecisionStakeholder,
-	User
+	Stakeholder
 } from './types';
 import { docStore } from 'sveltefire';
 interface DocStore<T> {
@@ -31,8 +31,8 @@ export type DecisionRepo = {
 	decisionId: string;
 	latestDecisionData: DocStore<Decision>;
 	fetchDecisionStakeholderData: (
-		decisionStakeholder: DecisionStakeholder[] | undefined
-	) => Promise<User[]>;
+		decisionStakeholders: DecisionStakeholder[] | undefined
+	) => Promise<Stakeholder[]>;
 	updateDecisionField: (field: string, value: any) => Promise<void>;
 	changeStakeholder: (event: Event) => Promise<void>;
 	updateStakeholderRole: (stakeholder_id: string, role: string) => Promise<void>;
@@ -54,9 +54,9 @@ export function createDecisionRepo(decisionId: string): DecisionRepo {
 		decisionId: decisionId,
 		latestDecisionData: docStore<Decision>(firestore, `decisions/${decisionId}`),
 		fetchDecisionStakeholderData: async function (
-			decisionStakeholder: DecisionStakeholder[] | undefined
-		): Promise<User[]> {
-			const decisionStakeholderIds = decisionStakeholder?.map((o) => o.stakeholder_id) ?? [
+			decisionStakeholders: DecisionStakeholder[] | undefined
+		): Promise<Stakeholder[]> {
+			const decisionStakeholderIds = decisionStakeholders?.map((o) => o.stakeholder_id) ?? [
 				'ignore'
 			];
 			const decisionStakeholdersResult = await getDocs(
@@ -67,10 +67,12 @@ export function createDecisionRepo(decisionId: string): DecisionRepo {
 			);
 			if (!decisionStakeholdersResult.empty) {
 				return decisionStakeholdersResult.docs.map((doc) => {
+					const role = decisionStakeholders?.find((s) => s.stakeholder_id === doc.id)?.role;
 					return {
 						id: doc.id,
+						role: role,
 						...doc.data()
-					} as User;
+					} as Stakeholder;
 				});
 			} else {
 				return [];
