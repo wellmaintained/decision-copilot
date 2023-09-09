@@ -62,15 +62,11 @@
             <td class="align-top">
                 {#each advisors as stakeholder (stakeholder.id)}
                     <StakeholderAvatar {stakeholder} />
-                {:else}
-                    <span class="loading loading-dots loading-md"></span>
                 {/each}
             </td>
             <td class="align-top">
                 {#each observers as stakeholder (stakeholder.id)}
                    <StakeholderAvatar {stakeholder} />
-                {:else}
-                    <span class="loading loading-dots loading-md"></span>
                 {/each}
             </td>
         </tr>
