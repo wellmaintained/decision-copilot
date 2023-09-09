@@ -3,9 +3,6 @@
 
     import { getContext } from 'svelte';
 	import type { DecisionRepo } from '$lib/decisionRepo';
-	import { collectionStore } from 'sveltefire';
-	import { firestore } from '$lib/firebase';
-	import { collection, documentId, query, where } from 'firebase/firestore';
 	import RadioButtonOptions from '$lib/components/RadioButtonOptions.svelte';
 	import { writable } from 'svelte/store';
 	import type { User } from '$lib/types';
@@ -17,24 +14,19 @@
     if ($decisionData?.decisionMethod) {
         openAccordianStep = "assign";
     }
-
-    let completed_steps: string[] = [];
-    $: {
-        if ($decisionData?.decisionMethod) {
-            completed_steps.push("select");
+    let stakeholdersWithRoleCount = 0;
+    for (let stakeholder of $decisionData?.stakeholders || []) {
+        if (stakeholder.role) {
+            stakeholdersWithRoleCount++;
         }
-        // if ($decisionData?.roles) {
-        //     completed_steps.push("assign");
-        // }
-        // if ($decisionData?.stakeholders) {
-        //     completed_steps.push("inform");
-        // }
-        completed_steps = completed_steps
     }
+    if (stakeholdersWithRoleCount === $decisionData?.stakeholders?.length) {
+        openAccordianStep = "schedule";
+    }
+
     let involvedStakeholders = writable([] as User[]);
     decisionData.subscribe(async (value) => {
         if (value?.stakeholders && value?.stakeholders.length>0) {
-            const selectedStakeholderIds = value?.stakeholders.map((s) => s.stakeholder_id);
             involvedStakeholders.set(await decisionRepo.fetchDecisionStakeholderData($decisionData?.stakeholders));
         }
     });
@@ -49,11 +41,6 @@
         decisionRepo.updateStakeholderRole(stakeholder_id, role);
 	}
 </script>
-<ul class="steps w-full mb-4">
-  <li class="step" class:step-primary={completed_steps.includes("select")}>Select method</li>
-  <li class="step step-primary" class:step-primary={completed_steps.includes("assign")}>Assign roles</li>
-  <li class="step" class:step-primary={completed_steps.includes("inform")}>Inform stakeholders</li>
-</ul>
 
 <div class="join join-vertical w-full">
     <div class="collapse collapse-arrow join-item border border-base-300">
@@ -128,6 +115,20 @@
             			<tr><td><span class="loading loading-dots loading-md"></span></td></tr>
 					{/each}
 				</tbody></table>
+			</div>
+            <button class="btn btn-primary w-1/4" on:click={(_) => openAccordianStep="schedule"}>Next</button>
+		</div>
+    </div>
+  </div>
+    <div class="collapse collapse-arrow join-item border border-base-300">
+    <input type="radio" name="step-accordian" checked={openAccordianStep=="schedule"} /> 
+    <div class="collapse-title text-xl font-medium">
+      Schedule
+    </div>
+    <div class="collapse-content"> 
+      <div class="flex flex-col gap-2">
+			<div class="input input-bordered h-max">
+                <p>Schedule</p>
 			</div>
 		</div>
     </div>
