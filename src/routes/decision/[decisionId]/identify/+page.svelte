@@ -96,8 +96,7 @@
 				</div>
 			</div>
 		</div>
-		<div class="divider"></div>
-		<a class="btn btn-primary" href="/decision/{decisionRepo.decisionId}/process">Next</a>
+		<a class="btn btn-primary w-1/4 ml-auto mr-2" href="/decision/{decisionRepo.decisionId}/process">Next</a>
 	</div>
 {:else}
 	<span class="loading loading-dots loading-md"></span>

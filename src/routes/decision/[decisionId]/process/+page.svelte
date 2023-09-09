@@ -116,7 +116,7 @@
 					{/each}
 				</tbody></table>
 			</div>
-            <button class="btn btn-primary w-1/4" on:click={(_) => openAccordianStep="schedule"}>Next</button>
+            <button class="btn btn-primary w-1/4 ml-auto mr-2" on:click={(_) => openAccordianStep="schedule"}>Next</button>
 		</div>
     </div>
   </div>
