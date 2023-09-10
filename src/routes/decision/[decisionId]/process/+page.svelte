@@ -11,16 +11,18 @@
     let involvedStakeholders = writable([] as Stakeholder[]);
     let roleAssignmentErrors:string[] = [];
     let availableDecisionMethods:string[] = [];
+    let selectedDecisionMethod:string = 'unknown';
 
     decisionData.subscribe(async (d) => {
         if (d?.stakeholders && d.stakeholders.length>0) {
             involvedStakeholders.set(await decisionRepo.fetchDecisionStakeholderData(d.stakeholders));               
             roleAssignmentErrors = [];
             availableDecisionMethods = [];
+            selectedDecisionMethod = d.decisionMethod ?? 'unknown';
             if ($decisionData?.stakeholders && $decisionData?.stakeholders.length>0) {
                 const deciders = d.stakeholders.filter((s) => s.role === 'decider');
                 if (deciders.length === 0) {
-                    roleAssignmentErrors.push("At least 1 stakeholder must be assigned the Decider role");
+                    roleAssignmentErrors.push("At least 1 stakeholder must be assigned a Decider role");
                     d.decisionMethod = 'unknown';
                     return;
                 } else if (deciders.length === 1) {
@@ -44,22 +46,33 @@
 		await decisionRepo.updateDecisionField('decisionMethod', decisionMethod);
 	}
 
-    const decisionMethods = {
+    type DecisionMethod = {
+        title: string;
+        description: string;
+        speed: number;
+        buyIn: number;
+    };
+
+    type DecisionMethods = {
+        [key: string]: DecisionMethod;
+    };
+
+    const decisionMethods: DecisionMethods = {
         unknown: {
             title: "Unknown",
-            description: "Please assign roles to stakeholders first",
+            description: "Please assign valid roles to stakeholders first",
             speed: 0,
             buyIn: 0
         },
         autocratic: {
             title: "Autocratic",
-            description: "The person driving the process makes a decision and informs all stakeholders",
+            description: "A single decider makes a choice and informs all stakeholders",
             speed: 4,
             buyIn: 0
         },
         democratic: {
             title: "Democratic",
-            description: "Option with the most votes wins",
+            description: "Deciders vote on the options.  The option with the most votes is chosen",
             speed: 0,
             buyIn: 4
         },
@@ -69,8 +82,8 @@
             speed: 3,
             buyIn: 3
         }
-    }         
-    $: selectedDecisionMethod = decisionMethods[$decisionData?.decisionMethod || 'unknown'];
+    }     
+    $: selectedDecisionMethodInfo = decisionMethods[selectedDecisionMethod];
 </script>
 
 <div class="join join-vertical w-full">
@@ -126,27 +139,29 @@
                             <input
                                 type="radio"
                                 class="radio"
-                                bind:group={$decisionData.decisionMethod}
+                                bind:group={selectedDecisionMethod}
                                 value={method}
                                 on:change={() => handleDecisionMethodSelect(method)}
                             />
                             <span class="label-text pl-1 capitalize">{method}</span>
                         </label>
+                    {:else}
+                        <p>It isn't possible to make a decision with the selected roles</p>
                     {/each}
                 </div>
             </div>
             <div class="card w-3/5 bg-base-100 shadow-xl border rounded-md">
                 <div class="card-body">
-                    <h2 class="card-title">{selectedDecisionMethod.title}</h2>
-                    <p>{selectedDecisionMethod.description}</p>
+                    <h2 class="card-title">{selectedDecisionMethodInfo.title}</h2>
+                    <p>{selectedDecisionMethodInfo.description}</p>
                     <div class="divider"></div>
                     <label class="flex items-center gap-2">
                         <span class="label-text text-neutral-content">Speed</span>
-                        <input disabled type="range" min="0" max="4" value="{selectedDecisionMethod.speed}" class="range" />
+                        <input disabled type="range" min="0" max="4" value="{selectedDecisionMethodInfo.speed}" class="range" />
                     </label>
                     <label class="flex items-center gap-2">
                         <span class="label-text text-neutral-content">Buy-in</span>
-                        <input disabled type="range" min="0" max="4" value="{selectedDecisionMethod.buyIn}" class="range" />
+                        <input disabled type="range" min="0" max="4" value="{selectedDecisionMethodInfo.buyIn}" class="range" />
                     </label>
                 </div>
             </div>
