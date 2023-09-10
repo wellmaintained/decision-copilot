@@ -24,15 +24,19 @@
                 if (deciders.length === 0) {
                     roleAssignmentErrors.push("At least 1 stakeholder must be assigned a Decider role");
                     d.decisionMethod = 'unknown';
-                    return;
                 } else if (deciders.length === 1) {
                     availableDecisionMethods.push("autocratic");
                 } else {
                     availableDecisionMethods.push("democratic")
                 }
                 const advisors = d.stakeholders.filter((s) => s.role === 'advisor');
-                if (advisors.length > 0 ) {
+                if (deciders.length > 0 && advisors.length > 0 ) {
                     availableDecisionMethods.push("consent")
+                }
+                const observers = d.stakeholders.filter((s) => s.role === 'observer');
+                if (deciders.length + advisors.length + observers.length != d.stakeholders.length) {
+                    roleAssignmentErrors.push("Every stakeholder must be assigned a role");
+                    d.decisionMethod = 'unknown';
                 }
             }
         }
@@ -101,9 +105,9 @@
                         <div class="flex-auto">
                             <RadioButtonOptions 
                                     options={[
-                                        {key: "decider", label: "Decider", explaination: "The person making the decision"},
-                                        {key: "advisor", label: "Advisor", explaination: "The person providing advice"},
-                                        {key: "observer", label: "Observer", explaination: "The person being informed"}
+                                        {key: "decider", label: "Decider", explaination: "Makes the decision"},
+                                        {key: "advisor", label: "Advisor", explaination: "Povides advice to the decider(s)"},
+                                        {key: "observer", label: "Observer", explaination: "Wants to know the result but has no say in the decision"},
                                     ]}
                                     selected={$decisionData?.stakeholders?.find((s) => s.stakeholder_id === stakeholder.id)?.role}
                                     on:changeOption={(e) => handleStakeholderRoleChange(stakeholder.id, e.detail)}
@@ -113,16 +117,6 @@
                 {:else}
                     <div class="loading loading-dots loading-md"></div>
                 {/each}
-                {#if roleAssignmentErrors.length > 0}
-                    <div role="alert" class="alert alert-error mt-3 mb-3">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                            <ul>
-                                {#each roleAssignmentErrors as error}
-                                    <li>{error}</li>
-                                {/each}
-                            </ul>
-                    </div>
-                {/if}
             </div>
         </div>
     </div>
@@ -130,10 +124,10 @@
         <h2 class="text-xl font-medium mb-2">
             Decision making method
         </h2>
+        <p class="text-neutral-content pb-2">Given the assigned roles assigned; one of the following methods could be used:</p>
         <div class="flex flex-row gap-2">
-            <div class="flex-initial w-2/5">
+            <div class="flex-initial {selectedDecisionMethod!=='unknown'? 'w-2/5':''}">
                 <div class="flex flex-col">
-                    <p class="text-neutral-content pb-2">Given the assigned roles assigned; one of the following methods could be used:</p>
                     {#each availableDecisionMethods as method}
                         <label class="label cursor-pointer w-min">
                             <input
@@ -146,25 +140,36 @@
                             <span class="label-text pl-1 capitalize">{method}</span>
                         </label>
                     {:else}
-                        <p>It isn't possible to make a decision with the selected roles</p>
+                        <div role="alert" class="alert alert-error mt-3 mb-3">
+                            <div class="flex flex-col text-left">
+                                <p class="break-after-column font-semibold mb-2">It isn't possible to make a decision given the selected roles.</p>
+                                <ul class="list-inside list-decimal">
+                                    {#each roleAssignmentErrors as error}
+                                        <li>{error}</li>
+                                    {/each}
+                                </ul>
+                            </div>
+                        </div>
                     {/each}
                 </div>
             </div>
-            <div class="card w-3/5 bg-base-100 shadow-xl border rounded-md">
-                <div class="card-body">
-                    <h2 class="card-title">{selectedDecisionMethodInfo.title}</h2>
-                    <p>{selectedDecisionMethodInfo.description}</p>
-                    <div class="divider"></div>
-                    <label class="flex items-center gap-2">
-                        <span class="label-text text-neutral-content">Speed</span>
-                        <input disabled type="range" min="0" max="4" value="{selectedDecisionMethodInfo.speed}" class="range" />
-                    </label>
-                    <label class="flex items-center gap-2">
-                        <span class="label-text text-neutral-content">Buy-in</span>
-                        <input disabled type="range" min="0" max="4" value="{selectedDecisionMethodInfo.buyIn}" class="range" />
-                    </label>
+            {#if selectedDecisionMethod!=='unknown'}
+                <div class="card w-3/5 bg-base-100 shadow-xl border rounded-md">
+                    <div class="card-body">
+                        <h2 class="card-title">{selectedDecisionMethodInfo.title}</h2>
+                        <p>{selectedDecisionMethodInfo.description}</p>
+                        <div class="divider"></div>
+                        <label class="flex items-center gap-2">
+                            <span class="label-text text-neutral-content">Speed</span>
+                            <input disabled type="range" min="0" max="4" value="{selectedDecisionMethodInfo.speed}" class="range" />
+                        </label>
+                        <label class="flex items-center gap-2">
+                            <span class="label-text text-neutral-content">Buy-in</span>
+                            <input disabled type="range" min="0" max="4" value="{selectedDecisionMethodInfo.buyIn}" class="range" />
+                        </label>
+                    </div>
                 </div>
-            </div>
+            {/if}
         </div>
     </div>
     <div class="join-item border border-base-300 p-4">
