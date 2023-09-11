@@ -153,7 +153,7 @@
                     {/each}
                 </div>
             </div>
-            {#if selectedDecisionMethod!=='unknown'}
+            {#if selectedDecisionMethod!='unknown'}
                 <div class="card w-3/5 bg-base-100 shadow-xl border rounded-md">
                     <div class="card-body">
                         <h2 class="card-title">{selectedDecisionMethodInfo.title}</h2>
