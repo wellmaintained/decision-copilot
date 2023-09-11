@@ -31,6 +31,25 @@ export type DecisionCriteria = {
 	title?: string;
 };
 
+export type DecisionStep = {
+	type: string;
+	who: string;
+	title: string;
+	description: string;
+};
+
+export type DecisionMethod = {
+	title: string;
+	description: string;
+	speed: number;
+	buyIn: number;
+	steps: DecisionStep[];
+};
+
+export type DecisionMethods = {
+	[key: string]: DecisionMethod;
+};
+
 export type Project = {
 	id?: string;
 	name?: string;

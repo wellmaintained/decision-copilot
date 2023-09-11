@@ -1,9 +1,11 @@
 <script lang="ts">
+  import DecisionSteps from './DecisionSteps.svelte';
+
     import { getContext } from 'svelte';
 	import type { DecisionRepo } from '$lib/decisionRepo';
 	import RadioButtonOptions from '$lib/components/RadioButtonOptions.svelte';
 	import { writable } from 'svelte/store';
-	import type { Stakeholder } from '$lib/types';
+	import type { DecisionMethods, Stakeholder } from '$lib/types';
 	import StakeholderAvatar from '$lib/components/StakeholderAvatar.svelte';
 	
 	const decisionRepo = getContext<DecisionRepo>('decisionRepo');
@@ -50,41 +52,39 @@
 		await decisionRepo.updateDecisionField('decisionMethod', decisionMethod);
 	}
 
-    type DecisionMethod = {
-        title: string;
-        description: string;
-        speed: number;
-        buyIn: number;
-    };
-
-    type DecisionMethods = {
-        [key: string]: DecisionMethod;
-    };
-
     const decisionMethods: DecisionMethods = {
-        unknown: {
-            title: "Unknown",
-            description: "Please assign valid roles to stakeholders first",
-            speed: 0,
-            buyIn: 0
-        },
         autocratic: {
             title: "Autocratic",
             description: "A single decider makes a choice and informs all stakeholders",
             speed: 4,
-            buyIn: 0
+            buyIn: 0,
+            steps: [
+                { type: "generate", who: "decider", title: "Generate options", description: "Options are generated" },
+                { type: "choose", who: "decider", title: "Make a choice", description: "Decider makes a choice" },
+            ],
         },
         democratic: {
             title: "Democratic",
             description: "Deciders vote on the options.  The option with the most votes is chosen",
             speed: 0,
-            buyIn: 4
+            buyIn: 4, 
+            steps: [
+                { type: "generate", who: "deciders & advisors", title: "Generate options", description: "Decider generates options" },
+                { type: "vote", who: "deciders", title: "Deciders vote on the options", description: "Deciders vote on the options" },
+                { type: "choose", who: "deciders", title: "Choose the option", description: "The option with the most votes is chosen" }
+            ],
         },
         consent: {
             title: "Consent",
             description: "The proposal is selected if no one has a strong/reasoned objection",
             speed: 3,
-            buyIn: 3
+            buyIn: 3,
+            steps: [
+                { type: "generate", who: "deciders & advisors", title: "Generate options", description: "Decider generates options" },
+                { type: "choose", who: "decider", title: "Decider chooses an option", description: "Decider proposes the chosen option" },
+                { type: "objection", who: "advisors", title: "Raise objections", description: "Stakeholders raise objections" },
+                { type: "choose", who: "decider", title: "Consent", description: "Proposal is selected if no one has a strong/reasoned objection"}
+            ]
         }
     }     
     $: selectedDecisionMethodInfo = decisionMethods[selectedDecisionMethod];
@@ -174,12 +174,16 @@
     </div>
     <div class="join-item border border-base-300 p-4">
         <h2 class="text-xl font-medium mb-2">
-            Schedule
+            Next steps
         </h2>
-        <div class="flex flex-col gap-2">
-            <div class="input input-bordered h-max">
-                <p>Schedule</p>
-            </div>
+        <div class="flex flex-col gap-4 m-2">
+            {#if selectedDecisionMethod!='unknown'}
+                <DecisionSteps decision={$decisionData} decisionSteps={selectedDecisionMethodInfo.steps} />
+            {:else}
+                {#each [1,2,3] as r}
+                    <div class="skeleton h-4 w-28"></div>
+                {/each}
+            {/if}
         </div>
     </div>
 </div>
