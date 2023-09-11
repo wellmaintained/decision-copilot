@@ -93,8 +93,8 @@ export function createDecisionRepo(decisionId: string): DecisionRepo {
 				(o: DecisionStakeholder) => o.stakeholder_id === stakeholder_id
 			);
 			if (!currentStakeholder && isChecked) {
-				// add stakeholder to decision
-				decisionStakeholders.push({ stakeholder_id: stakeholder_id });
+				// add stakeholder to decision as an observer
+				decisionStakeholders.push({ stakeholder_id: stakeholder_id, role: 'observer' });
 			} else if (currentStakeholder && !isChecked) {
 				// remove stakeholder from decision
 				const index = decisionStakeholders.indexOf(currentStakeholder);
