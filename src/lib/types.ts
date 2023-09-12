@@ -33,6 +33,7 @@ export type DecisionCriteria = {
 
 export type DecisionStep = {
 	type: string;
+	icon: string;
 	who: string;
 	title: string;
 	description: string;

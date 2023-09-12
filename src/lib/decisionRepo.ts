@@ -21,7 +21,7 @@ import type {
 	Stakeholder
 } from './types';
 import { docStore } from 'sveltefire';
-interface DocStore<T> {
+export interface DocStore<T> {
 	subscribe: (cb: (value: T | null) => void) => void | (() => void);
 	ref: DocumentReference<T> | null;
 	id: string;
@@ -35,7 +35,7 @@ export type DecisionRepo = {
 	) => Promise<Stakeholder[]>;
 	updateDecisionField: (field: string, value: any) => Promise<void>;
 	changeStakeholder: (event: Event) => Promise<void>;
-	updateStakeholderRole: (stakeholder_id: string, role: string) => Promise<void>;
+	updateStakeholderRole: (stakeholder_id: string, role: string) => Promise<Decision>;
 	handleDescriptionUpdate: (e: CustomEvent) => Promise<void>;
 	handleDecisionUpdate: (e: CustomEvent) => Promise<void>;
 	addOption: () => Promise<void>;
@@ -108,15 +108,29 @@ export function createDecisionRepo(decisionId: string): DecisionRepo {
 		},
 		updateStakeholderRole: async function (stakeholder_id: string, role: string) {
 			const decisionSnapshot = await getDoc(decisionRef);
-			const decisionStakeholders = decisionSnapshot.data()?.stakeholders;
-			const currentStakeholder = decisionStakeholders.find(
+			const decision = decisionSnapshot.data() as Decision;
+			if (
+				!decisionSnapshot.exists() ||
+				!decision?.stakeholders ||
+				decision?.stakeholders.length === 0
+			) {
+				throw new Error(`Document ${decisionRef} does not contain any stakeholders.`);
+			}
+
+			const currentStakeholder = decision.stakeholders.find(
 				(o: DecisionStakeholder) => o.stakeholder_id === stakeholder_id
 			);
+			if (!currentStakeholder) {
+				throw new Error(`Stakeholder ${stakeholder_id} not found in decision.`);
+			}
+
 			currentStakeholder.role = role;
 			await updateDoc(decisionRef, {
-				stakeholders: decisionStakeholders,
+				stakeholders: decision.stakeholders,
 				updatedAt: serverTimestamp()
 			});
+
+			return decision;
 		},
 		handleDescriptionUpdate: async function (e: CustomEvent) {
 			await updateDoc(decisionRef, {

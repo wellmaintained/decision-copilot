@@ -12,7 +12,6 @@
 	const decisionData = decisionRepo.latestDecisionData;
 	const stakeholdersStore = collectionStore<User>(firestore, 'stakeholders');
 
-
 	function isDecisionStakeholder(stakeholder_id: string): boolean {
 		if (!$decisionData?.stakeholders) return false;
 		if ($decisionData.stakeholders.length === 0) return false;

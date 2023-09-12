@@ -1,93 +1,74 @@
 <script lang="ts">
-  import DecisionSteps from './DecisionSteps.svelte';
-
     import { getContext } from 'svelte';
 	import type { DecisionRepo } from '$lib/decisionRepo';
 	import RadioButtonOptions from '$lib/components/RadioButtonOptions.svelte';
 	import { writable } from 'svelte/store';
-	import type { DecisionMethods, Stakeholder } from '$lib/types';
+	import type { Decision, DecisionMethod, Stakeholder } from '$lib/types';
 	import StakeholderAvatar from '$lib/components/StakeholderAvatar.svelte';
+	import { decisionMethods } from '$lib/decisionMethods';
 	
 	const decisionRepo = getContext<DecisionRepo>('decisionRepo');
-	const decisionData = decisionRepo.latestDecisionData;
+    const decisionData = decisionRepo.latestDecisionData;
     let involvedStakeholders = writable([] as Stakeholder[]);
     let roleAssignmentErrors:string[] = [];
     let availableDecisionMethods:string[] = [];
     let selectedDecisionMethod:string = 'unknown';
+    let selectedDecisionMethodInfo:DecisionMethod;
 
-    decisionData.subscribe(async (d) => {
-        if (d?.stakeholders && d.stakeholders.length>0) {
-            involvedStakeholders.set(await decisionRepo.fetchDecisionStakeholderData(d.stakeholders));               
-            roleAssignmentErrors = [];
-            availableDecisionMethods = [];
-            selectedDecisionMethod = d.decisionMethod ?? 'unknown';
-            if ($decisionData?.stakeholders && $decisionData?.stakeholders.length>0) {
-                const deciders = d.stakeholders.filter((s) => s.role === 'decider');
-                if (deciders.length === 0) {
-                    roleAssignmentErrors.push("At least 1 stakeholder must be assigned a Decider role");
-                    d.decisionMethod = 'unknown';
-                } else if (deciders.length === 1) {
-                    availableDecisionMethods.push("autocratic");
-                } else {
-                    availableDecisionMethods.push("democratic")
-                }
-                const advisors = d.stakeholders.filter((s) => s.role === 'advisor');
-                if (deciders.length > 0 && advisors.length > 0 ) {
-                    availableDecisionMethods.push("consent")
-                }
-                const observers = d.stakeholders.filter((s) => s.role === 'observer');
-                if (deciders.length + advisors.length + observers.length != d.stakeholders.length) {
-                    roleAssignmentErrors.push("Every stakeholder must be assigned a role");
-                    d.decisionMethod = 'unknown';
-                }
+    function validateRoleAssignment(decision:Decision|null): string[] {
+        roleAssignmentErrors = [];
+        if (decision && decision.stakeholders && decision.stakeholders.length>0) {
+            const deciders = decision.stakeholders.filter((s) => s.role === 'decider');
+            const advisors = decision.stakeholders.filter((s) => s.role === 'advisor');
+            const observers = decision.stakeholders.filter((s) => s.role === 'observer');
+            if (deciders.length === 0) {
+                roleAssignmentErrors.push("At least 1 stakeholder must be assigned a Decider role");
+            } 
+            if (deciders.length + advisors.length + observers.length != decision.stakeholders.length) {
+                roleAssignmentErrors.push("Every stakeholder must be assigned a role");
             }
         }
-    });
+        return roleAssignmentErrors;
+    }
 
-	function handleStakeholderRoleChange(stakeholder_id: string, role: string): void {
-        decisionRepo.updateStakeholderRole(stakeholder_id, role);
+    function determineAvailableDecisionMethods(decision:Decision|null): string[] {
+        availableDecisionMethods = [];
+        if (decision && decision.stakeholders && decision.stakeholders.length>0) {
+            const deciders = decision.stakeholders.filter((s) => s.role === 'decider');
+            const advisors = decision.stakeholders.filter((s) => s.role === 'advisor');
+
+            if (deciders.length === 1) {
+                availableDecisionMethods.push("autocratic");
+            } else if (deciders.length > 1) {
+                availableDecisionMethods.push("democratic")
+            }
+            if (deciders.length > 0 && advisors.length > 0 ) {
+                availableDecisionMethods.push("consent")
+            }
+        }
+        return availableDecisionMethods;
+    }
+
+	async function handleStakeholderRoleChange(decision:Decision|null, stakeholder_id: string, role: string): Promise<void> {
+        const updatedDecision = await decisionRepo.updateStakeholderRole(stakeholder_id, role);
+        if (validateRoleAssignment(updatedDecision).length > 0) {
+            await decisionRepo.updateDecisionField('decisionMethod', 'unknown');
+        }
 	}
 
     async function handleDecisionMethodSelect(decisionMethod: string): Promise<void> {
 		await decisionRepo.updateDecisionField('decisionMethod', decisionMethod);
 	}
-
-    const decisionMethods: DecisionMethods = {
-        autocratic: {
-            title: "Autocratic",
-            description: "A single decider makes a choice and informs all stakeholders",
-            speed: 4,
-            buyIn: 0,
-            steps: [
-                { type: "generate", who: "decider", title: "Generate options", description: "Options are generated" },
-                { type: "choose", who: "decider", title: "Make a choice", description: "Decider makes a choice" },
-            ],
-        },
-        democratic: {
-            title: "Democratic",
-            description: "Deciders vote on the options.  The option with the most votes is chosen",
-            speed: 0,
-            buyIn: 4, 
-            steps: [
-                { type: "generate", who: "deciders & advisors", title: "Generate options", description: "Decider generates options" },
-                { type: "vote", who: "deciders", title: "Deciders vote on the options", description: "Deciders vote on the options" },
-                { type: "choose", who: "deciders", title: "Choose the option", description: "The option with the most votes is chosen" }
-            ],
-        },
-        consent: {
-            title: "Consent",
-            description: "The proposal is selected if no one has a strong/reasoned objection",
-            speed: 3,
-            buyIn: 3,
-            steps: [
-                { type: "generate", who: "deciders & advisors", title: "Generate options", description: "Decider generates options" },
-                { type: "choose", who: "decider", title: "Decider chooses an option", description: "Decider proposes the chosen option" },
-                { type: "objection", who: "advisors", title: "Raise objections", description: "Stakeholders raise objections" },
-                { type: "choose", who: "decider", title: "Consent", description: "Proposal is selected if no one has a strong/reasoned objection"}
-            ]
+    
+    decisionData.subscribe(async (decision) => {
+        if (decision?.stakeholders && decision.stakeholders.length>0) {
+            involvedStakeholders.set(await decisionRepo.fetchDecisionStakeholderData(decision.stakeholders));               
+            roleAssignmentErrors = validateRoleAssignment(decision);
+            availableDecisionMethods = determineAvailableDecisionMethods(decision);
         }
-    }     
-    $: selectedDecisionMethodInfo = decisionMethods[selectedDecisionMethod];
+        selectedDecisionMethod = decision?.decisionMethod ?? 'unknown';
+        selectedDecisionMethodInfo = decisionMethods[selectedDecisionMethod];
+    });
 </script>
 
 <div class="join join-vertical w-full">
@@ -110,7 +91,7 @@
                                         {key: "observer", label: "Observer", explaination: "Wants to know the result but has no say in the decision"},
                                     ]}
                                     selected={$decisionData?.stakeholders?.find((s) => s.stakeholder_id === stakeholder.id)?.role}
-                                    on:changeOption={(e) => handleStakeholderRoleChange(stakeholder.id, e.detail)}
+                                    on:changeOption={(e) => handleStakeholderRoleChange($decisionData, stakeholder.id, e.detail)}
                                 />
                         </div>
                     </div>
@@ -169,20 +150,6 @@
                         </label>
                     </div>
                 </div>
-            {/if}
-        </div>
-    </div>
-    <div class="join-item border border-base-300 p-4">
-        <h2 class="text-xl font-medium mb-2">
-            Next steps
-        </h2>
-        <div class="flex flex-col gap-4 m-2">
-            {#if selectedDecisionMethod!='unknown'}
-                <DecisionSteps decision={$decisionData} decisionSteps={selectedDecisionMethodInfo.steps} />
-            {:else}
-                {#each [1,2,3] as r}
-                    <div class="skeleton h-4 w-28"></div>
-                {/each}
             {/if}
         </div>
     </div>
