@@ -19,6 +19,9 @@
     $: advisors = $involvedStakeholders?.filter((s) => s.role === 'advisor');
     $: observers = $involvedStakeholders?.filter((s) => s.role === 'observer');
     
+    function unPublishDecision(e:Event) {
+		decisionRepo.updateDecisionField('status', 'edit');
+	}
 </script>
 {#if $decisionData}
 <div class="flex flex-col gap-1">
@@ -71,6 +74,9 @@
             </td>
         </tr>
     </tbody></table>
+    <div class="alert alert-info">This decision has been published and can no longer be edited
+        <button class="btn btn-primary w-1/4 ml-auto mr-2" on:click={unPublishDecision}>Un-publish</button>
+    </div>
 </div>    
 {:else}
     <span class="loading loading-dots loading-md"></span>

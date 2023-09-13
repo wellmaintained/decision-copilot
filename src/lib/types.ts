@@ -1,5 +1,6 @@
 export type Decision = {
 	project_id?: string;
+	status?: string;
 	user: string;
 	id?: string;
 	key?: string;
