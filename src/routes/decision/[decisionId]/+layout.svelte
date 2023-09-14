@@ -19,11 +19,11 @@
 		<slot />
 	</div>
 {:else}
-	<div class="flex flex-row">
-		<div class="w-1/4 h-max p-4 mt-10 border bg-base-100 border-base-300">
+	<div class="flex flex-col-reverse sm:flex-row">
+		<div class="sm:w-1/4 h-max p-4 mt-10 border bg-base-100 border-base-300">
 			<DecisionSteps decision={decisionRepo.latestDecisionData}/>
 		</div>
-		<div class="pl-2 w-3/4">
+		<div class="sm:w-3/4 pl-2">
 			<div role="tablist" class="tabs tabs-lifted">
 				<a  role="tab"
 					href="/decision/{decisionId}/edit/identify"
