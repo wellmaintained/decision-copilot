@@ -5,7 +5,7 @@
 	import { writable } from 'svelte/store';
 	import type { Decision, DecisionMethod, Stakeholder } from '$lib/types';
 	import StakeholderAvatar from '$lib/components/StakeholderAvatar.svelte';
-	import { decisionMethods } from '$lib/decisionMethods';
+	import DecisionMethodInfo from '$lib/components/DecisionMethodInfo.svelte';
 	
 	const decisionRepo = getContext<DecisionRepo>('decisionRepo');
     const decisionData = decisionRepo.latestDecisionData;
@@ -13,7 +13,6 @@
     let roleAssignmentErrors:string[] = [];
     let availableDecisionMethods:string[] = [];
     let selectedDecisionMethod:string = 'unknown';
-    let selectedDecisionMethodInfo:DecisionMethod;
 
     function validateRoleAssignment(decision:Decision|null): string[] {
         roleAssignmentErrors = [];
@@ -67,7 +66,6 @@
             availableDecisionMethods = determineAvailableDecisionMethods(decision);
         }
         selectedDecisionMethod = decision?.decisionMethod ?? 'unknown';
-        selectedDecisionMethodInfo = decisionMethods[selectedDecisionMethod];
     });
 </script>
 
@@ -107,50 +105,22 @@
         </h2>
         <p class="text-neutral-content pb-2">Given the assigned roles assigned; one of the following methods could be used:</p>
         <div class="flex flex-row gap-2">
-            <div class="flex-initial {selectedDecisionMethod!=='unknown'? 'w-2/5':''}">
-                <div class="flex flex-col">
-                    {#each availableDecisionMethods as method}
-                        <label class="label cursor-pointer w-min">
-                            <input
-                                type="radio"
-                                class="radio"
-                                bind:group={selectedDecisionMethod}
-                                value={method}
-                                on:change={() => handleDecisionMethodSelect(method)}
-                            />
-                            <span class="label-text pl-1 capitalize">{method}</span>
-                        </label>
-                    {:else}
-                        <div role="alert" class="alert alert-error mt-3 mb-3">
-                            <div class="flex flex-col text-left">
-                                <p class="break-after-column font-semibold mb-2">It isn't possible to make a decision given the selected roles.</p>
-                                <ul class="list-inside list-decimal">
-                                    {#each roleAssignmentErrors as error}
-                                        <li>{error}</li>
-                                    {/each}
-                                </ul>
-                            </div>
-                        </div>
-                    {/each}
-                </div>
-            </div>
-            {#if selectedDecisionMethod!='unknown'}
-                <div class="card w-3/5 bg-base-100 shadow-xl border rounded-md">
-                    <div class="card-body">
-                        <h2 class="card-title">{selectedDecisionMethodInfo.title}</h2>
-                        <p>{selectedDecisionMethodInfo.description}</p>
-                        <div class="divider"></div>
-                        <label class="flex items-center gap-2">
-                            <span class="label-text text-neutral-content">Speed</span>
-                            <input disabled type="range" min="0" max="4" value="{selectedDecisionMethodInfo.speed}" class="range" />
-                        </label>
-                        <label class="flex items-center gap-2">
-                            <span class="label-text text-neutral-content">Buy-in</span>
-                            <input disabled type="range" min="0" max="4" value="{selectedDecisionMethodInfo.buyIn}" class="range" />
-                        </label>
+            {#each availableDecisionMethods as method}
+                <DecisionMethodInfo {method}
+                    isSelected={selectedDecisionMethod===method}
+                    on:select={() => handleDecisionMethodSelect(method)} />
+            {:else}
+                <div role="alert" class="alert alert-error mt-3 mb-3">
+                    <div class="flex flex-col text-left">
+                        <p class="break-after-column font-semibold mb-2">It isn't possible to make a decision given the selected roles.</p>
+                        <ul class="list-inside list-decimal">
+                            {#each roleAssignmentErrors as error}
+                                <li>{error}</li>
+                            {/each}
+                        </ul>
                     </div>
                 </div>
-            {/if}
+            {/each}    
         </div>
     </div>
 </div>
