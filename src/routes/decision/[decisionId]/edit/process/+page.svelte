@@ -3,7 +3,7 @@
 	import type { DecisionRepo } from '$lib/decisionRepo';
 	import RadioButtonOptions from '$lib/components/RadioButtonOptions.svelte';
 	import { writable } from 'svelte/store';
-	import type { Decision, DecisionMethod, Stakeholder } from '$lib/types';
+	import type { Decision, Stakeholder } from '$lib/types';
 	import StakeholderAvatar from '$lib/components/StakeholderAvatar.svelte';
 	import DecisionMethodInfo from '$lib/components/DecisionMethodInfo.svelte';
 	
@@ -67,6 +67,11 @@
         }
         selectedDecisionMethod = decision?.decisionMethod ?? 'unknown';
     });
+
+
+	function nextStep(event: Event) {
+		throw new Error('Function not implemented.');
+	}
 </script>
 
 <div class="join join-vertical w-full">

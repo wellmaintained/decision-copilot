@@ -74,8 +74,9 @@
             </td>
         </tr>
     </tbody></table>
-    <div class="alert alert-info">This decision has been published and can no longer be edited
-        <button class="btn btn-primary w-1/4 ml-auto mr-2" on:click={unPublishDecision}>Un-publish</button>
+    <div class="alert alert-info">
+        This decision has been published and can no longer be edited
+        <button class="btn btn-primary btn-sm w-1/4 ml-auto mr-2" on:click={unPublishDecision}>Un-publish</button>
     </div>
 </div>    
 {:else}
