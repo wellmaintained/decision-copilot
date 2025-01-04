@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button"
 import { RoleAssignment } from "@/components/role-assignment"
 import { DecisionMethodCard } from "@/components/decision-method-card"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
+import Link from "next/link"
 
 const initialPeople = [
   {
@@ -68,7 +69,11 @@ export default function DecisionProcess() {
       </Card>
 
       <div className="flex justify-end pt-4">
-        <Button size="lg">Next</Button>
+      <Button size="lg" asChild>
+          <Link href="/dashboard/decision/decide">
+            Next
+          </Link>
+        </Button>
       </div>
     </div>
   )
