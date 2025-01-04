@@ -73,68 +73,70 @@ function StakeholderGroup({ title, stakeholders }: { title: string, stakeholders
 
 export default function DecisionView() {
   return (
-    <div className="max-w-4xl mx-auto p-6 space-y-8">
-      <div className="space-y-4">
-        <h1 className="text-2xl font-bold text-slate-900">{sampleDecision.title}</h1>
-        <p className="text-slate-600">{sampleDecision.context}</p>
+    <div className="container max-w-4xl mx-auto p-6 space-y-8">
+      <div className="space-y-8">
+        <div className="space-y-4">
+          <h1 className="text-2xl font-bold text-slate-900">{sampleDecision.title}</h1>
+          <p className="text-slate-600">{sampleDecision.context}</p>
+        </div>
+
+        <section className="space-y-2">
+          <h2 className="text-xl font-semibold text-slate-800">Decision</h2>
+          <p className="text-slate-600">{sampleDecision.decision}</p>
+        </section>
+
+        <section className="space-y-2">
+          <h2 className="text-xl font-semibold text-slate-800">Method</h2>
+          <p className="text-slate-600">{sampleDecision.method}</p>
+        </section>
+
+        <section className="space-y-4">
+          <h2 className="text-xl font-semibold text-slate-800">Options considered</h2>
+          <ol className="list-decimal list-inside space-y-2">
+            {sampleDecision.options.map((option) => (
+              <li key={option} className="text-slate-600">{option}</li>
+            ))}
+          </ol>
+        </section>
+
+        <section className="space-y-4">
+          <h2 className="text-xl font-semibold text-slate-800">Criteria</h2>
+          <ol className="list-decimal list-inside space-y-2">
+            {sampleDecision.criteria.map((criterion) => (
+              <li key={criterion} className="text-slate-600">{criterion}</li>
+            ))}
+          </ol>
+        </section>
+
+        <section className="space-y-4">
+          <h2 className="text-xl font-semibold text-slate-800">Stakeholders</h2>
+          <div className="grid md:grid-cols-3 gap-8">
+            <StakeholderGroup 
+              title="Decider" 
+              stakeholders={[sampleDecision.stakeholders.decider]} 
+            />
+            <StakeholderGroup 
+              title="Advisors" 
+              stakeholders={sampleDecision.stakeholders.advisors} 
+            />
+            <StakeholderGroup 
+              title="Observers" 
+              stakeholders={sampleDecision.stakeholders.observers} 
+            />
+          </div>
+        </section>
+
+        {sampleDecision.isPublished && (
+          <div className="bottom-0 right-0 bg-sky-100 p-4 flex items-center justify-between z-50">
+            <p className="text-slate-700">This decision has been published and can no longer be edited</p>
+            <Button variant="default" className="bg-blue-600 hover:bg-blue-700">
+              <Link href="/dashboard/decision/identify">
+                Un-publish
+              </Link>
+            </Button>
+          </div>
+        )}
       </div>
-
-      <section className="space-y-2">
-        <h2 className="text-xl font-semibold text-slate-800">Decision</h2>
-        <p className="text-slate-600">{sampleDecision.decision}</p>
-      </section>
-
-      <section className="space-y-2">
-        <h2 className="text-xl font-semibold text-slate-800">Method</h2>
-        <p className="text-slate-600">{sampleDecision.method}</p>
-      </section>
-
-      <section className="space-y-4">
-        <h2 className="text-xl font-semibold text-slate-800">Options considered</h2>
-        <ol className="list-decimal list-inside space-y-2">
-          {sampleDecision.options.map((option) => (
-            <li key={option} className="text-slate-600">{option}</li>
-          ))}
-        </ol>
-      </section>
-
-      <section className="space-y-4">
-        <h2 className="text-xl font-semibold text-slate-800">Criteria</h2>
-        <ol className="list-decimal list-inside space-y-2">
-          {sampleDecision.criteria.map((criterion) => (
-            <li key={criterion} className="text-slate-600">{criterion}</li>
-          ))}
-        </ol>
-      </section>
-
-      <section className="space-y-4">
-        <h2 className="text-xl font-semibold text-slate-800">Stakeholders</h2>
-        <div className="grid md:grid-cols-3 gap-8">
-          <StakeholderGroup 
-            title="Decider" 
-            stakeholders={[sampleDecision.stakeholders.decider]} 
-          />
-          <StakeholderGroup 
-            title="Advisors" 
-            stakeholders={sampleDecision.stakeholders.advisors} 
-          />
-          <StakeholderGroup 
-            title="Observers" 
-            stakeholders={sampleDecision.stakeholders.observers} 
-          />
-        </div>
-      </section>
-
-      {sampleDecision.isPublished && (
-        <div className="bottom-0 right-0 bg-sky-100 p-4 flex items-center justify-between z-50">
-          <p className="text-slate-700">This decision has been published and can no longer be edited</p>
-          <Button variant="default" className="bg-blue-600 hover:bg-blue-700">
-          <Link href="/dashboard/decision/identify">
-            Un-publish
-          </Link>
-          </Button>
-        </div>
-      )}
     </div>
   )
 }

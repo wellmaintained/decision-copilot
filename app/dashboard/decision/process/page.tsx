@@ -6,6 +6,7 @@ import { RoleAssignment } from "@/components/role-assignment"
 import { DecisionMethodCard } from "@/components/decision-method-card"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import Link from "next/link"
+import WorkflowProgress from "@/components/workflow-progress"
 
 const initialPeople = [
   {
@@ -36,46 +37,51 @@ export default function DecisionProcess() {
   }
 
   return (
-    <div className="container max-w-5xl space-y-10 py-10">
-      <RoleAssignment people={people} onRoleChange={handleRoleChange} />
-      
-      <Card>
-        <CardHeader className="pb-3">
-          <CardTitle className="text-xl font-semibold">Decision making method</CardTitle>
-          <CardDescription className="text-sm">
-            Given the assigned roles assigned; one of the following methods could be used:
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="grid gap-6 md:grid-cols-2">
-            <DecisionMethodCard
-              title="Autocratic"
-              description="A single decider makes a choice and informs all stakeholders"
-              speedValue={90}
-              buyInValue={10}
-              isSelected={selectedMethod === "autocratic"}
-              onSelect={() => setSelectedMethod("autocratic")}
-            />
-            <DecisionMethodCard
-              title="Consent"
-              description="The proposal is selected if no one has a strong/reasoned objection"
-              speedValue={80}
-              buyInValue={90}
-              isSelected={selectedMethod === "consent"}
-              onSelect={() => setSelectedMethod("consent")}
-            />
-          </div>
-        </CardContent>
-      </Card>
+    <div className="container grid grid-cols-1 md:grid-cols-[1fr,300px] gap-6 py-10">
+      <div className="space-y-10">
+        <RoleAssignment people={people} onRoleChange={handleRoleChange} />
+        
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-xl font-semibold">Decision making method</CardTitle>
+            <CardDescription className="text-sm">
+              Given the assigned roles assigned; one of the following methods could be used:
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid gap-6 md:grid-cols-2">
+              <DecisionMethodCard
+                title="Autocratic"
+                description="A single decider makes a choice and informs all stakeholders"
+                speedValue={90}
+                buyInValue={10}
+                isSelected={selectedMethod === "autocratic"}
+                onSelect={() => setSelectedMethod("autocratic")}
+              />
+              <DecisionMethodCard
+                title="Consent"
+                description="The proposal is selected if no one has a strong/reasoned objection"
+                speedValue={80}
+                buyInValue={90}
+                isSelected={selectedMethod === "consent"}
+                onSelect={() => setSelectedMethod("consent")}
+              />
+            </div>
+          </CardContent>
+        </Card>
 
-      <div className="flex justify-end pt-4">
-        <Button size="lg" asChild>
-          <Link href="/dashboard/decision/decide">
-            Next
-          </Link>
-        </Button>
+        <div className="flex justify-end pt-4">
+          <Button size="lg" asChild>
+            <Link href="/dashboard/decision/decide">
+              Next
+            </Link>
+          </Button>
+        </div>
       </div>
 
+      <div className="hidden md:block">
+        <WorkflowProgress currentStep={2} />
+      </div>
     </div>
   )
 }
