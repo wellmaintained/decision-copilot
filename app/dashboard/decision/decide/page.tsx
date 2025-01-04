@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { Plus, Trash2 } from 'lucide-react'
+import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import {
@@ -130,11 +131,14 @@ export default function DecidePage() {
         </div>
       </Card>
 
-      <div className="flex justify-end">
-        <Button size="lg">
-          Publish
+      <div className="flex justify-end pt-4">
+        <Button size="lg" asChild>
+          <Link href="/dashboard/decision/view">
+            Publish
+          </Link>
         </Button>
       </div>
+
     </div>
   )
 }

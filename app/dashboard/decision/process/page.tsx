@@ -69,12 +69,13 @@ export default function DecisionProcess() {
       </Card>
 
       <div className="flex justify-end pt-4">
-      <Button size="lg" asChild>
+        <Button size="lg" asChild>
           <Link href="/dashboard/decision/decide">
             Next
           </Link>
         </Button>
       </div>
+
     </div>
   )
 }
