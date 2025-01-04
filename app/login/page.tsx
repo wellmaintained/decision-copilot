@@ -3,6 +3,7 @@
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Github } from 'lucide-react'
+import Link from 'next/link'
 
 export default function LoginPage() {
   return (
@@ -15,9 +16,9 @@ export default function LoginPage() {
           </CardDescription>
           <p className="text-center text-sm text-muted-foreground">
             Don&apos;t have an account?{" "}
-            <a href="/signup" className="underline underline-offset-4 hover:text-primary">
+            <Link href="/signup" className="underline underline-offset-4 hover:text-primary">
               Sign up
-            </a>
+            </Link>
           </p>
         </CardHeader>
         <CardContent className="space-y-4">
