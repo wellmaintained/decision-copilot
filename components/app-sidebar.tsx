@@ -53,32 +53,32 @@ const data = {
   navMain: [
     {
       title: "DecisionCopilot Core",
-      url: "#",
+      url: "/dashboard/project-decisions",
       icon: Cpu,
       isActive: true,
       items: [
         {
           title: "Frontend",
-          url: "#",
+          url: "/dashboard/project-decisions",
         },
         {
           title: "Backend",
-          url: "#",
+          url: "/dashboard/project-decisions",
         },
         {
           title: "Development environment",
-          url: "#",
+          url: "/dashboard/project-decisions",
         },
       ],
     },
     {
       title: "Business Development",
-      url: "#",
+      url: "/dashboard/project-decisions",
       icon: BookOpen,
       items: [
         {
           title: "Private Beta",
-          url: "#",
+          url: "/dashboard/project-decisions",
         },
       ],
     },

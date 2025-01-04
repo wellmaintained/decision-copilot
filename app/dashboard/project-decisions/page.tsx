@@ -1,12 +1,15 @@
 import { Button } from "@/components/ui/button"
 import { Pencil, Trash2, FileText } from 'lucide-react'
+import Link from 'next/link'
 
 export default function ProjectDecisionsPage() {
   return (
     <div className="p-6 space-y-6">
       <div className="flex justify-between items-center">
-        <Button className="bg-blue-500 hover:bg-blue-600">
-          🌟 Start new decision
+        <Button className="bg-blue-500 hover:bg-blue-600" asChild>
+          <Link href="/dashboard/decision/identify">
+            🌟 Start new decision
+          </Link>
         </Button>
       </div>
 
@@ -35,8 +38,10 @@ export default function ProjectDecisionsPage() {
                   </p>
                 </div>
                 <div className="flex space-x-2">
-                  <Button variant="ghost" size="icon">
-                    <Pencil className="h-4 w-4" />
+                  <Button variant="ghost" size="icon" asChild>
+                    <Link href="/dashboard/decision/identify">
+                      <Pencil className="h-4 w-4" />
+                    </Link>
                   </Button>
                   <Button variant="ghost" size="icon">
                     <Trash2 className="h-4 w-4" />

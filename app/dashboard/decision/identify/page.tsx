@@ -7,7 +7,8 @@ import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { Checkbox } from '@/components/ui/checkbox'
-import { Bold, Italic, Heading, Quote, List, ListOrdered, Link, Image, Eye, Book, Maximize, HelpCircle } from 'lucide-react'
+import { Bold, Italic, Heading, Quote, List, ListOrdered, Link as LinkIcon, Image, Eye, Book, Maximize, HelpCircle } from 'lucide-react'
+import Link from 'next/link'
 
 interface Stakeholder {
   id: string
@@ -79,7 +80,7 @@ export default function DecisionIdentityPage() {
                 </Button>
                 <div className="w-px h-4 bg-border mx-2" />
                 <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                  <Link className="h-4 w-4" />
+                  <LinkIcon className="h-4 w-4" />
                 </Button>
                 <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
                   <Image className="h-4 w-4" />
@@ -189,8 +190,10 @@ Ideally this will be low cost & low maintenance."
       </Card>
 
       <div className="flex justify-end pt-4">
-        <Button size="lg">
-          Next
+        <Button size="lg" asChild>
+          <Link href="/dashboard/decision/process">
+            Next
+          </Link>
         </Button>
       </div>
     </div>
