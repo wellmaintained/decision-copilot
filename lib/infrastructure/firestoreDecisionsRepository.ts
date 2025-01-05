@@ -10,6 +10,8 @@ import {
   updateDoc,
   addDoc,
   Timestamp,
+  deleteDoc,
+  getDoc,
 } from 'firebase/firestore';
 
 /**
@@ -85,13 +87,45 @@ export class FirestoreDecisionsRepository implements DecisionsRepository {
     });
   }
 
-  async createDecision(decisionWithoutId: Omit<DecisionProps, 'id'>): Promise<string> {
+  async createDecision(): Promise<Decision> {
     const colRef = collection(db, this.collectionPath);
     const docRef = await addDoc(colRef, {
-      ...decisionWithoutId,
-      createdAt: Timestamp.fromDate(decisionWithoutId.createdAt),
-      updatedAt: decisionWithoutId.updatedAt ? Timestamp.fromDate(decisionWithoutId.updatedAt) : null,
+      title: '',
+      description: '',
+      cost: 'medium',
+      criteria: [],
+      options: [],
+      decision: '',
+      decisionMethod: '',
+      project_id: '',
+      reversibility: 'haircut',
+      stakeholders: [],
+      status: 'draft',
+      createdAt: Timestamp.fromDate(new Date()),
+      updatedAt: Timestamp.fromDate(new Date()),
     });
-    return docRef.id;
+    const docSnap = await getDoc(docRef);
+    return Decision.create({
+      id: docRef.id,
+      title: docSnap.data()?.title,
+      description: docSnap.data()?.description,
+      cost: docSnap.data()?.cost,
+      createdAt: docSnap.data()?.createdAt,
+      criteria: docSnap.data()?.criteria,
+      options: docSnap.data()?.options,
+      decision: docSnap.data()?.decision,
+      decisionMethod: docSnap.data()?.decisionMethod,
+      project_id: docSnap.data()?.project_id,
+      reversibility: docSnap.data()?.reversibility,
+      stakeholders: docSnap.data()?.stakeholders,
+      status: docSnap.data()?.status,
+      updatedAt: docSnap.data()?.updatedAt,
+      user: docSnap.data()?.user,
+    });
+  }
+
+  async deleteDecision(decisionId: string): Promise<void> {
+    const docRef = doc(db, this.collectionPath, decisionId);
+    await deleteDoc(docRef);
   }
 } 

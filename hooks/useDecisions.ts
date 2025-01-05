@@ -89,9 +89,18 @@ export function useDecisions() {
     }
   };
 
-  const createDecision = async (decisionWithoutId: Omit<DecisionProps, 'id'>): Promise<string> => {
+  const createDecision = async (): Promise<Decision> => {
     try {
-      return await decisionsRepository.createDecision(decisionWithoutId);
+      return await decisionsRepository.createDecision();
+    } catch (error) {
+      setError(error as Error);
+      throw error;
+    }
+  };
+
+  const deleteDecision = async (decisionId: string): Promise<void> => {
+    try {
+      await decisionsRepository.deleteDecision(decisionId);
     } catch (error) {
       setError(error as Error);
       throw error;
@@ -108,5 +117,6 @@ export function useDecisions() {
     updateDecisionCost,
     updateDecisionReversibility,
     updateStakeholders,
+    deleteDecision,
   };
 } 

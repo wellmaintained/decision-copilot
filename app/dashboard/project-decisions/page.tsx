@@ -6,7 +6,7 @@ import { Pencil, Trash2, FileText, Users, Clock } from 'lucide-react'
 import Link from 'next/link'
 
 export default function ProjectDecisionsPage() {
-  const { decisions, loading, error } = useDecisions();
+  const { decisions, loading, error, deleteDecision } = useDecisions();
 
   if (loading) {
     return <div className="p-6">Loading decisions...</div>;
@@ -18,6 +18,15 @@ export default function ProjectDecisionsPage() {
 
   const inProgressDecisions = decisions?.filter(d => d.status === 'draft') || [];
   const publishedDecisions = decisions?.filter(d => d.status === 'published') || [];
+
+  const handleDelete = async (decisionId: string) => {
+    try {
+      await deleteDecision(decisionId);
+      console.log('Decision deleted:', decisionId);
+    } catch (error) {
+      console.error('Error deleting decision:', error);
+    }
+  };
 
   return (
     <div className="p-6 space-y-6">
@@ -60,12 +69,17 @@ export default function ProjectDecisionsPage() {
                   </div>
                 </div>
                 <div className="flex space-x-2">
-                  <Button variant="ghost" size="icon" asChild>
+                  <Button variant="ghost" size="icon" title="Edit decision">
                     <Link href={`/dashboard/decision/${decision.id}/identify`}>
                       <Pencil className="h-4 w-4" />
                     </Link>
                   </Button>
-                  <Button variant="ghost" size="icon" disabled>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    title="Delete decision"
+                    onClick={() => handleDelete(decision.id)}
+                  >
                     <Trash2 className="h-4 w-4" />
                   </Button>
                 </div>
@@ -104,12 +118,17 @@ export default function ProjectDecisionsPage() {
                   </div>
                 </div>
                 <div className="flex space-x-2">
-                  <Button variant="ghost" size="icon" asChild>
+                  <Button variant="ghost" size="icon" title="View decision">
                     <Link href={`/dashboard/decision/${decision.id}/view`}>
                       <FileText className="h-4 w-4" />
                     </Link>
                   </Button>
-                  <Button variant="ghost" size="icon" disabled>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    title="Delete decision"
+                    onClick={() => handleDelete(decision.id)}
+                  >
                     <Trash2 className="h-4 w-4" />
                   </Button>
                 </div>

@@ -1,4 +1,4 @@
-import { Decision, DecisionProps } from '@/lib/domain/Decision';
+import { Decision} from '@/lib/domain/Decision';
 
 export interface DecisionsRepository {
   /**
@@ -20,5 +20,10 @@ export interface DecisionsRepository {
   /**
    * Creates a new decision.
    */
-  createDecision(decisionWithoutId: Omit<DecisionProps, 'id'>): Promise<string>;
+  createDecision(): Promise<Decision>;
+
+  /**
+   * Deletes a decision.
+   */
+  deleteDecision(decisionId: string): Promise<void>;
 } 

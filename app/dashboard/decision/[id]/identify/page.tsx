@@ -77,7 +77,7 @@ export default function DecisionIdentityPage() {
               id="title"
               placeholder="What decision needs to be made?"
               defaultValue={decision.title}
-              onChange={(e) => updateDecisionTitle(decision, e.target.value)}
+              onBlur={(e) => updateDecisionTitle(decision, e.target.value)}
             />
           </div>
 
@@ -128,7 +128,7 @@ export default function DecisionIdentityPage() {
               <textarea 
                 className="w-full p-4 min-h-[200px] bg-background resize-none focus:outline-none"
                 defaultValue={decision.description}
-                onChange={(e) => updateDecisionDescription(decision, e.target.value)}
+                onBlur={(e) => updateDecisionDescription(decision, e.target.value)}
               />
             </div>
           </div>
