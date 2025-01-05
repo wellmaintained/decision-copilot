@@ -61,7 +61,7 @@ export default function ProjectDecisionsPage() {
                 </div>
                 <div className="flex space-x-2">
                   <Button variant="ghost" size="icon" asChild>
-                    <Link href={`/dashboard/decision/decide/${decision.id}`}>
+                    <Link href={`/dashboard/decision/${decision.id}/identify`}>
                       <Pencil className="h-4 w-4" />
                     </Link>
                   </Button>
@@ -105,7 +105,7 @@ export default function ProjectDecisionsPage() {
                 </div>
                 <div className="flex space-x-2">
                   <Button variant="ghost" size="icon" asChild>
-                    <Link href={`/dashboard/decision/view/${decision.id}`}>
+                    <Link href={`/dashboard/decision/${decision.id}/view`}>
                       <FileText className="h-4 w-4" />
                     </Link>
                   </Button>

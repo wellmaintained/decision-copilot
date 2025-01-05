@@ -1,6 +1,9 @@
+'use client'
+
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import Link from 'next/link'
+import { useParams } from 'next/navigation'
 
 interface Stakeholder {
   name: string
@@ -72,8 +75,11 @@ function StakeholderGroup({ title, stakeholders }: { title: string, stakeholders
 }
 
 export default function DecisionView() {
+  const params = useParams()
+  const decisionId = params.id as string
+
   return (
-    <div className="container max-w-4xl mx-auto p-6 space-y-8">
+    <>
       <div className="space-y-8">
         <div className="space-y-4">
           <h1 className="text-2xl font-bold text-slate-900">{sampleDecision.title}</h1>
@@ -130,14 +136,14 @@ export default function DecisionView() {
           <div className="bottom-0 right-0 bg-sky-100 p-4 flex items-center justify-between z-50">
             <p className="text-slate-700">This decision has been published and can no longer be edited</p>
             <Button variant="default" className="bg-blue-600 hover:bg-blue-700">
-              <Link href="/dashboard/decision/identify">
+              <Link href={`/dashboard/decision/${decisionId}/identify`}>
                 Un-publish
               </Link>
             </Button>
           </div>
         )}
       </div>
-    </div>
+    </>
   )
 }
 
