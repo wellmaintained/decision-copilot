@@ -23,7 +23,7 @@ export default function ProjectDecisionsPage() {
     <div className="p-6 space-y-6">
       <div className="flex justify-between items-center">
         <Button className="bg-blue-500 hover:bg-blue-600" asChild>
-          <Link href="/dashboard/decision/identify">
+          <Link href="/dashboard/decision/create">
             🌟 Start new decision
           </Link>
         </Button>

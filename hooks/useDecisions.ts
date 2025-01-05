@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Decision, Cost, Reversibility, DecisionStakeholderRole } from '@/lib/domain/Decision';
+import { Decision, Cost, Reversibility, DecisionStakeholderRole, DecisionProps } from '@/lib/domain/Decision';
 import { FirestoreDecisionsRepository } from '@/lib/infrastructure/firestoreDecisionsRepository';
 
 const decisionsRepository = new FirestoreDecisionsRepository();
@@ -89,10 +89,20 @@ export function useDecisions() {
     }
   };
 
+  const createDecision = async (decisionWithoutId: Omit<DecisionProps, 'id'>): Promise<string> => {
+    try {
+      return await decisionsRepository.createDecision(decisionWithoutId);
+    } catch (error) {
+      setError(error as Error);
+      throw error;
+    }
+  };
+
   return {
     decisions,
     loading,
     error,
+    createDecision,
     updateDecisionTitle,
     updateDecisionDescription,
     updateDecisionCost,

@@ -2,20 +2,20 @@
 
 import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { v4 as uuidv4 } from 'uuid'
-import { Decision } from '@/lib/domain/Decision'
+import type { DecisionProps } from '@/lib/domain/Decision'
 import { useDecisions } from '@/hooks/useDecisions'
+import { useAuth } from '@/hooks/useAuth'
 
 export default function DecisionPage() {
   const router = useRouter()
   const { createDecision } = useDecisions()
+  const { user } = useAuth()
 
   useEffect(() => {
     const createAndRedirect = async () => {
-      const decisionId = uuidv4()
-      const newDecision = Decision.create({
-        id: decisionId,
+      const decisionId = await createDecision({
         title: '',
+        description: '',
         cost: 'medium',
         createdAt: new Date(),
         criteria: [],
@@ -23,15 +23,15 @@ export default function DecisionPage() {
         reversibility: 'haircut',
         stakeholders: [],
         status: 'draft',
-        user: 'current-user', // TODO: Get from auth context
-      })
+        user: user?.uid || '',
+      } satisfies Omit<DecisionProps, 'id'>)
 
-      await createDecision(newDecision)
-      router.push(`/dashboard/decision/${decisionId}/identify`)
+      // Force a full page reload
+      window.location.href = `/dashboard/decision/${decisionId}/identify`;
     }
 
     createAndRedirect()
-  }, [router, createDecision])
+  }, [router, createDecision, user])
 
-  return null // This page immediately redirects
+  return <div>Creating decision...</div>
 } 

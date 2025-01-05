@@ -1,5 +1,5 @@
 import { DecisionsRepository } from '@/lib/domain/decisionsRepository';
-import { Decision, DecisionProps, Cost } from '@/lib/domain/Decision';
+import { Decision, DecisionProps } from '@/lib/domain/Decision';
 import { db } from '@/lib/firebase';
 import {
   collection,
@@ -42,18 +42,18 @@ export class FirestoreDecisionsRepository implements DecisionsRepository {
             id: docSnap.id,
             title: data.title,
             description: data.description,
-            cost: data.cost || 'medium' as Cost,
+            cost: data.cost,
             createdAt: data.createdAt ? (data.createdAt as Timestamp).toDate() : new Date(),
             criteria: data.criteria || [],
             options: data.options || [],
             decision: data.decision,
             decisionMethod: data.decisionMethod,
             project_id: data.project_id,
-            reversibility: data.reversibility || 'hat',
+            reversibility: data.reversibility,
             stakeholders: data.stakeholders || [],
             status: data.status || 'draft',
             updatedAt: data.updatedAt ? (data.updatedAt as Timestamp).toDate() : undefined,
-            user: data.user || 'unknown',
+            user: data.user,
           };
           return Decision.create(props);
         });
@@ -85,23 +85,13 @@ export class FirestoreDecisionsRepository implements DecisionsRepository {
     });
   }
 
-  async createDecision(decision: Decision): Promise<void> {
+  async createDecision(decisionWithoutId: Omit<DecisionProps, 'id'>): Promise<string> {
     const colRef = collection(db, this.collectionPath);
-    await addDoc(colRef, {
-      title: decision.title,
-      description: decision.description,
-      cost: decision.cost,
-      createdAt: Timestamp.fromDate(decision.createdAt),
-      criteria: decision.criteria,
-      options: decision.options,
-      decision: decision.decision,
-      decisionMethod: decision.decisionMethod,
-      project_id: decision.project_id,
-      reversibility: decision.reversibility,
-      stakeholders: decision.stakeholders,
-      status: decision.status,
-      updatedAt: decision.updatedAt ? Timestamp.fromDate(decision.updatedAt) : null,
-      user: decision.user,
+    const docRef = await addDoc(colRef, {
+      ...decisionWithoutId,
+      createdAt: Timestamp.fromDate(decisionWithoutId.createdAt),
+      updatedAt: decisionWithoutId.updatedAt ? Timestamp.fromDate(decisionWithoutId.updatedAt) : null,
     });
+    return docRef.id;
   }
 } 
