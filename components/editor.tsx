@@ -11,6 +11,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip'
+import { Textarea } from '@/components/ui/textarea'
 
 const tools = [
   { icon: Bold, tooltip: 'Bold' },
@@ -27,9 +28,15 @@ const tools = [
   { icon: HelpCircle, tooltip: 'Help' },
 ]
 
-export function Editor() {
+interface EditorProps {
+  content: string
+  onChange: (content: string) => void
+  className?: string
+}
+
+export function Editor({ content, onChange, className = '' }: EditorProps) {
   return (
-    <Card className="min-h-[300px]">
+    <Card className={`min-h-[300px] ${className}`}>
       <div className="flex items-center gap-1 border-b p-2">
         <TooltipProvider>
           {tools.map((Tool, index) => (
@@ -48,10 +55,12 @@ export function Editor() {
           ))}
         </TooltipProvider>
       </div>
-      <div className="p-4">
-        <div className="text-lg">And the final decision is...</div>
-        <div className="mt-4">Firebase!</div>
-      </div>
+      <Textarea
+        value={content}
+        onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => onChange(e.target.value)}
+        className="min-h-[200px] border-none focus-visible:ring-0"
+        placeholder="Start writing..."
+      />
     </Card>
   )
 }
