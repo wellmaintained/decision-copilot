@@ -1,42 +1,64 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Card } from '@/components/ui/card'
 import { Label } from '@/components/ui/label'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { Checkbox } from '@/components/ui/checkbox'
-import { Bold, Italic, Heading, Quote, List, ListOrdered, Link as LinkIcon, Image, Eye, Book, Maximize, HelpCircle } from 'lucide-react'
+import { Bold, Italic, Heading, Quote, List, ListOrdered, Link as LinkIcon, Image as ImageIcon, Eye, Book, Maximize, HelpCircle } from 'lucide-react'
 import Link from 'next/link'
 import { useParams } from 'next/navigation'
-
-interface Stakeholder {
-  id: string
-  name: string
-  role: string
-  avatar: string
-  selected?: boolean
-}
-
-const stakeholders: Stakeholder[] = [
-  { id: '1', name: 'David Laing', role: 'Engineer', avatar: '/placeholder.svg' },
-  { id: '2', name: 'Scott Muc', role: 'Architect', avatar: '/placeholder.svg' },
-  { id: '3', name: 'Ramon Rubio', role: 'Developer', avatar: '/placeholder.svg' },
-  { id: '4', name: 'Wendy Laing', role: 'Manager', avatar: '/placeholder.svg' },
-  { id: '5', name: 'Corey Innis', role: 'Designer', avatar: '/placeholder.svg' },
-  { id: '6', name: 'Odélia Porto', role: 'Product', avatar: '/placeholder.svg' },
-  { id: '7', name: 'Ana Leclerc', role: 'Engineer', avatar: '/placeholder.svg' },
-  { id: '8', name: 'Nalan Erçetin', role: 'Developer', avatar: '/placeholder.svg' },
-  { id: '9', name: 'Becki Hyde', role: 'Designer', avatar: '/placeholder.svg' },
-  { id: '10', name: 'Stella Glatz', role: 'Manager', avatar: '/placeholder.svg' },
-  { id: '11', name: 'David Laing', role: 'Product', avatar: '/placeholder.svg' },
-]
+import { useDecisions } from '@/hooks/useDecisions'
+import { useStakeholders } from '@/hooks/useStakeholders'
+import { Cost, Reversibility, DecisionStakeholderRole } from '@/lib/domain/Decision'
+import Image from 'next/image'
 
 export default function DecisionIdentityPage() {
   const params = useParams()
   const decisionId = params.id as string
+  const { decisions, loading: decisionsLoading, error: decisionsError, updateDecisionTitle, updateDecisionDescription, updateDecisionCost, updateDecisionReversibility, updateStakeholders } = useDecisions()
+  const { stakeholders, loading: stakeholdersLoading, error: stakeholdersError } = useStakeholders()
+  const decision = decisions?.find(d => d.id === decisionId)
   const [selectedStakeholders, setSelectedStakeholders] = useState<string[]>([])
+
+  useEffect(() => {
+    if (decision?.stakeholders) {
+      setSelectedStakeholders(decision.stakeholders.map(s => s.stakeholder_id))
+    }
+  }, [decision])
+
+  if (decisionsLoading || stakeholdersLoading) {
+    return <div>Loading...</div>
+  }
+
+  if (decisionsError) {
+    return <div>Error: {decisionsError.message}</div>
+  }
+
+  if (stakeholdersError) {
+    return <div>Error: {stakeholdersError.message}</div>
+  }
+
+  if (!decision) {
+    return <div>Decision not found</div>
+  }
+
+  const handleStakeholderChange = (stakeholderId: string, checked: boolean) => {
+    const newSelectedStakeholders = checked
+      ? [...selectedStakeholders, stakeholderId]
+      : selectedStakeholders.filter(id => id !== stakeholderId);
+    
+    setSelectedStakeholders(newSelectedStakeholders);
+    
+    const updatedStakeholders: DecisionStakeholderRole[] = newSelectedStakeholders.map(id => ({
+      stakeholder_id: id,
+      role: 'observer'
+    }));
+    
+    updateStakeholders(decision, updatedStakeholders);
+  };
 
   return (
     <>
@@ -54,7 +76,8 @@ export default function DecisionIdentityPage() {
             <Input 
               id="title"
               placeholder="What decision needs to be made?"
-              defaultValue="Which backend should be used?"
+              defaultValue={decision.title}
+              onChange={(e) => updateDecisionTitle(decision, e.target.value)}
             />
           </div>
 
@@ -86,7 +109,7 @@ export default function DecisionIdentityPage() {
                   <LinkIcon className="h-4 w-4" />
                 </Button>
                 <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                  <Image className="h-4 w-4" />
+                  <ImageIcon className="h-4 w-4" />
                 </Button>
                 <div className="w-px h-4 bg-border mx-2" />
                 <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
@@ -104,9 +127,8 @@ export default function DecisionIdentityPage() {
               </div>
               <textarea 
                 className="w-full p-4 min-h-[200px] bg-background resize-none focus:outline-none"
-                defaultValue="The app will need to store its data somewhere.
-
-Ideally this will be low cost & low maintenance."
+                defaultValue={decision.description}
+                onChange={(e) => updateDecisionDescription(decision, e.target.value)}
               />
             </div>
           </div>
@@ -116,7 +138,11 @@ Ideally this will be low cost & low maintenance."
               <Label className="text-base text-muted-foreground">Cost</Label>
               <span className="text-sm text-muted-foreground">- how much will it cost (in effort, time or money) to implement?</span>
             </div>
-            <RadioGroup defaultValue="medium" className="flex gap-4">
+            <RadioGroup
+              defaultValue={decision.cost}
+              className="flex gap-4"
+              onValueChange={(value) => updateDecisionCost(decision, value as Cost)}
+            >
               <div className="flex items-center space-x-2">
                 <RadioGroupItem value="low" id="cost-low" className="h-5 w-5" />
                 <Label htmlFor="cost-low">Low</Label>
@@ -137,7 +163,11 @@ Ideally this will be low cost & low maintenance."
               <Label className="text-base text-muted-foreground">Reversibility</Label>
               <span className="text-sm text-muted-foreground">- like choosing a</span>
             </div>
-            <RadioGroup defaultValue="hat" className="flex gap-4">
+            <RadioGroup
+              defaultValue={decision.reversibility}
+              className="flex gap-4"
+              onValueChange={(value) => updateDecisionReversibility(decision, value as Reversibility)}
+            >
               <div className="flex items-center space-x-2">
                 <RadioGroupItem value="hat" id="rev-hat" className="h-5 w-5" />
                 <Label htmlFor="rev-hat">Hat</Label>
@@ -160,29 +190,29 @@ Ideally this will be low cost & low maintenance."
             </div>
             <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
               {stakeholders.map((stakeholder) => (
-                <div key={stakeholder.id} className="flex items-center space-x-3">
-                  <Checkbox 
+                <div key={`stakeholder-wrapper-${stakeholder.id}`} className="flex items-center space-x-3">
+                  <Checkbox
+                    key={`checkbox-${stakeholder.id}`}
                     id={`stakeholder-${stakeholder.id}`}
                     checked={selectedStakeholders.includes(stakeholder.id)}
-                    onCheckedChange={(checked) => {
-                      if (checked) {
-                        setSelectedStakeholders([...selectedStakeholders, stakeholder.id])
-                      } else {
-                        setSelectedStakeholders(selectedStakeholders.filter(id => id !== stakeholder.id))
-                      }
-                    }}
+                    onCheckedChange={(checked) => handleStakeholderChange(stakeholder.id, checked as boolean)}
                   />
-                  <div className="flex items-center gap-2">
-                    <img
-                      src={stakeholder.avatar}
-                      alt={stakeholder.name}
-                      className="rounded-full w-8 h-8"
-                    />
+                  <div key={`info-${stakeholder.id}`} className="flex items-center gap-2">
+                    {stakeholder.photoURL && (
+                      <Image
+                        key={`avatar-${stakeholder.id}`}
+                        src={stakeholder.photoURL}
+                        alt={stakeholder.displayName}
+                        width={32}
+                        height={32}
+                        className="rounded-full"
+                      />
+                    )}
                     <Label 
                       htmlFor={`stakeholder-${stakeholder.id}`}
                       className="text-sm font-normal"
                     >
-                      {stakeholder.name}
+                      {stakeholder.displayName}
                     </Label>
                   </div>
                 </div>
