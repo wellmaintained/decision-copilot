@@ -4,7 +4,6 @@ import {
   BadgeCheck,
   ChevronsUpDown,
   LogOut,
-  Sparkles,
 } from "lucide-react"
 
 import {
@@ -27,6 +26,8 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar"
+import { signOutUser } from "@/lib/authFunctions"
+import { useState } from "react"
 
 export function NavUser({
   user,
@@ -38,11 +39,22 @@ export function NavUser({
   }
 }) {
   const { isMobile } = useSidebar()
+  const [isOpen, setIsOpen] = useState(false)
+
+  const handleLogout = async () => {
+    try {
+      setIsOpen(false)
+      await signOutUser()
+      window.location.href = '/'
+    } catch (error) {
+      console.error('Error signing out:', error)
+    }
+  }
 
   return (
     <SidebarMenu>
       <SidebarMenuItem>
-        <DropdownMenu>
+        <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
           <DropdownMenuTrigger asChild>
             <SidebarMenuButton
               size="lg"
@@ -81,14 +93,14 @@ export function NavUser({
             <DropdownMenuGroup>
               <DropdownMenuItem asChild>
                 <a href="/dashboard/user-account">
-                  <BadgeCheck />
+                  <BadgeCheck className="mr-2 h-4 w-4" />
                   User Account
                 </a>
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>
-              <LogOut />
+            <DropdownMenuItem onClick={handleLogout}>
+              <LogOut className="mr-2 h-4 w-4" />
               Log out
             </DropdownMenuItem>
           </DropdownMenuContent>

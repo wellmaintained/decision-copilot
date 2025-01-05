@@ -4,8 +4,31 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Github } from 'lucide-react'
 import Link from 'next/link'
+import { signInWithGoogle } from '@/lib/authFunctions'
+import { useRouter } from 'next/navigation'
+import { useAuth } from '@/hooks/useAuth'
+import { useEffect } from 'react'
 
 export default function LoginPage() {
+  const router = useRouter()
+  const { user } = useAuth()
+
+  // If user is already logged in, redirect to dashboard
+  useEffect(() => {
+    if (user) {
+      router.push('/dashboard')
+    }
+  }, [user, router])
+
+  const handleGoogleSignIn = async () => {
+    try {
+      await signInWithGoogle()
+      router.push('/dashboard')
+    } catch (error) {
+      console.error('Error signing in with Google:', error)
+    }
+  }
+
   return (
     <div className="min-h-screen w-full flex items-center justify-center bg-neutral-100">
       <Card className="w-full max-w-sm mx-4">
@@ -22,7 +45,7 @@ export default function LoginPage() {
           </p>
         </CardHeader>
         <CardContent className="space-y-4">
-          <Button variant="outline" className="w-full" onClick={() => {}}>
+          <Button variant="outline" className="w-full" onClick={handleGoogleSignIn}>
             <svg
               className="mr-2 h-4 w-4"
               aria-hidden="true"

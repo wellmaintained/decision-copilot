@@ -1,0 +1,1 @@
+- Always use absolute imports (ie, `import { Item } from '@/lib/domain/Item'`) rather than relative imports (ie, `import { Item } from './domain/Item'`)    
