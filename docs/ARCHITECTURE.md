@@ -10,8 +10,8 @@ This document outlines the high-level architecture of the Decision Copilot appli
 ├── components/          # Reusable React components
 ├── hooks/               # Custom React hooks
 ├── lib/                 # Core application logic
-│   ├── domain/          # Domain models and interfaces
-│   └── infrastructure/  # External service implementations
+│   ├── domain/          # Domain models (objects and props) and repository interfaces
+│   └── infrastructure/  # Repository implementations
 ├── public/              # Static assets
 ```
 
@@ -49,6 +49,145 @@ This document outlines the high-level architecture of the Decision Copilot appli
 - Repository interfaces for data access
 - Type definitions and validation rules
 - Domain entities (Decision, Stakeholder, etc.)
+
+### Domain Objects and Validation
+
+Domain objects use Props interfaces and class-validator decorators to ensure data validity. Here's how this works with our Decision domain:
+
+```typescript
+// Props interfaces define the data structure
+interface DecisionProps {
+  id: string
+  title: string
+  description: string
+  status: 'draft' | 'published' | 'archived'
+  criteria: DecisionCriterionProps[]
+  projectId: string
+  publishedAt?: Date
+}
+
+interface DecisionCriterionProps {
+  name: string
+  description: string
+}
+
+// Domain objects contain validation and business logic
+class Decision {
+  readonly id: string
+
+  @IsString()
+  @MinLength(5)
+  readonly title: string
+
+  @IsString()
+  @IsNotEmpty()
+  readonly description: string
+
+  @IsEnum(['draft', 'published', 'archived'])
+  readonly status: 'draft' | 'published' | 'archived'
+
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => DecisionCriterion)
+  readonly criteria: DecisionCriterion[]
+
+  @IsUUID()
+  readonly projectId: string
+
+  @IsDate()
+  @IsOptional()
+  readonly publishedAt?: Date
+
+  private constructor(props: DecisionProps) {
+    this.id = props.id
+    this.title = props.title
+    this.description = props.description
+    this.status = props.status
+    this.criteria = props.criteria.map(c => DecisionCriterion.create(c))
+    this.projectId = props.projectId
+    this.publishedAt = props.publishedAt
+    this.validate()
+  }
+
+  private validate(): void {
+    const errors = validateSync(this)
+    if (errors.length > 0) {
+      throw new DomainValidationError(errors)
+    }
+  }
+
+  static create(props: DecisionProps): Decision {
+    return new Decision(props)
+  }
+
+  publish(): Decision {
+    if (this.status !== 'draft') {
+      throw new Error('Can only publish draft decisions')
+    }
+
+    return Decision.create({
+      ...this,
+      status: 'published',
+      publishedAt: new Date()
+    })
+  }
+}
+```
+
+Key patterns:
+- Props interfaces define the shape of data without validation logic
+- Domain objects use class-validator decorators for validation rules
+- Private constructors with static factory methods ensure valid construction
+- Immutable properties prevent unauthorized modifications
+- Business logic methods (like `publish()`) return new instances
+- Nested validation for complex objects (like criteria)
+
+### Repository Pattern
+
+The repository pattern provides a type-safe abstraction for data persistence:
+
+```typescript
+// Repository interface in domain layer
+interface DecisionsRepository {
+  create(props: Omit<DecisionProps, 'id'>): Promise<Decision>
+  getById(id: string): Promise<Decision | null>
+  update(decision: Decision): Promise<void>
+  delete(id: string): Promise<void>
+  getByProject(projectId: string): Promise<Decision[]>
+}
+
+// Implementation in infrastructure layer
+class FirestoreDecisionsRepository implements DecisionsRepository {
+  async create(props: Omit<DecisionProps, 'id'>): Promise<Decision> {
+    const docRef = await addDoc(collection(db, 'decisions'), {
+      ...props,
+      createdAt: new Date()
+    })
+
+    return Decision.create({
+      ...props,
+      id: docRef.id
+    })
+  }
+
+  async getById(id: string): Promise<Decision | null> {
+    const doc = await getDoc(doc(db, 'decisions', id))
+    if (!doc.exists()) return null
+
+    return Decision.create({
+      id: doc.id,
+      ...doc.data()
+    })
+  }
+}
+```
+
+Key aspects:
+- Repository interfaces define type-safe data access methods
+- Firestore implementation handles data conversion
+- Domain objects are always created through factory methods
+- Validation is automatically enforced on data retrieval
+- Repository methods work with both Props and Domain objects
 
 ### 5. Infrastructure Layer (`lib/infrastructure/`)
 - Firestore repository implementations
