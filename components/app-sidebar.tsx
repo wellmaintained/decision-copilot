@@ -2,11 +2,8 @@
 
 import * as React from "react"
 import {
-  AudioWaveform,
   BookOpen,
   Cpu,
-  Command,
-  GalleryVerticalEnd,
 } from "lucide-react"
 
 import { NavMain } from "./nav-main"
@@ -21,25 +18,8 @@ import {
 } from "@/components/ui/sidebar"
 import { useAuth } from "@/hooks/useAuth"
 
-// This is sample data for teams and navigation
+// This is sample data for navigation
 const data = {
-  teams: [
-    {
-      name: "Development",
-      logo: GalleryVerticalEnd,
-      plan: "Enterprise",
-    },
-    {
-      name: "Marketing",
-      logo: AudioWaveform,
-      plan: "Startup",
-    },
-    {
-      name: "Finance",
-      logo: Command,
-      plan: "Free",
-    },
-  ],
   navMain: [
     {
       title: "DecisionCopilot Core",
@@ -90,7 +70,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   return (
     <Sidebar collapsible="icon" {...props}>
       <SidebarHeader>
-        <TeamSwitcher teams={data.teams} />
+        <TeamSwitcher />
       </SidebarHeader>
       <SidebarContent>
         <NavMain items={data.navMain} />

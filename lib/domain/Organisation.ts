@@ -1,15 +1,16 @@
+import '@/lib/domain/reflect'
 import { IsString, MinLength, ValidateNested, validateSync } from 'class-validator'
 import { Type } from 'class-transformer'
 import { Team } from '@/lib/domain/Team'
 import { DomainValidationError } from '@/lib/domain/DomainValidationError'
 
-export interface OrganizationProps {
+export interface OrganisationProps {
   id: string
   name: string
   teams: Team[]
 }
 
-export class Organization {
+export class Organisation {
   @IsString()
   readonly id: string
 
@@ -21,7 +22,7 @@ export class Organization {
   @Type(() => Team)
   readonly teams: Team[]
 
-  private constructor(props: OrganizationProps) {
+  private constructor(props: OrganisationProps) {
     this.id = props.id
     this.name = props.name
     this.teams = props.teams.map(t => Team.create(t))
@@ -35,8 +36,8 @@ export class Organization {
     }
   }
 
-  static create(props: OrganizationProps): Organization {
-    return new Organization(props)
+  static create(props: OrganisationProps): Organisation {
+    return new Organisation(props)
   }
 
   findTeam(teamId: string): Team | undefined {

@@ -1,3 +1,4 @@
+import '@/lib/domain/reflect'
 import { IsString, MinLength, ValidateNested, validateSync } from 'class-validator'
 import { Type } from 'class-transformer'
 import { Project } from '@/lib/domain/Project'

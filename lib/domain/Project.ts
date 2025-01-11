@@ -8,7 +8,6 @@ export interface ProjectProps {
   name: string
   description: string
   teamId: string
-  organizationId: string
   decisions: Decision[]
 }
 
@@ -26,9 +25,6 @@ export class Project {
   @IsString()
   readonly teamId: string
 
-  @IsString()
-  readonly organizationId: string
-
   @ValidateNested({ each: true })
   @Type(() => Decision)
   readonly decisions: Decision[]
@@ -38,7 +34,6 @@ export class Project {
     this.name = props.name
     this.description = props.description
     this.teamId = props.teamId
-    this.organizationId = props.organizationId
     this.decisions = props.decisions.map(d => Decision.create(d))
     this.validate()
   }

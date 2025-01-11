@@ -2,7 +2,7 @@
 
 ## Overview
 
-The Organization is a top-level entity that represents a security boundary in the system. Organizations contain teams, and stakeholders can be members of multiple teams across different organizations.
+The Organization is a top-level entity that represents a security boundary in the system. Organisations contain teams, and stakeholders can be members of multiple teams across different organisations.
 
 ### Domain Model Relationships
 
@@ -62,7 +62,7 @@ erDiagram
 interface OrganizationProps {
   id: string
   name: string
-  teams: Team[]  // Teams are embedded within organizations
+  teams: Team[]  // Teams are embedded within organisations
 }
 
 class Organization {
@@ -97,7 +97,7 @@ class Organization {
 ## Key Concepts
 
 ### Teams
-- Teams are embedded within organizations
+- Teams are embedded within organisations
 - A team belongs to exactly one organization
 - Teams contain projects and their associated decisions
 - Teams are the primary unit of access control
@@ -118,7 +118,7 @@ interface StakeholderTeamProps {
 ## Repository Interface
 
 ```typescript
-interface OrganizationsRepository {
+interface OrganisationsRepository {
   create(props: Omit<OrganizationProps, 'id'>): Promise<Organization>
   getById(id: string): Promise<Organization | null>
   getForStakeholder(stakeholderId: string): Promise<Organization[]>
@@ -130,7 +130,7 @@ interface OrganizationsRepository {
 ## Firestore Structure
 
 ```sh
-organizations/
+organisations/
   {organizationId}/
     teams/
       {teamId}/
@@ -147,7 +147,7 @@ stakeholderTeams/
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    match /organizations/{orgId} {
+    match /organisations/{orgId} {
       // Stakeholders can read org if they belong to any team in the org
       allow read: exists(/databases/$(database)/documents/stakeholderTeams/{stakeholderTeamId}
         where stakeholderTeamId == request.auth.uid 
@@ -201,11 +201,11 @@ if (team) {
 
 ### Repository Operations
 ```typescript
-// Get organizations for a stakeholder
-const orgs = await organizationsRepo.getForStakeholder(stakeholderId)
+// Get organisations for a stakeholder
+const orgs = await organisationsRepo.getForStakeholder(stakeholderId)
 
 // Create new organization
-const newOrg = await organizationsRepo.create({
+const newOrg = await organisationsRepo.create({
   name: 'New Corp',
   teams: []
 })
@@ -219,12 +219,12 @@ const newOrg = await organizationsRepo.create({
 
 ## Business Rules
 
-1. Organizations are the top-level security boundary
+1. Organisations are the top-level security boundary
 2. Teams can only belong to one organization
-3. Stakeholders access organizations through team membership
+3. Stakeholders access organisations through team membership
 4. Organization names must be unique (enforced at repository level)
-5. Organizations can have multiple teams
-6. Organizations can be deleted only if they have no teams
+5. Organisations can have multiple teams
+6. Organisations can be deleted only if they have no teams
 
 ## Error Handling
 
