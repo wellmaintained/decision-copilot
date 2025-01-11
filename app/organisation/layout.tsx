@@ -16,19 +16,22 @@ import {
   SidebarTrigger,
 } from "@/components/ui/sidebar"
 import { useAuth } from '@/hooks/useAuth'
-import { useTeam, TeamProvider } from '@/components/team-switcher'
+import { useOrganisation, OrganisationProvider } from '@/components/organisation-switcher'
 import { usePathname } from 'next/navigation'
 import { redirect } from 'next/navigation'
 import { Building2, Users2, FolderKanban } from 'lucide-react'
 
 function BreadcrumbNav() {
-  const { selectedTeam } = useTeam()
+  const { selectedOrganisation } = useOrganisation()
   const pathname = usePathname()
 
   // Extract project ID from URL if it exists
   const projectMatch = pathname?.match(/\/project\/([^/]+)/)
   const projectId = projectMatch ? projectMatch[1] : null
-  const currentProject = selectedTeam?.projects.find(p => p.id === projectId)
+  const currentTeamMatch = pathname?.match(/\/team\/([^/]+)/)
+  const currentTeamId = currentTeamMatch ? currentTeamMatch[1] : null
+  const currentTeam = selectedOrganisation?.teams.find(t => t.id === currentTeamId)
+  const currentProject = currentTeam?.projects.find(p => p.id === projectId)
 
   return (
     <Breadcrumb>
@@ -36,19 +39,19 @@ function BreadcrumbNav() {
         <BreadcrumbItem>
           <BreadcrumbLink href="/organisation" className="flex items-center gap-2">
             <Building2 className="h-4 w-4" />
-            {selectedTeam?.organisation.name || '...'}
+            {selectedOrganisation?.name || '...'}
           </BreadcrumbLink>
         </BreadcrumbItem>
-        {selectedTeam && (
+        {currentTeam && (
           <>
             <BreadcrumbSeparator />
             <BreadcrumbItem>
               <BreadcrumbLink 
-                href={`/organisation/${selectedTeam.organisation.id}/team/${selectedTeam.id}`}
+                href={`/organisation/${selectedOrganisation?.id}/team/${currentTeam.id}`}
                 className="flex items-center gap-2"
               >
                 <Users2 className="h-4 w-4" />
-                {selectedTeam.name}
+                {currentTeam?.name || '...'}
               </BreadcrumbLink>
             </BreadcrumbItem>
           </>
@@ -59,7 +62,7 @@ function BreadcrumbNav() {
             <BreadcrumbItem>
               <BreadcrumbPage className="flex items-center gap-2">
                 <FolderKanban className="h-4 w-4" />
-                {currentProject.name}
+                {currentProject.name || '...'}
               </BreadcrumbPage>
             </BreadcrumbItem>
           </>
@@ -86,7 +89,7 @@ export default function DashboardLayout({
 
   return (
     <SidebarProvider>
-      <TeamProvider>
+      <OrganisationProvider>
         <AppSidebar />
         <SidebarInset>
           <header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12">
@@ -100,7 +103,7 @@ export default function DashboardLayout({
             {children}
           </div>
         </SidebarInset>
-      </TeamProvider>
+      </OrganisationProvider>
     </SidebarProvider>
   )
 } 

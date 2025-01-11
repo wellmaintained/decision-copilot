@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { useOrganisation } from "@/hooks/useOrganisation"
+import { useOrganisation } from "@/components/organisation-switcher"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Plus } from "lucide-react"
@@ -16,8 +16,8 @@ interface TeamPageProps {
 
 export default function TeamPage({ params }: TeamPageProps) {
   const { organisationId, teamId } = React.use(params)
-  const { organisation } = useOrganisation()
-  const team = organisation?.teams.find(t => t.id === teamId)
+  const { selectedOrganisation } = useOrganisation()
+  const team = selectedOrganisation?.teams.find(t => t.id === teamId)
 
   if (!team) {
     return (
