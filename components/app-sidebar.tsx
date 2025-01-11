@@ -2,13 +2,12 @@
 
 import * as React from "react"
 import {
-  BookOpen,
   Cpu,
 } from "lucide-react"
 
 import { NavMain } from "./nav-main"
 import { NavUser } from "./nav-user"
-import { TeamSwitcher } from "./team-switcher"
+import { TeamSwitcher, useTeam } from "./team-switcher"
 import {
   Sidebar,
   SidebarContent,
@@ -18,45 +17,9 @@ import {
 } from "@/components/ui/sidebar"
 import { useAuth } from "@/hooks/useAuth"
 
-// This is sample data for navigation
-const data = {
-  navMain: [
-    {
-      title: "DecisionCopilot Core",
-      url: "/dashboard/project-decisions",
-      icon: Cpu,
-      isActive: true,
-      items: [
-        {
-          title: "Frontend",
-          url: "/dashboard/project-decisions",
-        },
-        {
-          title: "Backend",
-          url: "/dashboard/project-decisions",
-        },
-        {
-          title: "Development environment",
-          url: "/dashboard/project-decisions",
-        },
-      ],
-    },
-    {
-      title: "Business Development",
-      url: "/dashboard/project-decisions",
-      icon: BookOpen,
-      items: [
-        {
-          title: "Private Beta",
-          url: "/dashboard/project-decisions",
-        },
-      ],
-    },
-  ],
-}
-
-export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
   const { user } = useAuth();
+  const { selectedTeam } = useTeam();
 
   // Create user data object from authenticated user
   const userData = user ? {
@@ -67,13 +30,23 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 
   if (!userData) return null;
 
+  // Create navigation data from selected team's projects
+  const navData = {
+    navMain: selectedTeam?.projects.map(project => ({
+      title: project.name,
+      url: `/dashboard/project-decisions/${project.id}`,
+      icon: Cpu,
+      items: [],
+    })) || [],
+  };
+
   return (
     <Sidebar collapsible="icon" {...props}>
       <SidebarHeader>
         <TeamSwitcher />
       </SidebarHeader>
       <SidebarContent>
-        <NavMain items={data.navMain} />
+        <NavMain items={navData.navMain} />
       </SidebarContent>
       <SidebarFooter>
         <NavUser user={userData} />

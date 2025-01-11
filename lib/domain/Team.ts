@@ -4,11 +4,17 @@ import { Type } from 'class-transformer'
 import { Project } from '@/lib/domain/Project'
 import { DomainValidationError } from '@/lib/domain/DomainValidationError'
 
+// Minimal interface to avoid circular dependency
+interface OrganisationReference {
+  id: string;
+  name: string;
+}
+
 export interface TeamProps {
   id: string
   name: string
-  organisationId: string
   projects: Project[]
+  organisation: OrganisationReference
 }
 
 export class Team {
@@ -19,17 +25,17 @@ export class Team {
   @MinLength(3)
   readonly name: string
 
-  @IsString()
-  readonly organisationId: string
-
   @ValidateNested({ each: true })
   @Type(() => Project)
   readonly projects: Project[]
 
+  @ValidateNested()
+  readonly organisation: OrganisationReference
+
   private constructor(props: TeamProps) {
     this.id = props.id
     this.name = props.name
-    this.organisationId = props.organisationId
+    this.organisation = props.organisation
     this.projects = props.projects.map(p => Project.create(p))
     this.validate()
   }

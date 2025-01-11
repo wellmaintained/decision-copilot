@@ -14,6 +14,11 @@ export class FirestoreOrganisationsRepository implements OrganisationsRepository
       createdAt: new Date()
     })
 
+    const organisation = {
+      id: orgDoc.id,
+      name: props.name
+    }
+
     // Add teams and their projects to subcollections
     const teamsWithIds = await Promise.all(props.teams.map(async team => {
       const teamDoc = await addDoc(collection(db, 'organisations', orgDoc.id, 'teams'), {
@@ -66,7 +71,7 @@ export class FirestoreOrganisationsRepository implements OrganisationsRepository
       return Team.create({
         id: teamDoc.id,
         name: team.name,
-        organisationId: orgDoc.id,
+        organisation,
         projects: projectsWithIds
       })
     }))
@@ -84,6 +89,12 @@ export class FirestoreOrganisationsRepository implements OrganisationsRepository
 
     if (!docSnap.exists()) {
       throw new Error('Organisation not found')
+    }
+
+    const data = docSnap.data()
+    const organisation = {
+      id: docSnap.id,
+      name: data.name
     }
 
     // Get teams from subcollection
@@ -130,12 +141,12 @@ export class FirestoreOrganisationsRepository implements OrganisationsRepository
       return Team.create({
         id: teamDoc.id,
         name: teamDoc.data().name,
-        organisationId: id,
+        organisation,
         projects: projects
       })
     }))
 
-    const data = docSnap.data()
+    // Update the organisation with teams
     return Organisation.create({
       id: docSnap.id,
       name: data.name,
