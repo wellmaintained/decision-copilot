@@ -7,7 +7,7 @@ import { DomainValidationError } from '@/lib/domain/DomainValidationError'
 export interface TeamProps {
   id: string
   name: string
-  organizationId: string
+  organisationId: string
   projects: Project[]
 }
 
@@ -20,7 +20,7 @@ export class Team {
   readonly name: string
 
   @IsString()
-  readonly organizationId: string
+  readonly organisationId: string
 
   @ValidateNested({ each: true })
   @Type(() => Project)
@@ -29,7 +29,7 @@ export class Team {
   private constructor(props: TeamProps) {
     this.id = props.id
     this.name = props.name
-    this.organizationId = props.organizationId
+    this.organisationId = props.organisationId
     this.projects = props.projects.map(p => Project.create(p))
     this.validate()
   }

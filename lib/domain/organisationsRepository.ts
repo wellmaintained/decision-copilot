@@ -1,9 +1,9 @@
-import { Organization, OrganizationProps } from '@/lib/domain/Organization'
+import { Organisation, OrganisationProps } from '@/lib/domain/Organisation'
 
 export interface OrganisationsRepository {
-  create(props: Omit<OrganizationProps, 'id'>): Promise<Organization>
-  getById(id: string): Promise<Organization | null>
-  getForStakeholder(stakeholderId: string): Promise<Organization[]>
-  update(organization: Organization): Promise<void>
+  create(props: Omit<OrganisationProps, 'id'>): Promise<Organisation>
+  getById(id: string): Promise<Organisation | null>
+  getForStakeholder(stakeholderId: string): Promise<Organisation[]>
+  update(organisation: Organisation): Promise<void>
   delete(id: string): Promise<void>
 } 

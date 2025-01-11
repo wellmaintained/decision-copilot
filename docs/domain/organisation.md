@@ -1,20 +1,20 @@
-# Organization Domain Model
+# Organisation Domain Model
 
 ## Overview
 
-The Organization is a top-level entity that represents a security boundary in the system. Organisations contain teams, and stakeholders can be members of multiple teams across different organisations.
+The Organisation is a top-level entity that represents a security boundary in the system. Organisations contain teams, and stakeholders can be members of multiple teams across different organisations.
 
 ### Domain Model Relationships
 
 ```mermaid
 erDiagram
-    Organization ||--o{ Team : contains
+    Organisation ||--o{ Team : contains
     Team ||--o{ Project : contains
     Project ||--o{ Decision : contains
     Stakeholder }|--o{ StakeholderTeam : "belongs to"
     StakeholderTeam }o--|| Team : "references"
     
-    Organization {
+    Organisation {
         string id "Firestore ID"
         string name
     }
@@ -22,7 +22,7 @@ erDiagram
     Team {
         string id "Firestore ID"
         string name
-        string organizationId
+        string organisationId
     }
     
     Project {
@@ -30,7 +30,7 @@ erDiagram
         string name
         string description
         string teamId
-        string organizationId
+        string organisationId
     }
     
     Decision {
@@ -46,7 +46,7 @@ erDiagram
         string id "Firestore ID"
         string stakeholderId
         string teamId
-        string organizationId
+        string organisationId
     }
     
     Stakeholder {
@@ -59,13 +59,13 @@ erDiagram
 ## Domain Model
 
 ```typescript
-interface OrganizationProps {
+interface OrganisationProps {
   id: string
   name: string
   teams: Team[]  // Teams are embedded within organisations
 }
 
-class Organization {
+class Organisation {
   @IsString()
   readonly id: string
 
@@ -77,15 +77,15 @@ class Organization {
   @Type(() => Team)
   readonly teams: Team[]
 
-  private constructor(props: OrganizationProps) {
+  private constructor(props: OrganisationProps) {
     this.id = props.id
     this.name = props.name
     this.teams = props.teams.map(t => Team.create(t))
     this.validate()
   }
 
-  static create(props: OrganizationProps): Organization {
-    return new Organization(props)
+  static create(props: OrganisationProps): Organisation {
+    return new Organisation(props)
   }
 
   findTeam(teamId: string): Team | undefined {
@@ -98,7 +98,7 @@ class Organization {
 
 ### Teams
 - Teams are embedded within organisations
-- A team belongs to exactly one organization
+- A team belongs to exactly one organisation
 - Teams contain projects and their associated decisions
 - Teams are the primary unit of access control
 
@@ -107,22 +107,22 @@ class Organization {
 interface StakeholderTeamProps {
   id: string  // Firestore ID
   stakeholderId: string  // Firestore ID
-  organizationId: string  // Firestore ID
+  organisationId: string  // Firestore ID
   teamId: string  // Firestore ID
 }
 ```
 - Stakeholders can be members of multiple teams
-- Organization access is derived from team membership
+- Organisation access is derived from team membership
 - Stakeholder-team relationships are stored in a separate collection
 
 ## Repository Interface
 
 ```typescript
 interface OrganisationsRepository {
-  create(props: Omit<OrganizationProps, 'id'>): Promise<Organization>
-  getById(id: string): Promise<Organization | null>
-  getForStakeholder(stakeholderId: string): Promise<Organization[]>
-  update(organization: Organization): Promise<void>
+  create(props: Omit<OrganisationProps, 'id'>): Promise<Organisation>
+  getById(id: string): Promise<Organisation | null>
+  getForStakeholder(stakeholderId: string): Promise<Organisation[]>
+  update(organisation: Organisation): Promise<void>
   delete(id: string): Promise<void>
 }
 ```
@@ -131,7 +131,7 @@ interface OrganisationsRepository {
 
 ```sh
 organisations/
-  {organizationId}/
+  {organisationId}/
     teams/
       {teamId}/
         projects/
@@ -151,13 +151,13 @@ service cloud.firestore {
       // Stakeholders can read org if they belong to any team in the org
       allow read: exists(/databases/$(database)/documents/stakeholderTeams/{stakeholderTeamId}
         where stakeholderTeamId == request.auth.uid 
-        && organizationId == orgId);
+        && organisationId == orgId);
       
       match /teams/{teamId} {
         // Stakeholders can read team if they are a member
         allow read: exists(/databases/$(database)/documents/stakeholderTeams/{stakeholderTeamId}
           where stakeholderTeamId == request.auth.uid 
-          && organizationId == orgId
+          && organisationId == orgId
           && teamId == teamId);
       }
     }
@@ -167,9 +167,9 @@ service cloud.firestore {
 
 ## Usage Examples
 
-### Creating an Organization
+### Creating an Organisation
 ```typescript
-const org = Organization.create({
+const org = Organisation.create({
   id: 'org-1',
   name: 'Acme Corp',
   teams: []
@@ -178,7 +178,7 @@ const org = Organization.create({
 
 ### Adding a Team
 ```typescript
-const orgWithTeam = Organization.create({
+const orgWithTeam = Organisation.create({
   ...org,
   teams: [
     ...org.teams,
@@ -204,7 +204,7 @@ if (team) {
 // Get organisations for a stakeholder
 const orgs = await organisationsRepo.getForStakeholder(stakeholderId)
 
-// Create new organization
+// Create new organisation
 const newOrg = await organisationsRepo.create({
   name: 'New Corp',
   teams: []
@@ -213,31 +213,31 @@ const newOrg = await organisationsRepo.create({
 
 ## Validation Rules
 
-- Organization name must be at least 3 characters
+- Organisation name must be at least 3 characters
 - Teams must be valid Team domain objects
 - Teams array can be empty but must be present
 
 ## Business Rules
 
 1. Organisations are the top-level security boundary
-2. Teams can only belong to one organization
+2. Teams can only belong to one organisation
 3. Stakeholders access organisations through team membership
-4. Organization names must be unique (enforced at repository level)
+4. Organisation names must be unique (enforced at repository level)
 5. Organisations can have multiple teams
 6. Organisations can be deleted only if they have no teams
 
 ## Error Handling
 
 ```typescript
-class OrganizationError extends Error {
+class OrganisationError extends Error {
   constructor(message: string) {
     super(message)
-    this.name = 'OrganizationError'
+    this.name = 'OrganisationError'
   }
 }
 
 // Usage
 if (!org.teams.length) {
-  throw new OrganizationError('Cannot delete organization with existing teams')
+  throw new OrganisationError('Cannot delete organisation with existing teams')
 }
 ```

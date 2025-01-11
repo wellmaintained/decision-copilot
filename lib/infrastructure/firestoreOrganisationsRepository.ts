@@ -8,7 +8,7 @@ import { Decision } from '@/lib/domain/Decision'
 
 export class FirestoreOrganisationsRepository implements OrganisationsRepository {
   async create(props: Omit<OrganisationProps, 'id'>): Promise<Organisation> {
-    // Create the main organization document
+    // Create the main organisation document
     const orgDoc = await addDoc(collection(db, 'organisations'), {
       name: props.name,
       createdAt: new Date()
@@ -66,7 +66,7 @@ export class FirestoreOrganisationsRepository implements OrganisationsRepository
       return Team.create({
         id: teamDoc.id,
         name: team.name,
-        organizationId: orgDoc.id,
+        organisationId: orgDoc.id,
         projects: projectsWithIds
       })
     }))
@@ -78,12 +78,12 @@ export class FirestoreOrganisationsRepository implements OrganisationsRepository
     })
   }
 
-  async getById(id: string): Promise<Organisation | null> {
+  async getById(id: string): Promise<Organisation> {
     const docRef = doc(db, 'organisations', id)
     const docSnap = await getDoc(docRef)
 
     if (!docSnap.exists()) {
-      return null
+      throw new Error('Organisation not found')
     }
 
     // Get teams from subcollection
@@ -130,7 +130,7 @@ export class FirestoreOrganisationsRepository implements OrganisationsRepository
       return Team.create({
         id: teamDoc.id,
         name: teamDoc.data().name,
-        organizationId: id,
+        organisationId: id,
         projects: projects
       })
     }))
@@ -151,14 +151,14 @@ export class FirestoreOrganisationsRepository implements OrganisationsRepository
     )
     const stakeholderTeamsSnap = await getDocs(stakeholderTeamsQuery)
     
-    // Get unique organization IDs
-    const organizationIds = new Set(
-      stakeholderTeamsSnap.docs.map(doc => doc.data().organizationId)
+    // Get unique organisation IDs
+    const organisationIds = new Set(
+      stakeholderTeamsSnap.docs.map(doc => doc.data().organisationId)
     )
 
-    // Fetch each organization
+    // Fetch each organisation
     const organisations = await Promise.all(
-      Array.from(organizationIds).map(orgId => this.getById(orgId))
+      Array.from(organisationIds).map(orgId => this.getById(orgId))
     )
 
     return organisations.filter((org): org is Organisation => org !== null)
@@ -233,7 +233,7 @@ export class FirestoreOrganisationsRepository implements OrganisationsRepository
       await deleteDoc(teamDoc.ref)
     }
 
-    // Delete the organization document
+    // Delete the organisation document
     const docRef = doc(db, 'organisations', id)
     await deleteDoc(docRef)
   }

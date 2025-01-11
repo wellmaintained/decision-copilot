@@ -65,14 +65,14 @@ export default function UserAccountPage() {
 
           <Separator />
 
-          {/* Organization & Teams */}
+          {/* Organisation & Teams */}
           <div className="space-y-4">
-            <h3 className="text-lg font-medium">Organization & Teams</h3>
+            <h3 className="text-lg font-medium">Organisation & Teams</h3>
             <div className="grid gap-4">
               <div className="space-y-2">
-                <Label htmlFor="organization">Organization</Label>
+                <Label htmlFor="organisation">Organisation</Label>
                 <Input 
-                  id="organization" 
+                  id="organisation" 
                   defaultValue="Acme Corp" 
                 />
               </div>
