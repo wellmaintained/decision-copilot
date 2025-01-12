@@ -1,12 +1,14 @@
 'use client'
 
-import { useDecisions } from '@/hooks/useDecisions';
+import { useProjectDecisions } from '@/hooks/useProjectDecisions';
 import { Button } from "@/components/ui/button"
 import { Pencil, Trash2, FileText, Users, Clock } from 'lucide-react'
 import Link from 'next/link'
+import { useParams } from 'next/navigation';
 
 export default function ProjectDecisionsPage() {
-  const { decisions, loading, error, deleteDecision } = useDecisions();
+  const params = useParams();
+  const { decisions, loading, error, deleteDecision } = useProjectDecisions();
 
   if (loading) {
     return <div className="p-6">Loading decisions...</div>;
@@ -32,7 +34,7 @@ export default function ProjectDecisionsPage() {
     <div className="p-6 space-y-6">
       <div className="flex justify-between items-center">
         <Button className="bg-blue-500 hover:bg-blue-600" asChild>
-          <Link href="/dashboard/decision/create">
+          <Link href={`/organisation/${params.organisationId}/team/${params.teamId}/project/${params.projectId}/decision/create`}>
             🌟 Start new decision
           </Link>
         </Button>
@@ -70,7 +72,7 @@ export default function ProjectDecisionsPage() {
                 </div>
                 <div className="flex space-x-2">
                   <Button variant="ghost" size="icon" title="Edit decision">
-                    <Link href={`/dashboard/decision/${decision.id}/identify`}>
+                    <Link href={`/organisation/${params.organisationId}/team/${params.teamId}/project/${params.projectId}/decision/${decision.id}/identify`}>
                       <Pencil className="h-4 w-4" />
                     </Link>
                   </Button>
@@ -119,7 +121,7 @@ export default function ProjectDecisionsPage() {
                 </div>
                 <div className="flex space-x-2">
                   <Button variant="ghost" size="icon" title="View decision">
-                    <Link href={`/dashboard/decision/${decision.id}/view`}>
+                    <Link href={`/organisation/${params.organisationId}/team/${params.teamId}/project/${params.projectId}/decision/${decision.id}/view`}>
                       <FileText className="h-4 w-4" />
                     </Link>
                   </Button>

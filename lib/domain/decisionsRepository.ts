@@ -9,21 +9,31 @@ export interface DecisionsRepository {
    */
   subscribeToAll(
     onData: (decisions: Decision[]) => void,
-    onError: (error: Error) => void
+    onError: (error: Error) => void,
+    scope: { organisationId: string; teamId: string; projectId: string }
   ): () => void;
 
   /**
    * Updates a decision.
    */
-  updateDecision(decision: Decision): Promise<void>;
+  updateDecision(
+    decision: Decision,
+    scope: { organisationId: string; teamId: string; projectId: string }
+  ): Promise<void>;
 
   /**
    * Creates a new decision.
    */
-  createDecision(): Promise<Decision>;
+  createDecision(
+    initialData: Partial<Decision>,
+    scope: { organisationId: string; teamId: string; projectId: string }
+  ): Promise<Decision>;
 
   /**
    * Deletes a decision.
    */
-  deleteDecision(decisionId: string): Promise<void>;
+  deleteDecision(
+    decisionId: string,
+    scope: { organisationId: string; teamId: string; projectId: string }
+  ): Promise<void>;
 } 

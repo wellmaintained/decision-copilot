@@ -20,17 +20,24 @@ import {
  * - Translates raw data into domain Decision objects, and handles updates
  */
 export class FirestoreDecisionsRepository implements DecisionsRepository {
-  private collectionPath: string;
+  private getCollectionPath(scope: { organisationId: string; teamId: string; projectId: string }): string {
+    return `organisations/${scope.organisationId}/teams/${scope.teamId}/projects/${scope.projectId}/decisions`;
+  }
 
-  constructor(collectionPath = 'decisions') {
-    this.collectionPath = collectionPath;
+  private getCollectionRef(scope: { organisationId: string; teamId: string; projectId: string }) {
+    return collection(db, this.getCollectionPath(scope));
+  }
+
+  private getDocRef(decisionId: string, scope: { organisationId: string; teamId: string; projectId: string }) {
+    return doc(db, this.getCollectionPath(scope), decisionId);
   }
 
   subscribeToAll(
     onData: (decisions: Decision[]) => void,
-    onError: (error: Error) => void
+    onError: (error: Error) => void,
+    scope: { organisationId: string; teamId: string; projectId: string }
   ): () => void {
-    const colRef = collection(db, this.collectionPath);
+    const colRef = this.getCollectionRef(scope);
     const q = query(colRef, orderBy('createdAt', 'desc'));
 
     // Subscribe to snapshot updates
@@ -50,7 +57,6 @@ export class FirestoreDecisionsRepository implements DecisionsRepository {
             options: data.options || [],
             decision: data.decision,
             decisionMethod: data.decisionMethod,
-            project_id: data.project_id,
             reversibility: data.reversibility,
             stakeholders: data.stakeholders || [],
             status: data.status || 'draft',
@@ -69,8 +75,11 @@ export class FirestoreDecisionsRepository implements DecisionsRepository {
     return unsubscribe;
   }
 
-  async updateDecision(decision: Decision): Promise<void> {
-    const docRef = doc(db, this.collectionPath, decision.id);
+  async updateDecision(
+    decision: Decision,
+    scope: { organisationId: string; teamId: string; projectId: string }
+  ): Promise<void> {
+    const docRef = this.getDocRef(decision.id, scope);
     await updateDoc(docRef, {
       title: decision.title,
       description: decision.description,
@@ -79,7 +88,6 @@ export class FirestoreDecisionsRepository implements DecisionsRepository {
       options: decision.options,
       decision: decision.decision,
       decisionMethod: decision.decisionMethod,
-      project_id: decision.project_id,
       reversibility: decision.reversibility,
       stakeholders: decision.stakeholders,
       status: decision.status,
@@ -87,45 +95,45 @@ export class FirestoreDecisionsRepository implements DecisionsRepository {
     });
   }
 
-  async createDecision(): Promise<Decision> {
-    const colRef = collection(db, this.collectionPath);
-    const docRef = await addDoc(colRef, {
-      title: '',
-      description: '',
-      cost: 'medium',
-      criteria: [],
-      options: [],
-      decision: '',
-      decisionMethod: '',
-      project_id: '',
-      reversibility: 'haircut',
-      stakeholders: [],
-      status: 'draft',
-      createdAt: Timestamp.fromDate(new Date()),
-      updatedAt: Timestamp.fromDate(new Date()),
-    });
+  async createDecision(
+    initialData: Partial<Decision>,
+    scope: { organisationId: string; teamId: string; projectId: string }
+  ): Promise<Decision> {
+    const now = new Date();
+    const docData = {
+      ...initialData,
+      createdAt: Timestamp.fromDate(now),
+      updatedAt: Timestamp.fromDate(now),
+    };
+
+    const colRef = this.getCollectionRef(scope);
+    const docRef = await addDoc(colRef, docData);
     const docSnap = await getDoc(docRef);
+    const data = docSnap.data()!;
+
     return Decision.create({
       id: docRef.id,
-      title: docSnap.data()?.title,
-      description: docSnap.data()?.description,
-      cost: docSnap.data()?.cost,
-      createdAt: docSnap.data()?.createdAt,
-      criteria: docSnap.data()?.criteria,
-      options: docSnap.data()?.options,
-      decision: docSnap.data()?.decision,
-      decisionMethod: docSnap.data()?.decisionMethod,
-      project_id: docSnap.data()?.project_id,
-      reversibility: docSnap.data()?.reversibility,
-      stakeholders: docSnap.data()?.stakeholders,
-      status: docSnap.data()?.status,
-      updatedAt: docSnap.data()?.updatedAt,
-      user: docSnap.data()?.user,
+      title: data.title,
+      description: data.description,
+      cost: data.cost,
+      createdAt: (data.createdAt as Timestamp).toDate(),
+      criteria: data.criteria,
+      options: data.options,
+      decision: data.decision,
+      decisionMethod: data.decisionMethod,
+      reversibility: data.reversibility,
+      stakeholders: data.stakeholders,
+      status: data.status,
+      updatedAt: data.updatedAt ? (data.updatedAt as Timestamp).toDate() : undefined,
+      user: data.user,
     });
   }
 
-  async deleteDecision(decisionId: string): Promise<void> {
-    const docRef = doc(db, this.collectionPath, decisionId);
+  async deleteDecision(
+    decisionId: string,
+    scope: { organisationId: string; teamId: string; projectId: string }
+  ): Promise<void> {
+    const docRef = this.getDocRef(decisionId, scope);
     await deleteDoc(docRef);
   }
 } 

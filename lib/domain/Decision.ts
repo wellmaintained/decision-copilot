@@ -29,7 +29,6 @@ export type DecisionProps = {
   options: string[];
   decision?: string;
   decisionMethod?: string;
-  project_id?: string;
   reversibility: Reversibility;
   stakeholders: DecisionStakeholderRole[];
   status: string;
@@ -47,7 +46,6 @@ export class Decision {
   readonly options: string[];
   readonly decision?: string;
   readonly decisionMethod?: string;
-  readonly project_id?: string;
   readonly reversibility: Reversibility;
   readonly stakeholders: DecisionStakeholderRole[];
   readonly status: string;
@@ -64,7 +62,6 @@ export class Decision {
     this.options = props.options;
     this.decision = props.decision;
     this.decisionMethod = props.decisionMethod;
-    this.project_id = props.project_id;
     this.reversibility = props.reversibility;
     this.stakeholders = props.stakeholders;
     this.status = props.status;
