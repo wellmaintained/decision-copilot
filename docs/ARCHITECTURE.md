@@ -5,14 +5,15 @@ This document outlines the high-level architecture of the Decision Copilot appli
 ## Directory Structure
 
 ```sh
-.
-├── app/                 # Next.js app directory (pages and layouts)
-├── components/          # Reusable React components
-├── hooks/               # Custom React hooks
-├── lib/                 # Core application logic
-│   ├── domain/          # Domain models (objects and props) and repository interfaces
-│   └── infrastructure/  # Repository implementations
-├── public/              # Static assets
+├── .env.{development,production} # Env specific environment variables & secrets (not committed to git)
+├── .env                          # Default environment variables (can be committed)
+├── app/                          # Next.js app directory (pages and layouts)
+├── components/                   # Reusable React components
+├── hooks/                        # Custom React hooks
+├── lib/                          # Core application logic
+│   ├── domain/                   # Domain models (objects and props) and repository interfaces
+│   └── infrastructure/           # Repository implementations
+├── public/                       # Static assets
 ```
 
 ## Technology Stack
