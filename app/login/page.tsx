@@ -13,17 +13,17 @@ export default function LoginPage() {
   const router = useRouter()
   const { user } = useAuth()
 
-  // If user is already logged in, redirect to dashboard
+  // If user is already logged in, redirect to organisation
   useEffect(() => {
     if (user) {
-      router.push('/dashboard')
+      router.push('/organisation')
     }
   }, [user, router])
 
   const handleGoogleSignIn = async () => {
     try {
       await signInWithGoogle()
-      router.push('/dashboard')
+      router.push('/organisation')
     } catch (error) {
       console.error('Error signing in with Google:', error)
     }
