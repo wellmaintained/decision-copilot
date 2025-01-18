@@ -6,6 +6,11 @@ import {
   query,
   orderBy,
   onSnapshot,
+  addDoc,
+  doc,
+  getDoc,
+  updateDoc,
+  deleteDoc,
 } from 'firebase/firestore';
 
 /**
@@ -18,6 +23,45 @@ export class FirestoreStakeholdersRepository implements StakeholdersRepository {
 
   constructor(collectionPath = 'stakeholders') {
     this.collectionPath = collectionPath;
+  }
+
+  async create(props: StakeholderProps): Promise<Stakeholder> {
+    const colRef = collection(db, this.collectionPath);
+    const docRef = await addDoc(colRef, {
+      displayName: props.displayName,
+      email: props.email,
+      photoURL: props.photoURL,
+    });
+    const docSnap = await getDoc(docRef);
+    const data = docSnap.data()!;
+    return Stakeholder.create({
+      id: docRef.id,
+      displayName: data.displayName,
+      email: data.email,
+      photoURL: data.photoURL,
+    });
+  }
+
+  async update(stakeholder: Stakeholder): Promise<Stakeholder> {
+    const docRef = doc(db, this.collectionPath, stakeholder.id);
+    await updateDoc(docRef, {
+      displayName: stakeholder.displayName,
+      email: stakeholder.email,
+      photoURL: stakeholder.photoURL,
+    });
+    const docSnap = await getDoc(docRef);
+    const data = docSnap.data()!;
+    return Stakeholder.create({
+      id: docSnap.id,
+      displayName: data.displayName,
+      email: data.email,
+      photoURL: data.photoURL,
+    });
+  }
+
+  async delete(id: string): Promise<void> {
+    const docRef = doc(db, this.collectionPath, id);
+    await deleteDoc(docRef);
   }
 
   subscribeToAll(

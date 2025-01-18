@@ -6,5 +6,7 @@ export interface StakeholderTeamsRepository {
   getByStakeholderId(stakeholderId: string): Promise<StakeholderTeam[]>
   getByTeamId(teamId: string): Promise<StakeholderTeam[]>
   getByOrganisationId(organisationId: string): Promise<StakeholderTeam[]>
+  getByOrganisation(organisations: { id: string }[]): Promise<StakeholderTeam[]>
+  getByStakeholderAndTeam(stakeholderId: string, teamId: string): Promise<StakeholderTeam | null>
   delete(id: string): Promise<void>
 } 

@@ -57,6 +57,24 @@ export class FirestoreStakeholderTeamsRepository implements StakeholderTeamsRepo
     )
   }
 
+  async getByOrganisation(organisations: { id: string }[]): Promise<StakeholderTeam[]> {
+    const teamsPromises = organisations.map(org => this.getByOrganisationId(org.id));
+    const teamsArrays = await Promise.all(teamsPromises);
+    return teamsArrays.flat();
+  }
+
+  async getByStakeholderAndTeam(stakeholderId: string, teamId: string): Promise<StakeholderTeam | null> {
+    const q = query(
+      collection(db, this.collectionName),
+      where('stakeholderId', '==', stakeholderId),
+      where('teamId', '==', teamId)
+    )
+    const querySnapshot = await getDocs(q)
+    if (querySnapshot.empty) return null
+    const doc = querySnapshot.docs[0]
+    return StakeholderTeam.create({ id: doc.id, ...doc.data() } as StakeholderTeamProps)
+  }
+
   async delete(id: string): Promise<void> {
     await deleteDoc(doc(db, this.collectionName, id))
   }

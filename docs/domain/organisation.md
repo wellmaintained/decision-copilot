@@ -56,6 +56,37 @@ erDiagram
     }
 ```
 
+```mermaid
+erDiagram
+    Organisation ||--o{ Team : contains
+    Stakeholder }|--o{ StakeholderTeam : "belongs to"
+    StakeholderTeam }o--|| Team : "references"
+    
+    Organisation {
+        string id "Firestore ID"
+        string name
+    }
+    
+    Team {
+        string id "Firestore ID"
+        string name
+        string organisationId
+    }
+    
+    StakeholderTeam {
+        string id "Firestore ID"
+        string stakeholderId
+        string teamId
+        string organisationId
+    }
+    
+    Stakeholder {
+        string displayName
+        string email
+        string photoURL
+    }
+```
+
 ## Domain Model
 
 ```typescript

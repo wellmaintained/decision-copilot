@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Organisation } from '@/lib/domain/Organisation'
+import { Organisation, OrganisationProps } from '@/lib/domain/Organisation'
 import { FirestoreOrganisationsRepository } from '@/lib/infrastructure/firestoreOrganisationsRepository'
 import { useAuth } from '@/hooks/useAuth'
 
@@ -8,6 +8,11 @@ export function useOrganisations() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<Error | null>(null)
   const { user } = useAuth()
+  const addOrganisation = async (organisation: OrganisationProps) => {
+    const repository = new FirestoreOrganisationsRepository()
+    const newOrg = await repository.create(organisation)
+    setOrganisations([...organisations, newOrg])
+  }
 
   useEffect(() => {
     if (!user?.uid) return
@@ -17,10 +22,7 @@ export function useOrganisations() {
       try {
         const repository = new FirestoreOrganisationsRepository()
         const stakeholderOrgs = await repository.getForStakeholder(user.uid)
-        console.log("current users' stakeholderOrgs", stakeholderOrgs)
-
         setOrganisations(stakeholderOrgs)
-
       } catch (err) {
         console.error(err);
         setError(err instanceof Error ? err : new Error('Failed to fetch organisations for user: ' + user?.uid))
@@ -33,5 +35,5 @@ export function useOrganisations() {
     fetchOrganisation()
   }, [user?.uid])
 
-  return { organisations, loading, error }
+  return { organisations, setOrganisations, addOrganisation, loading, error }
 } 
