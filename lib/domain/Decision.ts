@@ -1,23 +1,23 @@
-export type DecisionStatus = 'draft' | 'published'
-export type DecisionMethod = 'autocratic' | 'consent'
-export type StakeholderRole = 'decider' | 'advisor' | 'observer'
-export type Cost = 'low' | 'medium' | 'high'
-export type Reversibility = 'hat' | 'haircut' | 'tattoo'
+export type DecisionStatus = "draft" | "published";
+export type DecisionMethod = "autocratic" | "consent";
+export type StakeholderRole = "decider" | "advisor" | "observer";
+export type Cost = "low" | "medium" | "high";
+export type Reversibility = "hat" | "haircut" | "tattoo";
 
 export interface Criterion {
-  id: string
-  title: string
+  id: string;
+  title: string;
 }
 
 export interface Option {
-  id: string
-  title: string
+  id: string;
+  title: string;
 }
 
 export type DecisionStakeholderRole = {
   stakeholder_id: string;
-  role: 'decider' | 'observer';
-}
+  role: "decider" | "observer";
+};
 
 export type DecisionProps = {
   id: string;
@@ -33,8 +33,8 @@ export type DecisionProps = {
   stakeholders: DecisionStakeholderRole[];
   status: string;
   updatedAt?: Date;
-  user: string;
-}
+  driverStakeholderId: string;
+};
 
 export class Decision {
   readonly id: string;
@@ -50,7 +50,7 @@ export class Decision {
   readonly stakeholders: DecisionStakeholderRole[];
   readonly status: string;
   readonly updatedAt?: Date;
-  readonly user: string;
+  readonly driverStakeholderId: string;
 
   private constructor(props: DecisionProps) {
     this.id = props.id;
@@ -66,7 +66,7 @@ export class Decision {
     this.stakeholders = props.stakeholders;
     this.status = props.status;
     this.updatedAt = props.updatedAt;
-    this.user = props.user;
+    this.driverStakeholderId = props.driverStakeholderId;
   }
 
   static create(props: DecisionProps): Decision {

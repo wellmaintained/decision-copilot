@@ -36,6 +36,18 @@ import {
 } from "@/lib/domain/Decision";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Stakeholder } from "@/lib/domain/Stakeholder";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+} from "@/components/ui/command";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 
 interface StakeholderGroupProps {
   teamName: string;
@@ -127,6 +139,7 @@ export default function DecisionIdentityPage() {
     updateDecisionCost,
     updateDecisionReversibility,
     updateStakeholders,
+    updateDecisionDriver,
   } = useDecisions();
   const {
     stakeholders,
@@ -140,6 +153,7 @@ export default function DecisionIdentityPage() {
     [],
   );
   const [expandedTeams, setExpandedTeams] = useState<string[]>([teamId]); // Current team is expanded by default
+  const [driverOpen, setDriverOpen] = useState(false);
 
   const decision = decisions?.find((d) => d.id === decisionId);
   const currentOrg = organisations?.find((org) => org.id === organisationId);
@@ -151,6 +165,14 @@ export default function DecisionIdentityPage() {
       );
     }
   }, [decision]);
+
+  useEffect(() => {
+    if (decision?.driverStakeholderId) {
+      setSelectedStakeholders((prev) =>
+        Array.from(new Set([...prev, decision.driverStakeholderId])),
+      );
+    }
+  }, [decision?.driverStakeholderId]);
 
   if (
     decisionsLoading ||
@@ -174,6 +196,11 @@ export default function DecisionIdentityPage() {
   }
 
   const handleStakeholderChange = (stakeholderId: string, checked: boolean) => {
+    // Don't allow unchecking the driver
+    if (!checked && stakeholderId === decision.driverStakeholderId) {
+      return;
+    }
+
     const newSelectedStakeholders = checked
       ? [...selectedStakeholders, stakeholderId]
       : selectedStakeholders.filter((id) => id !== stakeholderId);
@@ -220,6 +247,15 @@ export default function DecisionIdentityPage() {
     {} as Record<string, { name: string; stakeholders: typeof stakeholders }>,
   );
 
+  // Get unique stakeholders for the organization
+  const uniqueOrgStakeholders = Array.from(
+    new Map(
+      Object.values(stakeholdersByTeam)
+        .flatMap(({ stakeholders }) => stakeholders)
+        .map((stakeholder) => [stakeholder.id, stakeholder]),
+    ).values(),
+  ).sort((a, b) => a.displayName.localeCompare(b.displayName));
+
   return (
     <>
       <div className="space-y-3">
@@ -233,6 +269,100 @@ export default function DecisionIdentityPage() {
 
       <Card className="p-8 space-y-8">
         <div className="space-y-6">
+          <div className="space-y-2">
+            <Label htmlFor="driver" className="text-base text-muted-foreground">
+              Driver
+            </Label>
+            <Popover open={driverOpen} onOpenChange={setDriverOpen}>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  role="combobox"
+                  aria-expanded={driverOpen}
+                  className="w-full justify-between"
+                >
+                  {decision.driverStakeholderId ? (
+                    (() => {
+                      const driverStakeholder = uniqueOrgStakeholders.find(
+                        (s) => s.id === decision.driverStakeholderId,
+                      );
+                      return (
+                        <>
+                          <div className="flex items-center gap-2">
+                            <Avatar className="h-6 w-6">
+                              <AvatarImage src={driverStakeholder?.photoURL} />
+                              <AvatarFallback>
+                                {driverStakeholder?.displayName
+                                  ?.split(" ")
+                                  .map((n) => n[0])
+                                  .join("") || "?"}
+                              </AvatarFallback>
+                            </Avatar>
+                            {driverStakeholder?.displayName}
+                          </div>
+                          <ChevronDown className="h-4 w-4 shrink-0 opacity-50" />
+                        </>
+                      );
+                    })()
+                  ) : (
+                    <>
+                      <span>Select driver...</span>
+                      <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                    </>
+                  )}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-full p-0">
+                <Command>
+                  <CommandInput placeholder="Search stakeholders..." />
+                  <CommandEmpty>No stakeholder found.</CommandEmpty>
+                  <CommandGroup>
+                    {uniqueOrgStakeholders.map((stakeholder) => (
+                      <CommandItem
+                        key={stakeholder.id}
+                        onSelect={() => {
+                          // Update the driver
+                          updateDecisionDriver(decision, stakeholder.id);
+
+                          // Add driver to stakeholders if not already present
+                          if (!selectedStakeholders.includes(stakeholder.id)) {
+                            const newStakeholders = [
+                              ...selectedStakeholders,
+                              stakeholder.id,
+                            ];
+                            setSelectedStakeholders(newStakeholders);
+                            updateStakeholders(
+                              decision,
+                              newStakeholders.map((id) => ({
+                                stakeholder_id: id,
+                                role: "observer",
+                              })),
+                            );
+                          }
+
+                          setDriverOpen(false);
+                        }}
+                      >
+                        <Avatar className="h-6 w-6 mr-2">
+                          <AvatarImage src={stakeholder.photoURL} />
+                          <AvatarFallback>
+                            {stakeholder.displayName
+                              ? stakeholder.displayName
+                                  .split(" ")
+                                  .map((n) => n[0])
+                                  .join("")
+                              : "?"}
+                          </AvatarFallback>
+                        </Avatar>
+                        {stakeholder.displayName}
+                      </CommandItem>
+                    ))}
+                  </CommandGroup>
+                </Command>
+              </PopoverContent>
+            </Popover>
+          </div>
+
           <div className="space-y-2">
             <Label htmlFor="title" className="text-base text-muted-foreground">
               Title

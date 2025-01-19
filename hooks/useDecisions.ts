@@ -1,7 +1,14 @@
-import { useState, useEffect } from 'react';
-import { useParams } from 'next/navigation';
-import { Decision, Cost, Reversibility, DecisionStakeholderRole, DecisionProps } from '@/lib/domain/Decision';
-import { FirestoreDecisionsRepository } from '@/lib/infrastructure/firestoreDecisionsRepository';
+import { useState, useEffect } from "react";
+import { useParams } from "next/navigation";
+import {
+  Decision,
+  Cost,
+  Reversibility,
+  DecisionStakeholderRole,
+  DecisionProps,
+} from "@/lib/domain/Decision";
+import { FirestoreDecisionsRepository } from "@/lib/infrastructure/firestoreDecisionsRepository";
+import { DecisionScope } from "@/lib/domain/decisionsRepository";
 
 const decisionsRepository = new FirestoreDecisionsRepository();
 
@@ -15,7 +22,7 @@ export function useDecisions() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
-  const scope = { organisationId, teamId, projectId };
+  const scope: DecisionScope = { organisationId, teamId, projectId };
 
   useEffect(() => {
     const unsubscribe = decisionsRepository.subscribeToAll(
@@ -28,15 +35,17 @@ export function useDecisions() {
         setError(error);
         setLoading(false);
       },
-      scope
+      scope,
     );
 
     return () => unsubscribe();
   }, [organisationId, teamId, projectId]);
 
-  const createDecision = async (initialData: Partial<Omit<DecisionProps, 'id'>>) => {
+  const createDecision = async (
+    initialData: Partial<Omit<DecisionProps, "id">>,
+  ) => {
     try {
-      return await decisionsRepository.createDecision(initialData, scope);
+      return await decisionsRepository.create(initialData, scope);
     } catch (error) {
       setError(error as Error);
       throw error;
@@ -45,12 +54,12 @@ export function useDecisions() {
 
   const updateDecisionTitle = async (decision: Decision, title: string) => {
     try {
-      await decisionsRepository.updateDecision(
+      await decisionsRepository.update(
         decision.with({
           title,
           updatedAt: new Date(),
         }),
-        scope
+        scope,
       );
     } catch (error) {
       setError(error as Error);
@@ -58,14 +67,17 @@ export function useDecisions() {
     }
   };
 
-  const updateDecisionDescription = async (decision: Decision, description: string) => {
+  const updateDecisionDescription = async (
+    decision: Decision,
+    description: string,
+  ) => {
     try {
-      await decisionsRepository.updateDecision(
+      await decisionsRepository.update(
         decision.with({
           description,
           updatedAt: new Date(),
         }),
-        scope
+        scope,
       );
     } catch (error) {
       setError(error as Error);
@@ -75,12 +87,12 @@ export function useDecisions() {
 
   const updateDecisionCost = async (decision: Decision, cost: Cost) => {
     try {
-      await decisionsRepository.updateDecision(
+      await decisionsRepository.update(
         decision.with({
           cost,
           updatedAt: new Date(),
         }),
-        scope
+        scope,
       );
     } catch (error) {
       setError(error as Error);
@@ -88,14 +100,17 @@ export function useDecisions() {
     }
   };
 
-  const updateDecisionReversibility = async (decision: Decision, reversibility: Reversibility) => {
+  const updateDecisionReversibility = async (
+    decision: Decision,
+    reversibility: Reversibility,
+  ) => {
     try {
-      await decisionsRepository.updateDecision(
+      await decisionsRepository.update(
         decision.with({
           reversibility,
           updatedAt: new Date(),
         }),
-        scope
+        scope,
       );
     } catch (error) {
       setError(error as Error);
@@ -103,14 +118,27 @@ export function useDecisions() {
     }
   };
 
-  const updateStakeholders = async (decision: Decision, stakeholders: DecisionStakeholderRole[]) => {
+  const updateDecisionDriver = async (
+    decision: Decision,
+    driverStakeholderId: string,
+  ) => {
+    await decisionsRepository.update(
+      decision.with({ driverStakeholderId }),
+      scope,
+    );
+  };
+
+  const updateStakeholders = async (
+    decision: Decision,
+    stakeholders: DecisionStakeholderRole[],
+  ) => {
     try {
-      await decisionsRepository.updateDecision(
+      await decisionsRepository.update(
         decision.with({
           stakeholders,
           updatedAt: new Date(),
         }),
-        scope
+        scope,
       );
     } catch (error) {
       setError(error as Error);
@@ -120,7 +148,7 @@ export function useDecisions() {
 
   const deleteDecision = async (decisionId: string) => {
     try {
-      await decisionsRepository.deleteDecision(decisionId, scope);
+      await decisionsRepository.delete(decisionId, scope);
     } catch (error) {
       setError(error as Error);
       throw error;
@@ -136,7 +164,8 @@ export function useDecisions() {
     updateDecisionDescription,
     updateDecisionCost,
     updateDecisionReversibility,
+    updateDecisionDriver,
     updateStakeholders,
     deleteDecision,
   };
-} 
+}
