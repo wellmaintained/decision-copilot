@@ -102,7 +102,7 @@ export class FirestoreDecisionsRepository implements DecisionsRepository {
       reversibility: decision.reversibility,
       stakeholders: decision.stakeholders,
       status: decision.status,
-      updatedAt: Timestamp.fromDate(decision.updatedAt || new Date()),
+      updatedAt: Timestamp.fromDate(new Date()),
       driverStakeholderId: decision.driverStakeholderId,
     });
   }
@@ -148,29 +148,13 @@ export class FirestoreDecisionsRepository implements DecisionsRepository {
   }
 
   async create(
-    initialData: Partial<Omit<DecisionProps, "id">>,
+    initialData: DecisionProps,
     scope: DecisionScope,
   ): Promise<Decision> {
     const docRef = doc(this.getCollectionRef(scope));
-    const now = Timestamp.fromDate(new Date());
-
-    const data = {
-      title: initialData.title || "",
-      description: initialData.description || "",
-      cost: initialData.cost || "low",
-      createdAt: now,
-      criteria: initialData.criteria || [],
-      options: initialData.options || [],
-      decision: initialData.decision,
-      decisionMethod: initialData.decisionMethod,
-      reversibility: initialData.reversibility || "hat",
-      stakeholders: initialData.stakeholders || [],
-      status: initialData.status || "draft",
-      updatedAt: now,
-      driverStakeholderId: initialData.driverStakeholderId || "",
-    };
-
-    await setDoc(docRef, data);
+    initialData.updatedAt = Timestamp.fromDate(new Date()).toDate();
+    const { id, ...dataWithoutId } = initialData;
+    await setDoc(docRef, dataWithoutId);
 
     return this.decisionFromFirestore(await getDoc(docRef));
   }

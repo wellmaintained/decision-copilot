@@ -5,10 +5,10 @@ import {
   Cost,
   Reversibility,
   DecisionStakeholderRole,
-  DecisionProps,
 } from "@/lib/domain/Decision";
 import { FirestoreDecisionsRepository } from "@/lib/infrastructure/firestoreDecisionsRepository";
 import { DecisionScope } from "@/lib/domain/decisionsRepository";
+import { useAuth } from "@/hooks/useAuth";
 
 const decisionsRepository = new FirestoreDecisionsRepository();
 
@@ -21,6 +21,7 @@ export function useDecisions() {
   const [decisions, setDecisions] = useState<Decision[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
+  const { user } = useAuth();
 
   const scope: DecisionScope = { organisationId, teamId, projectId };
 
@@ -41,11 +42,15 @@ export function useDecisions() {
     return () => unsubscribe();
   }, [organisationId, teamId, projectId]);
 
-  const createDecision = async (
-    initialData: Partial<Omit<DecisionProps, "id">>,
-  ) => {
+  const createDecision = async () => {
     try {
-      return await decisionsRepository.create(initialData, scope);
+      if (!user) {
+        throw new Error("Unable to create new decision for currently logged in user: User not found");
+      }
+      const emptyDecision = Decision.createEmptyDecision({
+        driverStakeholderId: user.uid,
+      });
+      return await decisionsRepository.create(emptyDecision, scope);
     } catch (error) {
       setError(error as Error);
       throw error;

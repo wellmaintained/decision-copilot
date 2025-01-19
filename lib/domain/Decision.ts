@@ -73,6 +73,31 @@ export class Decision {
     return new Decision(props);
   }
 
+  static createEmptyDecision(defaultOverrides: Partial<DecisionProps> = {}): Decision {
+    const now = new Date();
+    const defaults: DecisionProps = {
+      id: 'unsaved',
+      title: '',
+      description: '',
+      cost: 'low' as Cost,
+      createdAt: now,
+      criteria: [],
+      options: [],
+      reversibility: 'hat' as Reversibility,
+      stakeholders: [],
+      status: 'draft',
+      updatedAt: now,
+      driverStakeholderId: '',
+      decision: '',
+      decisionMethod: '',
+    };
+
+    return new Decision({
+      ...defaults,
+      ...defaultOverrides,
+    });
+  }
+
   with(props: Partial<DecisionProps>): Decision {
     return Decision.create({
       ...this,
