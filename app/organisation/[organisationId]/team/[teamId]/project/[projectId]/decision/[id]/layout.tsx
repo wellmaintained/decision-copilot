@@ -7,11 +7,18 @@ import WorkflowProgress from '@/components/workflow-progress'
 interface DecisionLayoutProps {
   children: ReactNode
   params: {
+    organisationId: string
+    teamId: string
+    projectId: string
     id: string
   }
 }
 
-export default function DecisionLayout({ children }: DecisionLayoutProps) {
+export default function DecisionLayout({ 
+  children 
+}: {
+  children: ReactNode
+}) {
   const pathname = usePathname()
   
   const getCurrentStep = () => {

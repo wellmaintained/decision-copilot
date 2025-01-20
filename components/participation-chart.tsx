@@ -111,7 +111,7 @@ export function ParticipationChart() {
                   angle={-60}
                   height={80}
                   interval={0}
-                  tick={<CustomTick angle={-60} />}
+                  tick={(props) => <CustomTick {...props} angle={-60} />}
                 />
                 <YAxis />
                 <ChartTooltip content={<ChartTooltipContent />} />
