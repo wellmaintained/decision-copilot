@@ -49,13 +49,12 @@ export class FirestoreOrganisationsRepository implements OrganisationsRepository
               stakeholders: decision.stakeholders,
               status: decision.status,
               updatedAt: decision.updatedAt ? Timestamp.fromDate(decision.updatedAt) : null,
-              user: decision.user
+              driverStakeholderId: decision.driverStakeholderId
             }
           )
           return Decision.create({
             ...decision,
-            id: decisionDoc.id,
-            project_id: projectDoc.id
+            id: decisionDoc.id
           })
         }))
 
@@ -119,12 +118,11 @@ export class FirestoreOrganisationsRepository implements OrganisationsRepository
             options: data.options || [],
             decision: data.decision,
             decisionMethod: data.decisionMethod,
-            project_id: projectDoc.id,
             reversibility: data.reversibility,
             stakeholders: data.stakeholders || [],
             status: data.status || 'draft',
             updatedAt: data.updatedAt ? data.updatedAt.toDate() : undefined,
-            user: data.user
+            driverStakeholderId: data.driverStakeholderId
           })
         })
 
