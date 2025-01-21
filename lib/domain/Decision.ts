@@ -1,3 +1,15 @@
+import { Search, Settings, Lightbulb, Zap, BookOpen } from 'lucide-react'
+
+export const DecisionWorkflowSteps = [
+  { icon: Search, label: 'Identify' },
+  { icon: Settings, label: 'Method' },
+  { icon: Lightbulb, label: 'Options' },
+  { icon: Zap, label: 'Choose' },
+  { icon: BookOpen, label: 'Publish' },
+] as const;
+
+export type DecisionWorkflowStep = typeof DecisionWorkflowSteps[number];
+
 export type DecisionStatus = "draft" | "published";
 export type DecisionMethod = "autocratic" | "consent";
 export type StakeholderRole = "decider" | "advisor" | "observer";
@@ -51,6 +63,22 @@ export class Decision {
   readonly status: string;
   readonly updatedAt?: Date;
   readonly driverStakeholderId: string;
+
+  get currentStep(): DecisionWorkflowStep {
+    if (this.status === 'published') {
+      return DecisionWorkflowSteps[4]; // Published step
+    }
+    if (this.decision) {
+      return DecisionWorkflowSteps[3]; // Choose step
+    }
+    if (this.options.length > 0) {
+      return DecisionWorkflowSteps[2]; // Options step
+    }
+    if (this.decisionMethod) {
+      return DecisionWorkflowSteps[1]; // Method step
+    }
+    return DecisionWorkflowSteps[0]; // Identify step (default)
+  }
 
   private constructor(props: DecisionProps) {
     this.id = props.id;

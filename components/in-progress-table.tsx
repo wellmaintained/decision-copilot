@@ -26,6 +26,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
+import { WorkflowProgress } from "@/components/ui/workflow-progress"
 import { cn } from "@/lib/utils"
 import { formatDistanceToNow } from "date-fns"
 
@@ -107,33 +108,6 @@ const inProgressDecisions = [
     lastActivity: "2024-01-15T11:05:00Z",
   },
 ]
-
-function WorkflowProgress({ currentStep }: { currentStep: number }) {
-  return (
-    <div className="flex gap-1 items-center">
-      {workflowSteps.map((step, index) => {
-        const StepIcon = step.icon
-        const isCompleted = index + 1 < currentStep
-        const isActive = index + 1 === currentStep
-
-        return (
-          <div
-            key={step.label}
-            className={cn(
-              "relative group",
-              isCompleted || isActive ? "text-primary" : "text-muted-foreground/40"
-            )}
-          >
-            <StepIcon className="h-4 w-4" />
-            <div className="absolute hidden group-hover:block bg-popover text-popover-foreground rounded px-2 py-1 text-xs -top-8 left-1/2 -translate-x-1/2 whitespace-nowrap shadow-md">
-              {step.label}
-            </div>
-          </div>
-        )
-      })}
-    </div>
-  )
-}
 
 export function InProgressTable() {
   const [open, setOpen] = React.useState(false)

@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Pencil, Trash2, FileText, Users, Clock } from 'lucide-react'
 import Link from 'next/link'
 import { useParams } from 'next/navigation';
+import { WorkflowProgress } from '@/components/ui/workflow-progress';
 
 export default function ProjectDecisionsPage() {
   const params = useParams();
@@ -57,6 +58,9 @@ export default function ProjectDecisionsPage() {
                     </span>
                   </div>
                   <div className="flex items-center gap-4 mt-2 text-sm text-gray-500">
+                    <div className="flex items-center gap-1">
+                      <WorkflowProgress currentStep={decision.currentStep} />
+                    </div>
                     <div className="flex items-center gap-1">
                       <Users className="h-4 w-4" />
                       <span>{decision.stakeholders.length} stakeholders</span>
