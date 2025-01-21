@@ -29,6 +29,7 @@ import {
 import { WorkflowProgress } from "@/components/ui/workflow-progress"
 import { cn } from "@/lib/utils"
 import { formatDistanceToNow } from "date-fns"
+import { DecisionWorkflowSteps } from "@/lib/domain/Decision"
 
 const projects = [
   { value: "all", label: "All Projects" },
@@ -187,7 +188,7 @@ export function InProgressTable() {
                   </div>
                 </TableCell>
                 <TableCell>
-                  <WorkflowProgress currentStep={decision.currentStep} />
+                  <WorkflowProgress currentStep={DecisionWorkflowSteps[decision.currentStep]} />
                 </TableCell>
                 <TableCell className="text-muted-foreground">
                   {formatDistanceToNow(new Date(decision.lastActivity), { addSuffix: true })}
