@@ -63,10 +63,10 @@ export default function LoginPage() {
             </svg>
             Sign in with Google
           </Button>
-          <Button variant="outline" className="w-full" onClick={() => {}}>
+          {/* <Button variant="outline" className="w-full" onClick={() => {}}>
             <Github className="mr-2 h-4 w-4" />
             Sign in with GitHub
-          </Button>
+          </Button> */}
           <div className="text-center text-sm text-muted-foreground">
             By continuing, you agree to our{" "}
             <a href="/terms-of-service" className="underline underline-offset-4 hover:text-primary">
