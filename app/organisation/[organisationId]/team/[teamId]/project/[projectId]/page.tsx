@@ -56,9 +56,6 @@ export default function ProjectDecisionsPage() {
                       {decision.cost}
                     </span>
                   </div>
-                  <p className="text-sm text-gray-600">
-                    {decision.description}
-                  </p>
                   <div className="flex items-center gap-4 mt-2 text-sm text-gray-500">
                     <div className="flex items-center gap-1">
                       <Users className="h-4 w-4" />
