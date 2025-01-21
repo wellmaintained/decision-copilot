@@ -15,17 +15,17 @@ export function useOrganisations() {
   }
 
   useEffect(() => {
-    if (!user?.uid) return
+    if (!user?.email) return
     const fetchOrganisation = async () => {
-      if (!user?.uid) return
+      if (!user?.email) return
 
       try {
         const repository = new FirestoreOrganisationsRepository()
-        const stakeholderOrgs = await repository.getForStakeholder(user.uid)
+        const stakeholderOrgs = await repository.getForStakeholder(user.email)
         setOrganisations(stakeholderOrgs)
       } catch (err) {
         console.error(err);
-        setError(err instanceof Error ? err : new Error('Failed to fetch organisations for user: ' + user?.uid))
+        setError(err instanceof Error ? err : new Error('Failed to fetch organisations for user: ' + user?.email))
       } finally {
         setLoading(false)
       }
@@ -33,7 +33,7 @@ export function useOrganisations() {
 
     // createOrganisation()
     fetchOrganisation()
-  }, [user?.uid])
+  }, [user?.email])
 
   return { organisations, setOrganisations, addOrganisation, loading, error }
 } 

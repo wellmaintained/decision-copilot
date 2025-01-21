@@ -1,12 +1,19 @@
-import { collection, doc, getDoc, getDocs, addDoc, updateDoc, deleteDoc, query, where, Timestamp } from 'firebase/firestore'
+import { collection, doc, getDoc, getDocs, addDoc, updateDoc, deleteDoc, query, where, Timestamp, limit } from 'firebase/firestore'
 import { db } from '@/lib/firebase'
 import { Organisation, OrganisationProps } from '@/lib/domain/Organisation'
 import { OrganisationsRepository } from '@/lib/domain/organisationsRepository'
 import { Team } from '@/lib/domain/Team'
 import { Project } from '@/lib/domain/Project'
 import { Decision } from '@/lib/domain/Decision'
+import { FirestoreStakeholdersRepository } from '@/lib/infrastructure/firestoreStakeholdersRepository'
 
 export class FirestoreOrganisationsRepository implements OrganisationsRepository {
+  private stakeholdersRepository: FirestoreStakeholdersRepository
+
+  constructor() {
+    this.stakeholdersRepository = new FirestoreStakeholdersRepository()
+  }
+
   async create(props: Omit<OrganisationProps, 'id'>): Promise<Organisation> {
     // Create the main organisation document
     const orgDoc = await addDoc(collection(db, 'organisations'), {
@@ -152,11 +159,18 @@ export class FirestoreOrganisationsRepository implements OrganisationsRepository
     })
   }
 
-  async getForStakeholder(stakeholderId: string): Promise<Organisation[]> {
-    // First get all stakeholderTeams for this stakeholder
+  async getForStakeholder(stakeholderEmail: string): Promise<Organisation[]> {
+    // First lookup the stakeholder by email
+    const stakeholder = await this.stakeholdersRepository.getByEmail(stakeholderEmail)
+    
+    if (!stakeholder) {
+      throw new Error('Stakeholder with email <<' + stakeholderEmail + '>> not found')
+    }
+
+    // Then get all stakeholderTeams for this stakeholder
     const stakeholderTeamsQuery = query(
       collection(db, 'stakeholderTeams'),
-      where('stakeholderId', '==', stakeholderId)
+      where('stakeholderId', '==', stakeholder.id)
     )
     const stakeholderTeamsSnap = await getDocs(stakeholderTeamsQuery)
     

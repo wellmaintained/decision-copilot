@@ -1,4 +1,4 @@
-export type StakeholderProps = {
+export interface StakeholderProps {
   id: string;
   displayName: string;
   email: string;
@@ -19,6 +19,17 @@ export class Stakeholder {
   }
 
   static create(props: StakeholderProps): Stakeholder {
+    if (!props.email) {
+      throw new Error('Email is required');
+    }
+    if (!this.isValidEmail(props.email)) {
+      throw new Error('Invalid email format');
+    }
     return new Stakeholder(props);
+  }
+
+  private static isValidEmail(email: string): boolean {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
   }
 } 

@@ -11,13 +11,16 @@ export function useStakeholderTeams() {
   const { user } = useAuth()
 
   useEffect(() => {
-    if (!user?.uid) return
+    if (!user?.email) return
 
     const fetchStakeholderTeams = async () => {
       try {
+        if (!user?.email) {
+          throw new Error('User email is required')
+        }
         const stakeholderTeamsRepository = new FirestoreStakeholderTeamsRepository();
         const orgRepository = new FirestoreOrganisationsRepository();
-        const stakeholderOrgs = await orgRepository.getForStakeholder(user.uid);
+        const stakeholderOrgs = await orgRepository.getForStakeholder(user.email);
         const teams = await stakeholderTeamsRepository.getByOrganisation(stakeholderOrgs);
         setStakeholderTeams(teams)
       } catch (err) {
@@ -29,7 +32,7 @@ export function useStakeholderTeams() {
     }
 
     fetchStakeholderTeams()
-  }, [user?.uid])
+  }, [user?.email])
 
   const addStakeholderTeam = async (props: Omit<StakeholderTeamProps, 'id'>) => {
     const repository = new FirestoreStakeholderTeamsRepository()

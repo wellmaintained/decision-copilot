@@ -11,7 +11,11 @@ import {
   getDoc,
   updateDoc,
   deleteDoc,
+  getDocs,
+  where,
+  limit,
 } from 'firebase/firestore';
+import { EmailAlreadyExistsError } from '@/lib/domain/stakeholdersRepository';
 
 /**
  * Single Responsibility:
@@ -25,37 +29,78 @@ export class FirestoreStakeholdersRepository implements StakeholdersRepository {
     this.collectionPath = collectionPath;
   }
 
-  async create(props: StakeholderProps): Promise<Stakeholder> {
-    const colRef = collection(db, this.collectionPath);
-    const docRef = await addDoc(colRef, {
-      displayName: props.displayName,
+  async create(props: Omit<StakeholderProps, 'id'>): Promise<Stakeholder> {
+    // Check if email already exists
+    const existingStakeholder = await this.getByEmail(props.email);
+    if (existingStakeholder) {
+      throw new EmailAlreadyExistsError(props.email);
+    }
+
+    // Create new stakeholder
+    const docRef = await addDoc(collection(db, this.collectionPath), {
       email: props.email,
       photoURL: props.photoURL,
     });
-    const docSnap = await getDoc(docRef);
-    const data = docSnap.data()!;
+
     return Stakeholder.create({
       id: docRef.id,
-      displayName: data.displayName,
+      email: props.email,
+      displayName: props.displayName,
+      photoURL: props.photoURL,
+    });
+  }
+
+  async getById(id: string): Promise<Stakeholder | null> {
+    const docRef = doc(db, this.collectionPath, id);
+    const docSnap = await getDoc(docRef);
+
+    if (!docSnap.exists()) {
+      return null;
+    }
+
+    const data = docSnap.data();
+    return Stakeholder.create({
+      id: docSnap.id,
       email: data.email,
+      displayName: data.displayName,
       photoURL: data.photoURL,
     });
   }
 
-  async update(stakeholder: Stakeholder): Promise<Stakeholder> {
+  async getByEmail(email: string): Promise<Stakeholder | null> {
+    const q = query(
+      collection(db, this.collectionPath),
+      where('email', '==', email),
+      limit(1)
+    );
+    const querySnapshot = await getDocs(q);
+
+    if (querySnapshot.empty) {
+      return null;
+    }
+
+    const doc = querySnapshot.docs[0];
+    const data = doc.data();
+    return Stakeholder.create({
+      id: doc.id,
+      email: data.email,
+      displayName: data.displayName,
+      photoURL: data.photoURL,
+    });
+  }
+
+  async update(stakeholder: Stakeholder): Promise<void> {
+    // Check if new email already exists for a different stakeholder
+    const existingStakeholder = await this.getByEmail(stakeholder.email);
+    if (existingStakeholder && existingStakeholder.id !== stakeholder.id) {
+      throw new EmailAlreadyExistsError(stakeholder.email);
+    }
+
     const docRef = doc(db, this.collectionPath, stakeholder.id);
     await updateDoc(docRef, {
       displayName: stakeholder.displayName,
       email: stakeholder.email,
       photoURL: stakeholder.photoURL,
-    });
-    const docSnap = await getDoc(docRef);
-    const data = docSnap.data()!;
-    return Stakeholder.create({
-      id: docSnap.id,
-      displayName: data.displayName,
-      email: data.email,
-      photoURL: data.photoURL,
     });
   }
 
