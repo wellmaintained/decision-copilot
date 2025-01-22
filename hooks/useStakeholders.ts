@@ -18,8 +18,8 @@ export function useStakeholders() {
 
   const updateStakeholder = async (stakeholder: Stakeholder) => {
     const repository = new FirestoreStakeholdersRepository();
-    const updatedStakeholder = await repository.update(stakeholder);
-    setStakeholders(stakeholders.map(s => s.id === stakeholder.id ? updatedStakeholder : s))
+    await repository.update(stakeholder);
+    setStakeholders(stakeholders.map(s => s.id === stakeholder.id ? stakeholder : s))
   }
 
   const removeStakeholder = async (id: string) => {
