@@ -1,6 +1,7 @@
 import { StakeholdersRepository } from '@/lib/domain/stakeholdersRepository';
 import { Stakeholder, StakeholderProps } from '@/lib/domain/Stakeholder';
 import { db } from '@/lib/firebase';
+import { User } from 'firebase/auth';
 import {
   collection,
   query,
@@ -27,6 +28,16 @@ export class FirestoreStakeholdersRepository implements StakeholdersRepository {
 
   constructor(collectionPath = 'stakeholders') {
     this.collectionPath = collectionPath;
+  }
+
+  async updateStakeholderForUser(firebaseUser: User): Promise<void> {
+    const stakeholder = await this.getByEmail(firebaseUser.email || '');
+    if (stakeholder && stakeholder.photoURL !== firebaseUser.photoURL) {
+      await this.update(Stakeholder.create({
+        ...stakeholder,
+        photoURL: firebaseUser.photoURL || undefined
+      }));
+    }
   }
 
   async create(props: Omit<StakeholderProps, 'id'>): Promise<Stakeholder> {
