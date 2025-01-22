@@ -28,7 +28,7 @@ export interface Option {
 
 export type DecisionStakeholderRole = {
   stakeholder_id: string;
-  role: "decider" | "observer";
+  role: "decider" | "advisor" | "observer";
 };
 
 export type DecisionProps = {

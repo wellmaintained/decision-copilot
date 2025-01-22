@@ -5,6 +5,7 @@ import {
   Cost,
   Reversibility,
   DecisionStakeholderRole,
+  DecisionMethod,
 } from "@/lib/domain/Decision";
 import { FirestoreDecisionsRepository } from "@/lib/infrastructure/firestoreDecisionsRepository";
 import { DecisionScope } from "@/lib/domain/decisionsRepository";
@@ -160,6 +161,24 @@ export function useDecisions() {
     }
   };
 
+  const updateDecisionMethod = async (
+    decision: Decision,
+    method: DecisionMethod,
+  ) => {
+    try {
+      await decisionsRepository.update(
+        decision.with({
+          decisionMethod: method,
+          updatedAt: new Date(),
+        }),
+        scope,
+      );
+    } catch (error) {
+      setError(error as Error);
+      throw error;
+    }
+  };
+
   return {
     decisions,
     loading,
@@ -172,5 +191,6 @@ export function useDecisions() {
     updateDecisionDriver,
     updateStakeholders,
     deleteDecision,
+    updateDecisionMethod,
   };
 }

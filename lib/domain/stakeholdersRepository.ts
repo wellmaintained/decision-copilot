@@ -1,4 +1,5 @@
 import { Stakeholder, StakeholderProps } from '@/lib/domain/Stakeholder';
+import { Decision } from '@/lib/domain/Decision';
 
 export class EmailAlreadyExistsError extends Error {
   constructor(email: string) {
@@ -7,12 +8,17 @@ export class EmailAlreadyExistsError extends Error {
   }
 }
 
+export interface StakeholderWithRole extends Stakeholder {
+  role: "decider" | "advisor" | "observer";
+}
+
 export interface StakeholdersRepository {
   create(props: Omit<StakeholderProps, 'id'>): Promise<Stakeholder>;
   getById(id: string): Promise<Stakeholder | null>;
   getByEmail(email: string): Promise<Stakeholder | null>;
   update(stakeholder: Stakeholder): Promise<void>;
   delete(id: string): Promise<void>;
+  getStakeholdersForDecision(decision: Decision): Promise<StakeholderWithRole[]>;
   subscribeToAll(
     onData: (stakeholders: Stakeholder[]) => void,
     onError: (error: Error) => void

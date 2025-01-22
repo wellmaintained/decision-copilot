@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { Stakeholder, StakeholderProps } from '@/lib/domain/Stakeholder';
 import { FirestoreStakeholdersRepository } from '@/lib/infrastructure/firestoreStakeholdersRepository';
+import { Decision } from '@/lib/domain/Decision';
+import { StakeholderWithRole } from '@/lib/domain/stakeholdersRepository';
 
 const stakeholdersRepository = new FirestoreStakeholdersRepository();
 
@@ -28,6 +30,10 @@ export function useStakeholders() {
     setStakeholders(stakeholders.filter(s => s.id !== id));
   }
 
+  const getStakeholdersForDecision = async (decision: Decision): Promise<StakeholderWithRole[]> => {
+    return stakeholdersRepository.getStakeholdersForDecision(decision);
+  }
+
   useEffect(() => {
     const unsubscribe = stakeholdersRepository.subscribeToAll(
       (stakeholders) => {
@@ -49,6 +55,7 @@ export function useStakeholders() {
     addStakeholder,
     updateStakeholder,
     removeStakeholder,
+    getStakeholdersForDecision,
     loading,
     error,
   };

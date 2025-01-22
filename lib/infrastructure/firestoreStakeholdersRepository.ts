@@ -1,7 +1,8 @@
-import { StakeholdersRepository } from '@/lib/domain/stakeholdersRepository';
+import { StakeholdersRepository, EmailAlreadyExistsError, StakeholderWithRole } from '@/lib/domain/stakeholdersRepository';
 import { Stakeholder, StakeholderProps } from '@/lib/domain/Stakeholder';
 import { db } from '@/lib/firebase';
 import { User } from 'firebase/auth';
+import { Decision } from '@/lib/domain/Decision';
 import {
   collection,
   query,
@@ -16,7 +17,6 @@ import {
   where,
   limit,
 } from 'firebase/firestore';
-import { EmailAlreadyExistsError } from '@/lib/domain/stakeholdersRepository';
 
 /**
  * Single Responsibility:
@@ -118,6 +118,21 @@ export class FirestoreStakeholdersRepository implements StakeholdersRepository {
   async delete(id: string): Promise<void> {
     const docRef = doc(db, this.collectionPath, id);
     await deleteDoc(docRef);
+  }
+
+  async getStakeholdersForDecision(decision: Decision): Promise<StakeholderWithRole[]> {
+    const stakeholderIds = decision.stakeholders.map(s => s.stakeholder_id);
+    const stakeholders = await Promise.all(stakeholderIds.map(id => this.getById(id)));
+    
+    return stakeholders
+      .map((stakeholder, index) => {
+        if (!stakeholder) return null;
+        return {
+          ...stakeholder,
+          role: decision.stakeholders[index].role
+        };
+      })
+      .filter((s): s is StakeholderWithRole => s !== null);
   }
 
   subscribeToAll(

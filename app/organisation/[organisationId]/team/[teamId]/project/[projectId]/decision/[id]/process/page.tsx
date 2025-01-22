@@ -1,53 +1,58 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { RoleAssignment } from "@/components/role-assignment"
 import { DecisionMethodCard } from "@/components/decision-method-card"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import Link from "next/link"
 import { useParams } from 'next/navigation'
-
-const initialPeople = [
-  {
-    id: "1",
-    name: "David Laing",
-    image: "/placeholder.svg",
-    role: "decider" as const,
-  },
-  {
-    id: "2",
-    name: "Scott Muc",
-    image: "/placeholder.svg",
-    role: "advisor" as const,
-  },
-  // Add other people here...
-] as const
-
-type Person = {
-  id: string;
-  name: string;
-  image: string;
-  role: "decider" | "advisor" | "observer";
-}
+import { useDecisions } from "@/hooks/useDecisions"
+import { useStakeholderTeams } from "@/hooks/useStakeholderTeams"
+import { useOrganisations } from "@/hooks/useOrganisations"
+import { DecisionMethod } from "@/lib/domain/Decision"
 
 export default function DecisionProcess() {
   const params = useParams()
   const decisionId = params.id as string
-  const [people, setPeople] = useState<Person[]>(initialPeople.map(p => ({ ...p })))
-  const [selectedMethod, setSelectedMethod] = useState<"autocratic" | "consent">("consent")
+  const projectId = params.projectId as string
+  const teamId = params.teamId as string
+  const organisationId = params.organisationId as string
 
-  const handleRoleChange = (personId: string, role: Person["role"]) => {
-    setPeople((prev) =>
-      prev.map((person) =>
-        person.id === personId ? { ...person, role } : person
-      )
-    )
+  const { decisions, loading: decisionsLoading, error: decisionsError, updateDecisionMethod } = useDecisions()
+  const { stakeholderTeams, loading: stakeholderTeamsLoading } = useStakeholderTeams()
+  const { organisations, loading: organisationsLoading } = useOrganisations()
+
+  const [selectedMethod, setSelectedMethod] = useState<DecisionMethod>("consent")
+
+  const decision = decisions?.find(d => d.id === decisionId)
+
+  useEffect(() => {
+    if (decision?.decisionMethod) {
+      setSelectedMethod(decision.decisionMethod as DecisionMethod)
+    }
+  }, [decision?.decisionMethod])
+
+  if (decisionsLoading || stakeholderTeamsLoading || organisationsLoading) {
+    return <div>Loading...</div>
+  }
+
+  if (decisionsError) {
+    return <div>Error: {decisionsError.message}</div>
+  }
+
+  if (!decision) {
+    return <div>Decision not found</div>
+  }
+
+  const handleMethodSelect = (method: DecisionMethod) => {
+    setSelectedMethod(method)
+    updateDecisionMethod(decision, method)
   }
 
   return (
     <>
-      <RoleAssignment people={people} onRoleChange={handleRoleChange} />
+      <RoleAssignment decision={decision} />
       
       <Card>
         <CardHeader className="pb-3">
@@ -64,7 +69,7 @@ export default function DecisionProcess() {
               speedValue={90}
               buyInValue={10}
               isSelected={selectedMethod === "autocratic"}
-              onSelect={() => setSelectedMethod("autocratic")}
+              onSelect={() => handleMethodSelect("autocratic")}
             />
             <DecisionMethodCard
               title="Consent"
@@ -72,7 +77,7 @@ export default function DecisionProcess() {
               speedValue={80}
               buyInValue={90}
               isSelected={selectedMethod === "consent"}
-              onSelect={() => setSelectedMethod("consent")}
+              onSelect={() => handleMethodSelect("consent")}
             />
           </div>
         </CardContent>
@@ -80,7 +85,7 @@ export default function DecisionProcess() {
 
       <div className="flex justify-end pt-4">
         <Button size="lg" asChild>
-          <Link href={`/dashboard/decision/${decisionId}/decide`}>
+          <Link href={`/organisation/${organisationId}/team/${teamId}/project/${projectId}/decision/${decisionId}/decide`}>
             Next
           </Link>
         </Button>

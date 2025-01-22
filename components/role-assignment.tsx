@@ -1,23 +1,46 @@
 "use client"
 
+import { useEffect, useState } from "react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-
-interface Person {
-  id: string
-  name: string
-  image: string
-  role: "decider" | "advisor" | "observer"
-}
+import { Decision, DecisionStakeholderRole } from "@/lib/domain/Decision"
+import { useStakeholders } from "@/hooks/useStakeholders"
+import { useDecisions } from "@/hooks/useDecisions"
+import { StakeholderWithRole } from "@/lib/domain/stakeholdersRepository"
 
 interface RoleAssignmentProps {
-  people: Person[]
-  onRoleChange: (personId: string, role: Person["role"]) => void
+  decision: Decision
 }
 
-export function RoleAssignment({ people, onRoleChange }: RoleAssignmentProps) {
+export function RoleAssignment({ decision }: RoleAssignmentProps) {
+  const { getStakeholdersForDecision, loading: stakeholdersLoading } = useStakeholders()
+  const { updateStakeholders } = useDecisions()
+  const [stakeholdersWithRoles, setStakeholdersWithRoles] = useState<StakeholderWithRole[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    const loadStakeholders = async () => {
+      const stakeholders = await getStakeholdersForDecision(decision)
+      setStakeholdersWithRoles(stakeholders)
+      setLoading(false)
+    }
+    loadStakeholders()
+  }, [decision, getStakeholdersForDecision])
+
+  if (stakeholdersLoading || loading) {
+    return <div>Loading stakeholders...</div>
+  }
+
+  const handleRoleChange = (stakeholderId: string, role: DecisionStakeholderRole["role"]) => {
+    const updatedStakeholders = decision.stakeholders.map(s => ({
+      stakeholder_id: s.stakeholder_id,
+      role: s.stakeholder_id === stakeholderId ? role : s.role
+    }))
+    updateStakeholders(decision, updatedStakeholders)
+  }
+
   return (
     <Card>
       <CardHeader className="pb-3">
@@ -25,34 +48,34 @@ export function RoleAssignment({ people, onRoleChange }: RoleAssignmentProps) {
       </CardHeader>
       <CardContent>
         <div className="rounded-lg border">
-          {people.map((person) => (
+          {stakeholdersWithRoles.map((stakeholder) => (
             <div
-              key={person.id}
+              key={stakeholder.id}
               className="flex items-center justify-between border-b p-5 last:border-0"
             >
               <div className="flex items-center gap-4">
                 <Avatar className="h-10 w-10">
-                  <AvatarImage src={person.image} alt={person.name} />
-                  <AvatarFallback>{person.name[0]}</AvatarFallback>
+                  <AvatarImage src={stakeholder.photoURL} alt={stakeholder.displayName} />
+                  <AvatarFallback>{stakeholder.displayName[0]}</AvatarFallback>
                 </Avatar>
-                <span className="text-sm font-medium">{person.name}</span>
+                <span className="text-sm font-medium">{stakeholder.displayName}</span>
               </div>
               <RadioGroup
-                defaultValue={person.role}
-                onValueChange={(value) => onRoleChange(person.id, value as Person["role"])}
+                defaultValue={stakeholder.role}
+                onValueChange={(value) => handleRoleChange(stakeholder.id, value as DecisionStakeholderRole["role"])}
                 className="flex gap-6"
               >
                 <div className="flex items-center space-x-2.5">
-                  <RadioGroupItem value="decider" id={`${person.id}-decider`} className="h-5 w-5" />
-                  <Label htmlFor={`${person.id}-decider`} className="text-sm">Decider</Label>
+                  <RadioGroupItem value="decider" id={`${stakeholder.id}-decider`} className="h-5 w-5" />
+                  <Label htmlFor={`${stakeholder.id}-decider`} className="text-sm">Decider</Label>
                 </div>
                 <div className="flex items-center space-x-2.5">
-                  <RadioGroupItem value="advisor" id={`${person.id}-advisor`} className="h-5 w-5" />
-                  <Label htmlFor={`${person.id}-advisor`} className="text-sm">Advisor</Label>
+                  <RadioGroupItem value="advisor" id={`${stakeholder.id}-advisor`} className="h-5 w-5" />
+                  <Label htmlFor={`${stakeholder.id}-advisor`} className="text-sm">Advisor</Label>
                 </div>
                 <div className="flex items-center space-x-2.5">
-                  <RadioGroupItem value="observer" id={`${person.id}-observer`} className="h-5 w-5" />
-                  <Label htmlFor={`${person.id}-observer`} className="text-sm">Observer</Label>
+                  <RadioGroupItem value="observer" id={`${stakeholder.id}-observer`} className="h-5 w-5" />
+                  <Label htmlFor={`${stakeholder.id}-observer`} className="text-sm">Observer</Label>
                 </div>
               </RadioGroup>
             </div>
