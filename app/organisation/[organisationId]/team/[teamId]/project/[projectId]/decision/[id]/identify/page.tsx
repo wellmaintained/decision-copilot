@@ -126,6 +126,7 @@ function StakeholderGroup({
 export default function DecisionIdentityPage() {
   const params = useParams();
   const decisionId = params.id as string;
+  const projectId = params.projectId as string;
   const teamId = params.teamId as string;
   const organisationId = params.organisationId as string;
 
@@ -552,7 +553,7 @@ export default function DecisionIdentityPage() {
 
       <div className="flex justify-end pt-4">
         <Button size="lg" asChild>
-          <Link href={`/dashboard/decision/${decisionId}/process`}>Next</Link>
+          <Link href={`/organisation/${organisationId}/team/${teamId}/project/${projectId}/decision/${decisionId}/process`}>Next</Link>
         </Button>
       </div>
     </>
