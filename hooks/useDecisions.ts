@@ -9,31 +9,30 @@ import {
 } from "@/lib/domain/Decision";
 import { FirestoreDecisionsRepository } from "@/lib/infrastructure/firestoreDecisionsRepository";
 import { DecisionScope } from "@/lib/domain/decisionsRepository";
-import { useAuth } from "@/hooks/useAuth";
 
 const decisionsRepository = new FirestoreDecisionsRepository();
 
-export function useDecisions() {
+export function useDecision(decisionId: string) {
   const params = useParams();
   const organisationId = params.organisationId as string;
   const teamId = params.teamId as string;
   const projectId = params.projectId as string;
 
-  const [decisions, setDecisions] = useState<Decision[]>([]);
+  const [decision, setDecision] = useState<Decision | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
-  const { user } = useAuth();
 
   const scope: DecisionScope = { organisationId, teamId, projectId };
 
   useEffect(() => {
-    const unsubscribe = decisionsRepository.subscribeToAll(
-      (decisions) => {
-        setDecisions(decisions);
+    const unsubscribe = decisionsRepository.subscribeToOne(
+      decisionId,
+      (decision: Decision | null) => {
+        setDecision(decision);
         setLoading(false);
         setError(null);
       },
-      (error) => {
+      (error: Error) => {
         setError(error);
         setLoading(false);
       },
@@ -41,30 +40,13 @@ export function useDecisions() {
     );
 
     return () => unsubscribe();
-  }, [organisationId, teamId, projectId]);
+  }, [organisationId, teamId, projectId, decisionId]);
 
-  const createDecision = async () => {
+  const updateDecisionTitle = async (title: string) => {
     try {
-      if (!user) {
-        throw new Error("Unable to create new decision for currently logged in user: User not found");
-      }
-      const emptyDecision = Decision.createEmptyDecision({
-        driverStakeholderId: user.uid,
-      });
-      return await decisionsRepository.create(emptyDecision, scope);
-    } catch (error) {
-      setError(error as Error);
-      throw error;
-    }
-  };
-
-  const updateDecisionTitle = async (decision: Decision, title: string) => {
-    try {
+      if (!decision) return;
       await decisionsRepository.update(
-        decision.with({
-          title,
-          updatedAt: new Date(),
-        }),
+        decision.with({ title }),
         scope,
       );
     } catch (error) {
@@ -73,16 +55,11 @@ export function useDecisions() {
     }
   };
 
-  const updateDecisionDescription = async (
-    decision: Decision,
-    description: string,
-  ) => {
+  const updateDecisionDescription = async (description: string) => {
     try {
+      if (!decision) return;
       await decisionsRepository.update(
-        decision.with({
-          description,
-          updatedAt: new Date(),
-        }),
+        decision.with({ description }),
         scope,
       );
     } catch (error) {
@@ -91,13 +68,11 @@ export function useDecisions() {
     }
   };
 
-  const updateDecisionCost = async (decision: Decision, cost: Cost) => {
+  const updateDecisionCost = async (cost: Cost) => {
     try {
+      if (!decision) return;
       await decisionsRepository.update(
-        decision.with({
-          cost,
-          updatedAt: new Date(),
-        }),
+        decision.with({ cost }),
         scope,
       );
     } catch (error) {
@@ -106,16 +81,11 @@ export function useDecisions() {
     }
   };
 
-  const updateDecisionReversibility = async (
-    decision: Decision,
-    reversibility: Reversibility,
-  ) => {
+  const updateDecisionReversibility = async (reversibility: Reversibility) => {
     try {
+      if (!decision) return;
       await decisionsRepository.update(
-        decision.with({
-          reversibility,
-          updatedAt: new Date(),
-        }),
+        decision.with({ reversibility }),
         scope,
       );
     } catch (error) {
@@ -124,26 +94,11 @@ export function useDecisions() {
     }
   };
 
-  const updateDecisionDriver = async (
-    decision: Decision,
-    driverStakeholderId: string,
-  ) => {
-    await decisionsRepository.update(
-      decision.with({ driverStakeholderId }),
-      scope,
-    );
-  };
-
-  const updateStakeholders = async (
-    decision: Decision,
-    stakeholders: DecisionStakeholderRole[],
-  ) => {
+  const updateDecisionDriver = async (driverStakeholderId: string) => {
     try {
+      if (!decision) return;
       await decisionsRepository.update(
-        decision.with({
-          stakeholders,
-          updatedAt: new Date(),
-        }),
+        decision.setDecisionDriver(driverStakeholderId),
         scope,
       );
     } catch (error) {
@@ -152,25 +107,53 @@ export function useDecisions() {
     }
   };
 
-  const deleteDecision = async (decisionId: string) => {
+  const updateStakeholders = async (stakeholders: DecisionStakeholderRole[]) => {
     try {
-      await decisionsRepository.delete(decisionId, scope);
+      if (!decision) return;
+      await decisionsRepository.update(
+        decision.with({ stakeholders }),
+        scope,
+      );
     } catch (error) {
       setError(error as Error);
       throw error;
     }
   };
 
-  const updateDecisionMethod = async (
-    decision: Decision,
-    method: DecisionMethod,
+  const addStakeholder = async (
+    stakeholderId: string,
+    role: DecisionStakeholderRole["role"] = "observer"
   ) => {
     try {
+      if (!decision) return;
       await decisionsRepository.update(
-        decision.with({
-          decisionMethod: method,
-          updatedAt: new Date(),
-        }),
+        decision.addStakeholder(stakeholderId, role),
+        scope,
+      );
+    } catch (error) {
+      setError(error as Error);
+      throw error;
+    }
+  };
+
+  const removeStakeholder = async (stakeholderId: string) => {
+    try {
+      if (!decision) return;
+      await decisionsRepository.update(
+        decision.removeStakeholder(stakeholderId),
+        scope,
+      );
+    } catch (error) {
+      setError(error as Error);
+      throw error;
+    }
+  };
+
+  const updateDecisionMethod = async (method: DecisionMethod) => {
+    try {
+      if (!decision) return;
+      await decisionsRepository.update(
+        decision.with({ decisionMethod: method }),
         scope,
       );
     } catch (error) {
@@ -180,17 +163,17 @@ export function useDecisions() {
   };
 
   return {
-    decisions,
+    decision,
     loading,
     error,
-    createDecision,
     updateDecisionTitle,
     updateDecisionDescription,
     updateDecisionCost,
     updateDecisionReversibility,
     updateDecisionDriver,
     updateStakeholders,
-    deleteDecision,
     updateDecisionMethod,
+    addStakeholder,
+    removeStakeholder,
   };
 }

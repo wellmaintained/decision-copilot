@@ -20,4 +20,10 @@ export interface DecisionsRepository {
     onError: (error: Error) => void,
     scope: DecisionScope,
   ): () => void;
+  subscribeToOne(
+    id: string,
+    onData: (decision: Decision | null) => void,
+    onError: (error: Error) => void,
+    scope: DecisionScope,
+  ): () => void;
 }

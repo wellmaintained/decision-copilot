@@ -80,6 +80,46 @@ export class Decision {
     return DecisionWorkflowSteps[0]; // Identify step (default)
   }
 
+  get decisionStakeholderIds(): string[] {
+    return this.stakeholders.map(s => s.stakeholder_id);
+  }
+
+  addStakeholder(stakeholderId: string, role: StakeholderRole = "observer"): Decision {
+    if (this.stakeholders.some(s => s.stakeholder_id === stakeholderId)) {
+      return this;
+    }
+
+    return this.with({
+      stakeholders: [
+        ...this.stakeholders,
+        {
+          stakeholder_id: stakeholderId,
+          role,
+        },
+      ],
+    });
+  }
+
+  removeStakeholder(stakeholderId: string): Decision {
+    // Don't allow removing the driver
+    if (stakeholderId === this.driverStakeholderId) {
+      return this;
+    }
+
+    return this.with({
+      stakeholders: this.stakeholders.filter(s => s.stakeholder_id !== stakeholderId),
+    });
+  }
+
+  setDecisionDriver(driverStakeholderId: string): Decision {
+    // First ensure the driver is a stakeholder
+    const withDriver = this.addStakeholder(driverStakeholderId);
+    
+    return withDriver.with({ 
+      driverStakeholderId 
+    });
+  }
+
   private constructor(props: DecisionProps) {
     this.id = props.id;
     this.title = props.title;

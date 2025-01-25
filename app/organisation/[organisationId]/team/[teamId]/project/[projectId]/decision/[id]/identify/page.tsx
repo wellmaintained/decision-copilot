@@ -25,7 +25,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { useDecisions } from "@/hooks/useDecisions";
+import { useDecision } from "@/hooks/useDecisions";
 import { useStakeholders } from "@/hooks/useStakeholders";
 import { useStakeholderTeams } from "@/hooks/useStakeholderTeams";
 import { useOrganisations } from "@/hooks/useOrganisations";
@@ -54,7 +54,7 @@ interface StakeholderGroupProps {
   stakeholders: Stakeholder[];
   isExpanded: boolean;
   onToggle: () => void;
-  selectedStakeholders: string[];
+  selectedStakeholderIds: string[];
   onStakeholderChange: (stakeholderId: string, checked: boolean) => void;
 }
 
@@ -63,7 +63,7 @@ function StakeholderGroup({
   stakeholders,
   isExpanded,
   onToggle,
-  selectedStakeholders,
+  selectedStakeholderIds,
   onStakeholderChange,
 }: StakeholderGroupProps) {
   return (
@@ -89,7 +89,7 @@ function StakeholderGroup({
               >
                 <Checkbox
                   id={`stakeholder-${stakeholder.id}`}
-                  checked={selectedStakeholders.includes(stakeholder.id)}
+                  checked={selectedStakeholderIds.includes(stakeholder.id)}
                   onCheckedChange={(checked) =>
                     onStakeholderChange(stakeholder.id, checked as boolean)
                   }
@@ -106,7 +106,6 @@ function StakeholderGroup({
                         : "?"}
                     </AvatarFallback>
                   </Avatar>
-                  <div></div>
                   <Label
                     htmlFor={`stakeholder-${stakeholder.id}`}
                     className="text-sm font-normal"
@@ -131,16 +130,17 @@ export default function DecisionIdentityPage() {
   const organisationId = params.organisationId as string;
 
   const {
-    decisions,
+    decision,
     loading: decisionsLoading,
     error: decisionsError,
     updateDecisionTitle,
     updateDecisionDescription,
     updateDecisionCost,
     updateDecisionReversibility,
-    updateStakeholders,
     updateDecisionDriver,
-  } = useDecisions();
+    addStakeholder,
+    removeStakeholder,
+  } = useDecision(decisionId);
   const {
     stakeholders,
     loading: stakeholdersLoading,
@@ -149,30 +149,10 @@ export default function DecisionIdentityPage() {
   const { stakeholderTeams, loading: stakeholderTeamsLoading } =
     useStakeholderTeams();
   const { organisations, loading: organisationsLoading } = useOrganisations();
-  const [selectedStakeholders, setSelectedStakeholders] = useState<string[]>(
-    [],
-  );
   const [expandedTeams, setExpandedTeams] = useState<string[]>([teamId]); // Current team is expanded by default
   const [driverOpen, setDriverOpen] = useState(false);
 
-  const decision = decisions?.find((d) => d.id === decisionId);
   const currentOrg = organisations?.find((org) => org.id === organisationId);
-
-  useEffect(() => {
-    if (decision?.stakeholders) {
-      setSelectedStakeholders(
-        decision.stakeholders.map((s) => s.stakeholder_id),
-      );
-    }
-  }, [decision]);
-
-  useEffect(() => {
-    if (decision?.driverStakeholderId) {
-      setSelectedStakeholders((prev) =>
-        Array.from(new Set([...prev, decision.driverStakeholderId])),
-      );
-    }
-  }, [decision?.driverStakeholderId]);
 
   if (
     decisionsLoading ||
@@ -196,24 +176,11 @@ export default function DecisionIdentityPage() {
   }
 
   const handleStakeholderChange = (stakeholderId: string, checked: boolean) => {
-    // Don't allow unchecking the driver
-    if (!checked && stakeholderId === decision.driverStakeholderId) {
-      return;
+    if (checked) {
+      addStakeholder(stakeholderId);
+    } else {
+      removeStakeholder(stakeholderId);
     }
-
-    const newSelectedStakeholders = checked
-      ? [...selectedStakeholders, stakeholderId]
-      : selectedStakeholders.filter((id) => id !== stakeholderId);
-
-    setSelectedStakeholders(newSelectedStakeholders);
-
-    const updatedStakeholders: DecisionStakeholderRole[] =
-      newSelectedStakeholders.map((id) => ({
-        stakeholder_id: id,
-        role: "observer",
-      }));
-
-    updateStakeholders(decision, updatedStakeholders);
   };
 
   const toggleTeam = (teamId: string) => {
@@ -327,27 +294,7 @@ export default function DecisionIdentityPage() {
                         <CommandItem
                           key={stakeholder.id}
                           onSelect={() => {
-                            // Update the driver
-                            updateDecisionDriver(decision, stakeholder.id);
-
-                            // Add driver to stakeholders if not already present
-                            if (
-                              !selectedStakeholders.includes(stakeholder.id)
-                            ) {
-                              const newStakeholders = [
-                                ...selectedStakeholders,
-                                stakeholder.id,
-                              ];
-                              setSelectedStakeholders(newStakeholders);
-                              updateStakeholders(
-                                decision,
-                                newStakeholders.map((id) => ({
-                                  stakeholder_id: id,
-                                  role: "observer",
-                                })),
-                              );
-                            }
-
+                            updateDecisionDriver(stakeholder.id);
                             setDriverOpen(false);
                           }}
                         >
@@ -383,7 +330,7 @@ export default function DecisionIdentityPage() {
               id="title"
               placeholder="What decision needs to be made?"
               defaultValue={decision.title}
-              onBlur={(e) => updateDecisionTitle(decision, e.target.value)}
+              onBlur={(e) => updateDecisionTitle(e.target.value)}
               className="flex-1"
             />
           </div>
@@ -436,7 +383,7 @@ export default function DecisionIdentityPage() {
                 className="w-full p-4 min-h-[200px] bg-background resize-none focus:outline-none"
                 defaultValue={decision.description}
                 onBlur={(e) =>
-                  updateDecisionDescription(decision, e.target.value)
+                  updateDecisionDescription(e.target.value)
                 }
               />
             </div>
@@ -453,7 +400,7 @@ export default function DecisionIdentityPage() {
               defaultValue={decision.cost}
               className="flex gap-4"
               onValueChange={(value) =>
-                updateDecisionCost(decision, value as Cost)
+                updateDecisionCost(value as Cost)
               }
             >
               <div className="flex items-center space-x-2">
@@ -492,7 +439,7 @@ export default function DecisionIdentityPage() {
               defaultValue={decision.reversibility}
               className="flex gap-4"
               onValueChange={(value) =>
-                updateDecisionReversibility(decision, value as Reversibility)
+                updateDecisionReversibility(value as Reversibility)
               }
             >
               <div className="flex items-center space-x-2">
@@ -542,7 +489,7 @@ export default function DecisionIdentityPage() {
                     stakeholders={stakeholders}
                     isExpanded={expandedTeams.includes(teamId)}
                     onToggle={() => toggleTeam(teamId)}
-                    selectedStakeholders={selectedStakeholders}
+                    selectedStakeholderIds={decision.decisionStakeholderIds}
                     onStakeholderChange={handleStakeholderChange}
                   />
                 ))}

@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Decision, DecisionStakeholderRole } from "@/lib/domain/Decision"
 import { useStakeholders } from "@/hooks/useStakeholders"
-import { useDecisions } from "@/hooks/useDecisions"
+import { useDecision } from "@/hooks/useDecisions"
 import { StakeholderWithRole } from "@/lib/domain/stakeholdersRepository"
 
 interface RoleAssignmentProps {
@@ -16,7 +16,7 @@ interface RoleAssignmentProps {
 
 export function RoleAssignment({ decision }: RoleAssignmentProps) {
   const { getStakeholdersForDecision, loading: stakeholdersLoading } = useStakeholders()
-  const { updateStakeholders } = useDecisions()
+  const { updateStakeholders } = useDecision(decision.id)
   const [stakeholdersWithRoles, setStakeholdersWithRoles] = useState<StakeholderWithRole[]>([])
   const [loading, setLoading] = useState(true)
 
@@ -38,7 +38,7 @@ export function RoleAssignment({ decision }: RoleAssignmentProps) {
       stakeholder_id: s.stakeholder_id,
       role: s.stakeholder_id === stakeholderId ? role : s.role
     }))
-    updateStakeholders(decision, updatedStakeholders)
+    updateStakeholders(updatedStakeholders)
   }
 
   return (

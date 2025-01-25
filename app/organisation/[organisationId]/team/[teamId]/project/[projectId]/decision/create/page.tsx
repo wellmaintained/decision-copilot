@@ -2,12 +2,12 @@
 
 import { useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
-import { useDecisions } from '@/hooks/useDecisions'
+import { useProjectDecisions } from '@/hooks/useProjectDecisions'
 import { useAuth } from '@/hooks/useAuth'
 
 export default function DecisionPage() {
   const router = useRouter()
-  const { createDecision } = useDecisions()
+  const { createDecision } = useProjectDecisions()
   const { user } = useAuth()
   const hasCreatedDecision = useRef(false)
 

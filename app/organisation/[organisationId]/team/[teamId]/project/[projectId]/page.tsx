@@ -1,6 +1,6 @@
 'use client'
 
-import { useDecisions } from '@/hooks/useDecisions';
+import { useProjectDecisions } from '@/hooks/useProjectDecisions';
 import { Button } from "@/components/ui/button"
 import { Pencil, Trash2, FileText, Users, Clock } from 'lucide-react'
 import Link from 'next/link'
@@ -9,7 +9,7 @@ import { WorkflowProgress } from '@/components/ui/workflow-progress';
 
 export default function ProjectDecisionsPage() {
   const params = useParams();
-  const { decisions, loading, error, deleteDecision } = useDecisions();
+  const { decisions, loading, error, deleteDecision } = useProjectDecisions();
 
   if (loading) {
     return <div className="p-6">Loading decisions...</div>;

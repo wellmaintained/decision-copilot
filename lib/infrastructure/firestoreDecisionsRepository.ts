@@ -86,6 +86,31 @@ export class FirestoreDecisionsRepository implements DecisionsRepository {
     return unsubscribe;
   }
 
+  subscribeToOne(
+    id: string,
+    onData: (decision: Decision | null) => void,
+    onError: (error: Error) => void,
+    scope: DecisionScope,
+  ): () => void {
+    const docRef = this.getDocRef(id, scope);
+
+    const unsubscribe = onSnapshot(
+      docRef,
+      (docSnap) => {
+        if (!docSnap.exists()) {
+          onData(null);
+          return;
+        }
+        onData(this.decisionFromFirestore(docSnap));
+      },
+      (error) => {
+        onError(error);
+      },
+    );
+
+    return unsubscribe;
+  }
+
   async updateDecision(
     decision: Decision,
     scope: DecisionScope,

@@ -7,7 +7,7 @@ import { DecisionMethodCard } from "@/components/decision-method-card"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import Link from "next/link"
 import { useParams } from 'next/navigation'
-import { useDecisions } from "@/hooks/useDecisions"
+import { useDecision } from "@/hooks/useDecisions"
 import { useStakeholderTeams } from "@/hooks/useStakeholderTeams"
 import { useOrganisations } from "@/hooks/useOrganisations"
 import { DecisionMethod } from "@/lib/domain/Decision"
@@ -19,13 +19,16 @@ export default function DecisionProcess() {
   const teamId = params.teamId as string
   const organisationId = params.organisationId as string
 
-  const { decisions, loading: decisionsLoading, error: decisionsError, updateDecisionMethod } = useDecisions()
+  const { 
+    decision, 
+    loading: decisionsLoading, 
+    error: decisionsError, 
+    updateDecisionMethod 
+  } = useDecision(decisionId)
   const { stakeholderTeams, loading: stakeholderTeamsLoading } = useStakeholderTeams()
   const { organisations, loading: organisationsLoading } = useOrganisations()
 
   const [selectedMethod, setSelectedMethod] = useState<DecisionMethod>("consent")
-
-  const decision = decisions?.find(d => d.id === decisionId)
 
   useEffect(() => {
     if (decision?.decisionMethod) {
@@ -47,7 +50,7 @@ export default function DecisionProcess() {
 
   const handleMethodSelect = (method: DecisionMethod) => {
     setSelectedMethod(method)
-    updateDecisionMethod(decision, method)
+    updateDecisionMethod(method)
   }
 
   return (
