@@ -162,6 +162,45 @@ export function useDecision(decisionId: string) {
     }
   };
 
+  const updateDecisionOptions = async (options: string[]) => {
+    try {
+      if (!decision) return;
+      await decisionsRepository.update(
+        decision.with({ options }),
+        scope,
+      );
+    } catch (error) {
+      setError(error as Error);
+      throw error;
+    }
+  };
+
+  const updateDecisionCriteria = async (criteria: string[]) => {
+    try {
+      if (!decision) return;
+      await decisionsRepository.update(
+        decision.with({ criteria }),
+        scope,
+      );
+    } catch (error) {
+      setError(error as Error);
+      throw error;
+    }
+  };
+
+  const updateDecisionContent = async (content: string) => {
+    try {
+      if (!decision) return;
+      await decisionsRepository.update(
+        decision.with({ decision: content }),
+        scope,
+      );
+    } catch (error) {
+      setError(error as Error);
+      throw error;
+    }
+  };
+
   return {
     decision,
     loading,
@@ -175,5 +214,8 @@ export function useDecision(decisionId: string) {
     updateDecisionMethod,
     addStakeholder,
     removeStakeholder,
+    updateDecisionOptions,
+    updateDecisionCriteria,
+    updateDecisionContent,
   };
 }

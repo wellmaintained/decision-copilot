@@ -1,61 +1,72 @@
 'use client'
 
 import { useState } from 'react'
-import { Plus, Trash2 } from 'lucide-react'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from '@/components/ui/tooltip'
 import { Editor } from '@/components/editor'
 import { useParams } from 'next/navigation'
-
-interface Option {
-  id: number
-  text: string
-}
-
-interface Criterion {
-  id: number
-  text: string
-}
+import { useDecision } from '@/hooks/useDecisions'
+import { DecisionItemList } from '@/components/decision-item-list'
 
 export default function DecidePage() {
   const params = useParams()
   const decisionId = params.id as string
-  const [options, setOptions] = useState<Option[]>([
-    { id: 1, text: 'Firebase' },
-    { id: 2, text: 'Python Flask' },
-    { id: 3, text: 'Supabase' },
-    { id: 4, text: '.NET' }
-  ])
-  const [decisionContent, setDecisionContent] = useState("")
+  const projectId = params.projectId as string
+  const teamId = params.teamId as string
+  const organisationId = params.organisationId as string
 
-  const [criteria, setCriteria] = useState<Criterion[]>([
-    { id: 1, text: 'It should be easy to host' },
-    { id: 2, text: 'It should be well supported' }
-  ])
+  const {
+    decision,
+    loading: decisionsLoading,
+    error: decisionsError,
+    updateDecisionOptions,
+    updateDecisionCriteria,
+    updateDecisionContent,
+  } = useDecision(decisionId)
 
-  const addOption = () => {
-    const newId = options.length > 0 ? Math.max(...options.map(o => o.id)) + 1 : 1
-    setOptions([...options, { id: newId, text: '' }])
+  if (decisionsLoading) {
+    return <div>Loading...</div>
   }
 
-  const addCriterion = () => {
-    const newId = criteria.length > 0 ? Math.max(...criteria.map(c => c.id)) + 1 : 1
-    setCriteria([...criteria, { id: newId, text: '' }])
+  if (decisionsError) {
+    return <div>Error: {decisionsError.message}</div>
   }
 
-  const deleteOption = (id: number) => {
-    setOptions(options.filter(o => o.id !== id))
+  if (!decision) {
+    return <div>Decision not found</div>
   }
 
-  const deleteCriterion = (id: number) => {
-    setCriteria(criteria.filter(c => c.id !== id))
+  const handleAddOption = (option: string) => {
+    const newOptions = [...decision.options.filter(o => o !== ""), option]
+    updateDecisionOptions(newOptions)
+  }
+
+  const handleUpdateOption = (index: number, option: string) => {
+    const newOptions = [...decision.options]
+    newOptions[index] = option
+    updateDecisionOptions(newOptions)
+  }
+
+  const handleDeleteOption = (index: number) => {
+    const newOptions = decision.options.filter((_, i) => i !== index)
+    updateDecisionOptions(newOptions)
+  }
+
+  const handleAddCriterion = (criterion: string) => {
+    const newCriteria = [...decision.criteria.filter(c => c !== ""), criterion]
+    updateDecisionCriteria(newCriteria)
+  }
+
+  const handleUpdateCriterion = (index: number, criterion: string) => {
+    const newCriteria = [...decision.criteria]
+    newCriteria[index] = criterion
+    updateDecisionCriteria(newCriteria)
+  }
+
+  const handleDeleteCriterion = (index: number) => {
+    const newCriteria = decision.criteria.filter((_, i) => i !== index)
+    updateDecisionCriteria(newCriteria)
   }
 
   return (
@@ -63,84 +74,36 @@ export default function DecidePage() {
       <h1 className="text-3xl font-semibold">Decide</h1>
       
       <Card className="p-6 space-y-8">
-        <div className="space-y-4">
-          <div className="flex items-center gap-2">
-            <h2 className="text-xl text-muted-foreground">Options</h2>
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button variant="ghost" size="icon" className="h-6 w-6" onClick={addOption}>
-                    <Plus className="h-4 w-4" />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>Add option</TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-          </div>
-          
-          <div className="space-y-2">
-            {options.map((option, index) => (
-              <Card key={option.id} className="flex items-center p-4">
-                <span className="text-muted-foreground mr-4">{index + 1}</span>
-                <span className="flex-1">{option.text}</span>
-                <Button 
-                  variant="ghost" 
-                  size="icon"
-                  className="h-8 w-8 text-muted-foreground hover:text-foreground"
-                  onClick={() => deleteOption(option.id)}
-                >
-                  <Trash2 className="h-4 w-4" />
-                </Button>
-              </Card>
-            ))}
-          </div>
-        </div>
+        <DecisionItemList
+          title="Options"
+          items={decision.options}
+          onAdd={handleAddOption}
+          onUpdate={handleUpdateOption}
+          onDelete={handleDeleteOption}
+          placeholder="Enter new option"
+        />
 
-        <div className="space-y-4">
-          <div className="flex items-center gap-2">
-            <h2 className="text-xl text-muted-foreground">Criteria</h2>
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button variant="ghost" size="icon" className="h-6 w-6" onClick={addCriterion}>
-                    <Plus className="h-4 w-4" />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>Add criterion</TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-          </div>
-          
-          <div className="space-y-2">
-            {criteria.map((criterion, index) => (
-              <Card key={criterion.id} className="flex items-center p-4">
-                <span className="text-muted-foreground mr-4">{index + 1}</span>
-                <span className="flex-1">{criterion.text}</span>
-                <Button 
-                  variant="ghost" 
-                  size="icon"
-                  className="h-8 w-8 text-muted-foreground hover:text-foreground"
-                  onClick={() => deleteCriterion(criterion.id)}
-                >
-                  <Trash2 className="h-4 w-4" />
-                </Button>
-              </Card>
-            ))}
-          </div>
-        </div>
+        <DecisionItemList
+          title="Criteria"
+          items={decision.criteria}
+          onAdd={handleAddCriterion}
+          onUpdate={handleUpdateCriterion}
+          onDelete={handleDeleteCriterion}
+          placeholder="Enter new criterion"
+        />
 
         <div className="space-y-4">
           <h2 className="text-xl text-muted-foreground">Decision</h2>
           <Editor 
-            content={decisionContent}
-            onChange={setDecisionContent}
+            content={decision.decision || ""}
+            onChange={(content) => updateDecisionContent(content)}
           />
         </div>
       </Card>
 
       <div className="flex justify-end pt-4">
         <Button size="lg" asChild>
-          <Link href={`/dashboard/decision/${decisionId}/view`}>
+          <Link href={`/organisation/${organisationId}/team/${teamId}/project/${projectId}/decision/${decisionId}/view`}>
             Publish
           </Link>
         </Button>
