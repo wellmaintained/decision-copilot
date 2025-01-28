@@ -6,6 +6,7 @@ import {
   Reversibility,
   DecisionStakeholderRole,
   DecisionMethod,
+  SupportingMaterial,
 } from "@/lib/domain/Decision";
 import { FirestoreDecisionsRepository } from "@/lib/infrastructure/firestoreDecisionsRepository";
 import { DecisionScope } from "@/lib/domain/decisionsRepository";
@@ -201,6 +202,47 @@ export function useDecision(decisionId: string) {
     }
   };
 
+  const updateSupportingMaterials = async (materials: SupportingMaterial[]) => {
+    try {
+      if (!decision) return;
+      await decisionsRepository.update(
+        decision.with({ supportingMaterials: materials }),
+        scope,
+      );
+    } catch (error) {
+      setError(error as Error);
+      throw error;
+    }
+  };
+
+  const addSupportingMaterial = async (material: SupportingMaterial) => {
+    try {
+      if (!decision) return;
+      const newMaterials = [...(decision.supportingMaterials || []), material];
+      await decisionsRepository.update(
+        decision.with({ supportingMaterials: newMaterials }),
+        scope,
+      );
+    } catch (error) {
+      setError(error as Error);
+      throw error;
+    }
+  };
+
+  const removeSupportingMaterial = async (materialUrl: string) => {
+    try {
+      if (!decision) return;
+      const newMaterials = decision.supportingMaterials.filter(m => m.url !== materialUrl);
+      await decisionsRepository.update(
+        decision.with({ supportingMaterials: newMaterials }),
+        scope,
+      );
+    } catch (error) {
+      setError(error as Error);
+      throw error;
+    }
+  };
+
   return {
     decision,
     loading,
@@ -217,5 +259,8 @@ export function useDecision(decisionId: string) {
     updateDecisionOptions,
     updateDecisionCriteria,
     updateDecisionContent,
+    updateSupportingMaterials,
+    addSupportingMaterial,
+    removeSupportingMaterial,
   };
 }

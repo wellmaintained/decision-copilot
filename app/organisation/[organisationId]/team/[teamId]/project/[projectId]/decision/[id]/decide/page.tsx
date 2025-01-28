@@ -8,6 +8,8 @@ import { Editor } from '@/components/editor'
 import { useParams } from 'next/navigation'
 import { useDecision } from '@/hooks/useDecisions'
 import { DecisionItemList } from '@/components/decision-item-list'
+import { useAuth } from '@/hooks/useAuth'
+import { SupportingMaterialsList } from '@/components/supporting-materials-list'
 
 export default function DecidePage() {
   const params = useParams()
@@ -15,6 +17,7 @@ export default function DecidePage() {
   const projectId = params.projectId as string
   const teamId = params.teamId as string
   const organisationId = params.organisationId as string
+  const { user } = useAuth()
 
   const {
     decision,
@@ -23,6 +26,8 @@ export default function DecidePage() {
     updateDecisionOptions,
     updateDecisionCriteria,
     updateDecisionContent,
+    addSupportingMaterial,
+    removeSupportingMaterial,
   } = useDecision(decisionId)
 
   if (decisionsLoading) {
@@ -99,6 +104,12 @@ export default function DecidePage() {
             onChange={(content) => updateDecisionContent(content)}
           />
         </div>
+
+        <SupportingMaterialsList 
+          materials={decision.supportingMaterials} 
+          onAdd={addSupportingMaterial}
+          onRemove={removeSupportingMaterial}
+        />
       </Card>
 
       <div className="flex justify-end pt-4">

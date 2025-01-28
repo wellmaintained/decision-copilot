@@ -169,6 +169,7 @@ export class FirestoreDecisionsRepository implements DecisionsRepository {
       status: data.status,
       updatedAt: data.updatedAt?.toDate(),
       driverStakeholderId: data.driverStakeholderId,
+      supportingMaterials: data.supportingMaterials || [],
     });
   }
 
@@ -212,6 +213,7 @@ export class FirestoreDecisionsRepository implements DecisionsRepository {
       createdAt: Timestamp.fromDate(decision.createdAt),
       updatedAt: Timestamp.fromDate(new Date()),
       driverStakeholderId: decision.driverStakeholderId || "",
+      supportingMaterials: decision.supportingMaterials || [],
     });
   }
 }

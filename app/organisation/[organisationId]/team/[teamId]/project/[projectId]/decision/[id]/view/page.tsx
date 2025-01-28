@@ -6,6 +6,16 @@ import Link from 'next/link'
 import { useParams } from 'next/navigation'
 import { useDecision } from '@/hooks/useDecisions'
 import { useStakeholders } from '@/hooks/useStakeholders'
+import { FileText, Globe } from 'lucide-react'
+
+function getMaterialIcon(mimeType: string) {
+  switch (mimeType) {
+    case 'application/vnd.google-apps.document':
+      return <FileText className="h-4 w-4" />
+    default:
+      return <Globe className="h-4 w-4" />
+  }
+}
 
 function StakeholderGroup({ title, stakeholders }: { title: string, stakeholders: { id: string, displayName: string, photoURL?: string }[] }) {
   return (
@@ -95,6 +105,27 @@ export default function DecisionView() {
                 <li key={`criterion-${index}`} className="text-slate-600">{criterion}</li>
               ))}
             </ol>
+          </section>
+        )}
+
+        {decision.supportingMaterials.length > 0 && (
+          <section className="space-y-4">
+            <h2 className="text-xl font-semibold text-slate-800">Supporting Materials</h2>
+            <div className="space-y-2">
+              {decision.supportingMaterials.map((material, index) => (
+                <div key={`material-${index}`} className="flex items-center gap-2 text-slate-600">
+                  {getMaterialIcon(material.mimeType)}
+                  <a 
+                    href={material.url} 
+                    target="_blank" 
+                    rel="noopener noreferrer" 
+                    className="hover:underline"
+                  >
+                    {material.title}
+                  </a>
+                </div>
+              ))}
+            </div>
           </section>
         )}
 

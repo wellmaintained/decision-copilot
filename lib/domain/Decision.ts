@@ -31,6 +31,12 @@ export type DecisionStakeholderRole = {
   role: "decider" | "advisor" | "observer";
 };
 
+export interface SupportingMaterial {
+  mimeType: string;
+  title: string;
+  url: string;
+}
+
 export type DecisionProps = {
   id: string;
   title: string;
@@ -46,6 +52,7 @@ export type DecisionProps = {
   status: string;
   updatedAt?: Date;
   driverStakeholderId: string;
+  supportingMaterials?: SupportingMaterial[];
 };
 
 export class Decision {
@@ -63,6 +70,7 @@ export class Decision {
   readonly status: string;
   readonly updatedAt?: Date;
   readonly driverStakeholderId: string;
+  readonly supportingMaterials: SupportingMaterial[];
 
   get currentStep(): DecisionWorkflowStep {
     if (this.status === 'published') {
@@ -135,6 +143,7 @@ export class Decision {
     this.status = props.status;
     this.updatedAt = props.updatedAt;
     this.driverStakeholderId = props.driverStakeholderId;
+    this.supportingMaterials = props.supportingMaterials || [];
   }
 
   static create(props: DecisionProps): Decision {
@@ -158,6 +167,7 @@ export class Decision {
       driverStakeholderId: '',
       decision: '',
       decisionMethod: '',
+      supportingMaterials: [],
     };
 
     return new Decision({
