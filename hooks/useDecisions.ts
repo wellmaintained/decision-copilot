@@ -6,8 +6,8 @@ import {
   Reversibility,
   DecisionStakeholderRole,
   DecisionMethod,
-  SupportingMaterial,
 } from "@/lib/domain/Decision";
+import { SupportingMaterial } from "@/lib/domain/SupportingMaterial";
 import { FirestoreDecisionsRepository } from "@/lib/infrastructure/firestoreDecisionsRepository";
 import { DecisionScope } from "@/lib/domain/decisionsRepository";
 
