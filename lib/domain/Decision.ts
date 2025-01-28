@@ -1,4 +1,5 @@
 import { Search, Settings, Lightbulb, Zap, BookOpen } from 'lucide-react'
+import { SupportingMaterial } from '@/lib/domain/SupportingMaterial'
 
 export const DecisionWorkflowSteps = [
   { icon: Search, label: 'Identify' },
@@ -30,12 +31,6 @@ export type DecisionStakeholderRole = {
   stakeholder_id: string;
   role: "decider" | "advisor" | "observer";
 };
-
-export interface SupportingMaterial {
-  mimeType: string;
-  title: string;
-  url: string;
-}
 
 export type DecisionProps = {
   id: string;

@@ -11,36 +11,59 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog'
-import { SupportingMaterial } from '@/lib/domain/Decision'
-import { ReactNode } from 'react'
+import { SupportingMaterial, SupportingMaterialFactory, SupportingMaterialValidator } from '@/lib/domain/SupportingMaterial'
+import { Alert, AlertDescription } from '@/components/ui/alert'
+import { X } from 'lucide-react'
 
 interface AddSupportingMaterialDialogProps {
   onAdd: (material: SupportingMaterial) => Promise<void>
-  children?: ReactNode
+  children?: React.ReactNode
 }
 
 export function AddSupportingMaterialDialog({ onAdd, children }: AddSupportingMaterialDialogProps) {
   const [open, setOpen] = useState(false)
   const [newMaterialUrl, setNewMaterialUrl] = useState('')
   const [newMaterialTitle, setNewMaterialTitle] = useState('')
+  const [errors, setErrors] = useState<string[]>([])
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
-  const handleAddSupportingMaterial = async () => {
-    if (!newMaterialUrl || !newMaterialTitle) return
-
-    const material: SupportingMaterial = {
-      url: newMaterialUrl,
-      title: newMaterialTitle,
-      mimeType: newMaterialUrl.includes('docs.google.com') ? 'application/vnd.google-apps.document' : 'text/html',
-    }
-
-    await onAdd(material)
+  const resetForm = () => {
     setNewMaterialUrl('')
     setNewMaterialTitle('')
-    setOpen(false)
+    setErrors([])
+    setIsSubmitting(false)
+  }
+
+  const handleAddSupportingMaterial = async () => {
+    try {
+      setIsSubmitting(true)
+      setErrors([])
+
+      const material = SupportingMaterialFactory.create(newMaterialTitle, newMaterialUrl)
+      const validationErrors = SupportingMaterialValidator.validate(material)
+
+      if (validationErrors.length > 0) {
+        setErrors(validationErrors)
+        return
+      }
+
+      await onAdd(material)
+      resetForm()
+      setOpen(false)
+    } catch (error) {
+      setErrors([error instanceof Error ? error.message : 'An unexpected error occurred'])
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={(newOpen) => {
+      setOpen(newOpen)
+      if (!newOpen) {
+        resetForm()
+      }
+    }}>
       <DialogTrigger asChild>
         {children || <Button variant="outline">Add Supporting Material</Button>}
       </DialogTrigger>
@@ -52,6 +75,17 @@ export function AddSupportingMaterialDialog({ onAdd, children }: AddSupportingMa
           </DialogDescription>
         </DialogHeader>
         <div className="grid gap-4 py-4">
+          {errors.length > 0 && (
+            <Alert variant="destructive">
+              <AlertDescription>
+                <ul className="list-disc list-inside">
+                  {errors.map((error, index) => (
+                    <li key={index}>{error}</li>
+                  ))}
+                </ul>
+              </AlertDescription>
+            </Alert>
+          )}
           <div className="grid gap-2">
             <Label htmlFor="material-title">Title</Label>
             <Input
@@ -69,7 +103,7 @@ export function AddSupportingMaterialDialog({ onAdd, children }: AddSupportingMa
               value={newMaterialUrl}
               onChange={(e) => setNewMaterialUrl(e.target.value)}
               onKeyDown={(e) => {
-                if (e.key === 'Enter') {
+                if (e.key === 'Enter' && !isSubmitting) {
                   handleAddSupportingMaterial()
                 }
               }}
@@ -80,8 +114,11 @@ export function AddSupportingMaterialDialog({ onAdd, children }: AddSupportingMa
           <Button variant="outline" onClick={() => setOpen(false)}>
             Cancel
           </Button>
-          <Button onClick={handleAddSupportingMaterial}>
-            Add Material
+          <Button 
+            onClick={handleAddSupportingMaterial}
+            disabled={isSubmitting}
+          >
+            {isSubmitting ? 'Adding...' : 'Add Material'}
           </Button>
         </DialogFooter>
       </DialogContent>
