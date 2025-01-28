@@ -80,9 +80,6 @@ importers:
       firebase-functions:
         specifier: ^6.3.0
         version: 6.3.0(firebase-admin@12.7.0(encoding@0.1.13))
-      firebase-tools:
-        specifier: ^13.29.2
-        version: 13.29.2(encoding@0.1.13)
       framer-motion:
         specifier: ^12.0.6
         version: 12.0.6(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
@@ -144,6 +141,9 @@ importers:
       eslint-config-next:
         specifier: 15.1.5
         version: 15.1.5(eslint@9.19.0(jiti@1.21.7))(typescript@5.7.3)
+      firebase-tools:
+        specifier: ^13.29.2
+        version: 13.29.2(encoding@0.1.13)
       postcss:
         specifier: ^8.5.1
         version: 8.5.1
