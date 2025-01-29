@@ -1,5 +1,7 @@
 import { Search, Settings, Lightbulb, Zap, BookOpen } from 'lucide-react'
 import { SupportingMaterial } from '@/lib/domain/SupportingMaterial'
+import { IsArray, IsDate, IsEnum, IsOptional, IsString } from 'class-validator'
+import { DecisionStateError, StakeholderError, DecisionDependencyError } from '@/lib/domain/DecisionError'
 
 export const DecisionWorkflowSteps = [
   { icon: Search, label: 'Identify' },
@@ -11,7 +13,7 @@ export const DecisionWorkflowSteps = [
 
 export type DecisionWorkflowStep = typeof DecisionWorkflowSteps[number];
 
-export type DecisionStatus = "draft" | "published";
+export type DecisionStatus = "draft" | "published" | "superseded";
 export type DecisionMethod = "autocratic" | "consent";
 export type StakeholderRole = "decider" | "advisor" | "observer";
 export type Cost = "low" | "medium" | "high";
@@ -44,31 +46,87 @@ export type DecisionProps = {
   decisionMethod?: string;
   reversibility: Reversibility;
   stakeholders: DecisionStakeholderRole[];
-  status: string;
+  status: DecisionStatus;
   updatedAt?: Date;
   driverStakeholderId: string;
   supportingMaterials?: SupportingMaterial[];
+  organisationId: string;
+  teamId: string;
+  projectId: string;
+  blockedByDecisionIds: string[];
+  supersededByDecisionId?: string;
 };
 
 export class Decision {
+  @IsString()
   readonly id: string;
+
+  @IsString()
   readonly title: string;
+
+  @IsString()
   readonly description: string;
+
+  @IsEnum(['low', 'medium', 'high'])
   readonly cost: Cost;
+
+  @IsDate()
   readonly createdAt: Date;
+
+  @IsArray()
+  @IsString({ each: true })
   readonly criteria: string[];
+
+  @IsArray()
+  @IsString({ each: true })
   readonly options: string[];
+
+  @IsOptional()
+  @IsString()
   readonly decision?: string;
+
+  @IsOptional()
+  @IsString()
   readonly decisionMethod?: string;
+
+  @IsEnum(['hat', 'haircut', 'tattoo'])
   readonly reversibility: Reversibility;
+
+  @IsArray()
   readonly stakeholders: DecisionStakeholderRole[];
-  readonly status: string;
+
+  @IsEnum(['draft', 'published', 'superseded'])
+  readonly status: DecisionStatus;
+
+  @IsOptional()
+  @IsDate()
   readonly updatedAt?: Date;
+
+  @IsString()
   readonly driverStakeholderId: string;
+
+  @IsArray()
   readonly supportingMaterials: SupportingMaterial[];
 
+  @IsString()
+  readonly organisationId: string;
+
+  @IsString()
+  readonly teamId: string;
+
+  @IsString()
+  readonly projectId: string;
+
+  @IsArray()
+  @IsString({ each: true })
+  readonly blockedByDecisionIds: string[];
+
+  @IsOptional()
+  @IsString()
+  readonly supersededByDecisionId?: string;
+
   get currentStep(): DecisionWorkflowStep {
-    if (this.status === 'published') {
+    if (this.status === 'published' || this.status === 'superseded') {
       return DecisionWorkflowSteps[4]; // Published step
     }
     if (this.decision) {
@@ -87,9 +145,21 @@ export class Decision {
     return this.stakeholders.map(s => s.stakeholder_id);
   }
 
+  isBlockedBy(decisionId: string): boolean {
+    return this.blockedByDecisionIds.includes(decisionId);
+  }
+
+  canProceed(completedDecisionIds: string[]): boolean {
+    return this.blockedByDecisionIds.every(id => completedDecisionIds.includes(id));
+  }
+
+  isSuperseded(): boolean {
+    return this.status === 'superseded' && !!this.supersededByDecisionId;
+  }
+
   addStakeholder(stakeholderId: string, role: StakeholderRole = "observer"): Decision {
     if (this.stakeholders.some(s => s.stakeholder_id === stakeholderId)) {
-      return this;
+      throw new StakeholderError(`Stakeholder ${stakeholderId} is already part of this decision`);
     }
 
     return this.with({
@@ -104,9 +174,8 @@ export class Decision {
   }
 
   removeStakeholder(stakeholderId: string): Decision {
-    // Don't allow removing the driver
     if (stakeholderId === this.driverStakeholderId) {
-      return this;
+      throw new StakeholderError('Cannot remove the driver stakeholder');
     }
 
     return this.with({
@@ -120,6 +189,37 @@ export class Decision {
     
     return withDriver.with({ 
       driverStakeholderId 
+    });
+  }
+
+  addBlockingDecision(blockingDecisionId: string): Decision {
+    if (blockingDecisionId === this.id) {
+      throw new DecisionDependencyError('A decision cannot block itself');
+    }
+
+    if (this.blockedByDecisionIds.includes(blockingDecisionId)) {
+      throw new DecisionDependencyError(`Decision ${blockingDecisionId} is already blocking this decision`);
+    }
+
+    return this.with({
+      blockedByDecisionIds: [...this.blockedByDecisionIds, blockingDecisionId]
+    });
+  }
+
+  removeBlockingDecision(blockingDecisionId: string): Decision {
+    return this.with({
+      blockedByDecisionIds: this.blockedByDecisionIds.filter(id => id !== blockingDecisionId)
+    });
+  }
+
+  markAsSupersededBy(newDecisionId: string): Decision {
+    if (this.status === 'superseded') {
+      throw new DecisionStateError(`Decision is already superseded by ${this.supersededByDecisionId}`);
+    }
+
+    return this.with({
+      supersededByDecisionId: newDecisionId,
+      status: 'superseded'
     });
   }
 
@@ -139,6 +239,11 @@ export class Decision {
     this.updatedAt = props.updatedAt;
     this.driverStakeholderId = props.driverStakeholderId;
     this.supportingMaterials = props.supportingMaterials || [];
+    this.organisationId = props.organisationId;
+    this.teamId = props.teamId;
+    this.projectId = props.projectId;
+    this.blockedByDecisionIds = props.blockedByDecisionIds || [];
+    this.supersededByDecisionId = props.supersededByDecisionId;
   }
 
   static create(props: DecisionProps): Decision {
@@ -163,6 +268,10 @@ export class Decision {
       decision: '',
       decisionMethod: '',
       supportingMaterials: [],
+      organisationId: '',
+      teamId: '',
+      projectId: '',
+      blockedByDecisionIds: [],
     };
 
     return new Decision({
@@ -172,9 +281,20 @@ export class Decision {
   }
 
   with(props: Partial<DecisionProps>): Decision {
+    if (this.status === 'published') {
+      throw new DecisionStateError('Cannot modify a published decision');
+    }
+    if (this.status === 'superseded') {
+      throw new DecisionStateError('Cannot modify a superseded decision');
+    }
     return Decision.create({
       ...this,
       ...props,
     });
+  }
+
+  withoutId(): Omit<DecisionProps, "id"> {
+    const { id, ...propsWithoutId } = this;
+    return propsWithoutId;
   }
 }

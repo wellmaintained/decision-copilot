@@ -48,9 +48,13 @@ export function useProjectDecisions() {
       if (!userStakeholder) {
         throw new Error("Unable to create new decision - cannot find stakeholder with same email as user");
       }
-      const newDecision = Decision.createEmptyDecision();
+      const newDecision = Decision.createEmptyDecision({
+        organisationId,
+        teamId,
+        projectId,
+      });
       const decisionWithDriver = newDecision.setDecisionDriver(userStakeholder.id);
-      return await decisionsRepository.create(decisionWithDriver, scope);
+      return await decisionsRepository.create(decisionWithDriver.withoutId(), scope);
     } catch (error) {
       setError(error as Error);
       throw error;

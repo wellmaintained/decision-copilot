@@ -25,7 +25,7 @@ export class Project {
   @IsString()
   readonly teamId: string
 
-  @ValidateNested({ each: true })
+  // @ValidateNested({ each: true })
   @Type(() => Decision)
   readonly decisions: Decision[]
 

@@ -128,8 +128,14 @@ export class FirestoreOrganisationsRepository implements OrganisationsRepository
             reversibility: data.reversibility,
             stakeholders: data.stakeholders || [],
             status: data.status || 'draft',
-            updatedAt: data.updatedAt ? data.updatedAt.toDate() : undefined,
-            driverStakeholderId: data.driverStakeholderId
+            updatedAt: data.updatedAt?.toDate(),
+            driverStakeholderId: data.driverStakeholderId,
+            organisationId: id,
+            teamId: teamDoc.id,
+            projectId: projectDoc.id,
+            blockedByDecisionIds: data.blockedByDecisionIds || [],
+            supersededByDecisionId: data.supersededByDecisionId,
+            supportingMaterials: data.supportingMaterials || []
           })
         })
 
