@@ -123,7 +123,7 @@ export function useDecision(decisionId: string) {
 
   const addStakeholder = async (
     stakeholderId: string,
-    role: DecisionStakeholderRole["role"] = "observer"
+    role: DecisionStakeholderRole["role"] = "informed"
   ) => {
     try {
       if (!decision) return;

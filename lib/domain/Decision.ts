@@ -31,7 +31,7 @@ export interface Option {
 
 export type DecisionStakeholderRole = {
   stakeholder_id: string;
-  role: "decider" | "advisor" | "observer";
+  role: StakeholderRole;
 };
 
 export type DecisionProps = {
@@ -157,7 +157,7 @@ export class Decision {
     return this.status === 'superseded' && !!this.supersededByDecisionId;
   }
 
-  addStakeholder(stakeholderId: string, role: StakeholderRole = "observer"): Decision {
+  addStakeholder(stakeholderId: string, role: StakeholderRole = "informed"): Decision {
     if (this.stakeholders.some(s => s.stakeholder_id === stakeholderId)) {
       throw new StakeholderError(`Stakeholder ${stakeholderId} is already part of this decision`);
     }

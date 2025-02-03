@@ -70,12 +70,12 @@ export function RoleAssignment({ decision }: RoleAssignmentProps) {
                   <Label htmlFor={`${stakeholder.id}-decider`} className="text-sm">Decider</Label>
                 </div>
                 <div className="flex items-center space-x-2.5">
-                  <RadioGroupItem value="advisor" id={`${stakeholder.id}-advisor`} className="h-5 w-5" />
-                  <Label htmlFor={`${stakeholder.id}-advisor`} className="text-sm">Advisor</Label>
+                  <RadioGroupItem value="consulted" id={`${stakeholder.id}-consulted`} className="h-5 w-5" />
+                  <Label htmlFor={`${stakeholder.id}-consulted`} className="text-sm">Consulted</Label>
                 </div>
                 <div className="flex items-center space-x-2.5">
-                  <RadioGroupItem value="observer" id={`${stakeholder.id}-observer`} className="h-5 w-5" />
-                  <Label htmlFor={`${stakeholder.id}-observer`} className="text-sm">Observer</Label>
+                  <RadioGroupItem value="informed" id={`${stakeholder.id}-informed`} className="h-5 w-5" />
+                  <Label htmlFor={`${stakeholder.id}-informed`} className="text-sm">Informed</Label>
                 </div>
               </RadioGroup>
             </div>

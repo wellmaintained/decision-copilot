@@ -1,5 +1,5 @@
 import { Stakeholder, StakeholderProps } from '@/lib/domain/Stakeholder';
-import { Decision } from '@/lib/domain/Decision';
+import { Decision, StakeholderRole } from '@/lib/domain/Decision';
 
 export class EmailAlreadyExistsError extends Error {
   constructor(email: string) {
@@ -9,7 +9,7 @@ export class EmailAlreadyExistsError extends Error {
 }
 
 export interface StakeholderWithRole extends Stakeholder {
-  role: "decider" | "advisor" | "observer";
+  role: StakeholderRole;
 }
 
 export interface StakeholdersRepository {

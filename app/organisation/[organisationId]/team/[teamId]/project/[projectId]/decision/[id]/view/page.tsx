@@ -7,6 +7,7 @@ import { useParams } from 'next/navigation'
 import { useDecision } from '@/hooks/useDecisions'
 import { useStakeholders } from '@/hooks/useStakeholders'
 import { SupportingMaterialIcon } from '@/components/supporting-material-icon'
+import { StakeholderRole } from '@/lib/domain/Decision'
 
 function StakeholderGroup({ title, stakeholders }: { title: string, stakeholders: { id: string, displayName: string, photoURL?: string }[] }) {
   return (
