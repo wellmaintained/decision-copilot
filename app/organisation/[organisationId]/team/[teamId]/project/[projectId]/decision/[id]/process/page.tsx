@@ -55,8 +55,6 @@ export default function DecisionProcess() {
 
   return (
     <>
-      <RoleAssignment decision={decision} />
-      
       <Card>
         <CardHeader className="pb-3">
           <CardTitle className="text-xl font-semibold">Decision making method</CardTitle>
@@ -67,12 +65,12 @@ export default function DecisionProcess() {
         <CardContent>
           <div className="grid gap-6 md:grid-cols-2">
             <DecisionMethodCard
-              title="Autocratic"
+              title="Accountable Individual"
               description="A single decider makes a choice and informs all stakeholders"
               speedValue={90}
               buyInValue={10}
-              isSelected={selectedMethod === "autocratic"}
-              onSelect={() => handleMethodSelect("autocratic")}
+              isSelected={selectedMethod === "accountable_individual"}
+              onSelect={() => handleMethodSelect("accountable_individual")}
             />
             <DecisionMethodCard
               title="Consent"
@@ -85,6 +83,8 @@ export default function DecisionProcess() {
           </div>
         </CardContent>
       </Card>
+
+      <RoleAssignment decision={decision} />
 
       <div className="flex justify-end pt-4">
         <Button size="lg" asChild>

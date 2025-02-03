@@ -50,13 +50,13 @@ export default function DecisionView() {
   }
 
   const deciderStakeholders = stakeholders?.filter(s => 
-    decision.stakeholders.find(ds => ds.stakeholder_id === s.id && ds.role === 'decider')
+    decision.stakeholders.find(ds => ds.stakeholder_id === s.id && ds.role === ('decider' as StakeholderRole))
   ) || []
-  const advisorStakeholders = stakeholders?.filter(s => 
-    decision.stakeholders.find(ds => ds.stakeholder_id === s.id && ds.role === 'advisor')
+  const consultedStakeholders = stakeholders?.filter(s => 
+    decision.stakeholders.find(ds => ds.stakeholder_id === s.id && ds.role === ('consulted' as StakeholderRole))
   ) || []
-  const observerStakeholders = stakeholders?.filter(s => 
-    decision.stakeholders.find(ds => ds.stakeholder_id === s.id && ds.role === 'observer')
+  const informedStakeholders = stakeholders?.filter(s => 
+    decision.stakeholders.find(ds => ds.stakeholder_id === s.id && ds.role === ('informed' as StakeholderRole))
   ) || []
 
   return (
@@ -70,11 +70,6 @@ export default function DecisionView() {
         <section className="space-y-2">
           <h2 className="text-xl font-semibold text-slate-800">Decision</h2>
           <p className="text-slate-600">{decision.decision || 'No decision made yet'}</p>
-        </section>
-
-        <section className="space-y-2">
-          <h2 className="text-xl font-semibold text-slate-800">Method</h2>
-          <p className="text-slate-600">{decision.decisionMethod || 'No method selected'}</p>
         </section>
 
         {decision.options.length > 0 && (
@@ -120,6 +115,11 @@ export default function DecisionView() {
           </section>
         )}
 
+        <section className="space-y-2">
+          <h2 className="text-xl font-semibold text-slate-800">Method</h2>
+          <p className="text-slate-600">{decision.decisionMethod || 'No method selected'}</p>
+        </section>
+
         <section className="space-y-4">
           <h2 className="text-xl font-semibold text-slate-800">Stakeholders</h2>
           <div className="grid md:grid-cols-3 gap-8">
@@ -129,16 +129,16 @@ export default function DecisionView() {
                 stakeholders={deciderStakeholders} 
               />
             )}
-            {advisorStakeholders.length > 0 && (
+            {consultedStakeholders.length > 0 && (
               <StakeholderGroup 
-                title="Advisors" 
-                stakeholders={advisorStakeholders} 
+                title="Consulted" 
+                stakeholders={consultedStakeholders} 
               />
             )}
-            {observerStakeholders.length > 0 && (
+            {informedStakeholders.length > 0 && (
               <StakeholderGroup 
-                title="Observers" 
-                stakeholders={observerStakeholders} 
+                title="Informed" 
+                stakeholders={informedStakeholders} 
               />
             )}
           </div>

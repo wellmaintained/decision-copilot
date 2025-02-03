@@ -14,8 +14,8 @@ export const DecisionWorkflowSteps = [
 export type DecisionWorkflowStep = typeof DecisionWorkflowSteps[number];
 
 export type DecisionStatus = "draft" | "published" | "superseded";
-export type DecisionMethod = "autocratic" | "consent";
-export type StakeholderRole = "decider" | "advisor" | "observer";
+export type DecisionMethod = "accountable_individual" | "consent";
+export type StakeholderRole = "decider" | "consulted" | "informed";
 export type Cost = "low" | "medium" | "high";
 export type Reversibility = "hat" | "haircut" | "tattoo";
 
