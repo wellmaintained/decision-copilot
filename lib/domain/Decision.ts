@@ -256,7 +256,7 @@ export class Decision {
       id: 'unsaved',
       title: '',
       description: '',
-      cost: 'low' as Cost,
+      cost: 'medium' as Cost,
       createdAt: now,
       criteria: [],
       options: [],
