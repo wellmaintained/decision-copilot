@@ -48,6 +48,10 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import { DecisionRelationshipsList } from '@/components/decision-relationships-list'
+import { useProjectDecisions } from '@/hooks/useProjectDecisions'
+import { DecisionRelationship } from '@/lib/domain/DecisionRelationship'
+import { useDecisionRelationships } from '@/hooks/useDecisionRelationships'
 
 interface StakeholderGroupProps {
   teamName: string;
@@ -141,6 +145,15 @@ export default function DecisionIdentityPage() {
     addStakeholder,
     removeStakeholder,
   } = useDecision(decisionId);
+
+  const {
+    relationships,
+    loading: relationshipsLoading,
+    error: relationshipsError,
+    addRelationship,
+    removeRelationship,
+  } = useDecisionRelationships(decisionId, organisationId);
+
   const {
     stakeholders,
     loading: stakeholdersLoading,
@@ -154,21 +167,25 @@ export default function DecisionIdentityPage() {
 
   const currentOrg = organisations?.find((org) => org.id === organisationId);
 
+  const {
+    decisions,
+    loading: projectDecisionsLoading,
+    error: projectDecisionsError,
+  } = useProjectDecisions()
+
   if (
     decisionsLoading ||
     stakeholdersLoading ||
     stakeholderTeamsLoading ||
-    organisationsLoading
+    organisationsLoading ||
+    projectDecisionsLoading ||
+    relationshipsLoading
   ) {
-    return <div>Loading...</div>;
+    return <div>Loading...</div>
   }
 
-  if (decisionsError) {
-    return <div>Error: {decisionsError.message}</div>;
-  }
-
-  if (stakeholdersError) {
-    return <div>Error: {stakeholdersError.message}</div>;
+  if (decisionsError || projectDecisionsError || relationshipsError) {
+    return <div>Error: {(decisionsError || projectDecisionsError || relationshipsError)?.message}</div>
   }
 
   if (!decision || !currentOrg) {
@@ -222,6 +239,18 @@ export default function DecisionIdentityPage() {
         .map((stakeholder) => [stakeholder.id, stakeholder]),
     ).values(),
   ).sort((a, b) => a.displayName.localeCompare(b.displayName));
+
+  const getDecisionTitle = (decisionId: string) => {
+    return decisions?.find(d => d.id === decisionId)?.title || 'Unknown Decision'
+  }
+
+  const handleAddRelationship = async (relationship: Omit<DecisionRelationship, 'id' | 'createdAt'>) => {
+    await addRelationship(relationship.toDecisionId, relationship.type);
+  }
+
+  const handleRemoveRelationship = async (relationshipId: string) => {
+    await removeRelationship(relationshipId);
+  }
 
   return (
     <>
@@ -388,6 +417,13 @@ export default function DecisionIdentityPage() {
               />
             </div>
           </div>
+
+          <DecisionRelationshipsList
+            relationships={relationships}
+            onAdd={handleAddRelationship}
+            onRemove={handleRemoveRelationship}
+            getDecisionTitle={getDecisionTitle}
+          />
 
           <div className="space-y-3">
             <div className="flex items-center gap-2">

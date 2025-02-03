@@ -2,6 +2,7 @@ import { Search, Settings, Lightbulb, Zap, BookOpen } from 'lucide-react'
 import { SupportingMaterial } from '@/lib/domain/SupportingMaterial'
 import { IsArray, IsDate, IsEnum, IsOptional, IsString } from 'class-validator'
 import { DecisionStateError, StakeholderError, DecisionDependencyError } from '@/lib/domain/DecisionError'
+import { DecisionRelationship } from '@/lib/domain/DecisionRelationship'
 
 export const DecisionWorkflowSteps = [
   { icon: Search, label: 'Identify' },
@@ -53,8 +54,7 @@ export type DecisionProps = {
   organisationId: string;
   teamId: string;
   projectId: string;
-  blockedByDecisionIds: string[];
-  supersededByDecisionId?: string;
+  relationships?: DecisionRelationship[];
 };
 
 export class Decision {
@@ -117,13 +117,9 @@ export class Decision {
   @IsString()
   readonly projectId: string;
 
-  @IsArray()
-  @IsString({ each: true })
-  readonly blockedByDecisionIds: string[];
-
   @IsOptional()
-  @IsString()
-  readonly supersededByDecisionId?: string;
+  @IsArray()
+  readonly relationships?: DecisionRelationship[];
 
   get currentStep(): DecisionWorkflowStep {
     if (this.status === 'published' || this.status === 'superseded') {
@@ -146,15 +142,27 @@ export class Decision {
   }
 
   isBlockedBy(decisionId: string): boolean {
-    return this.blockedByDecisionIds.includes(decisionId);
+    return this.relationships?.some(r => 
+      r.type === 'blocks' && 
+      r.fromDecisionId === decisionId && 
+      r.toDecisionId === this.id
+    ) ?? false;
   }
 
   canProceed(completedDecisionIds: string[]): boolean {
-    return this.blockedByDecisionIds.every(id => completedDecisionIds.includes(id));
+    const blockingDecisions = this.relationships?.filter(r => 
+      r.type === 'blocks' && 
+      r.toDecisionId === this.id
+    ) ?? [];
+    return blockingDecisions.every(r => completedDecisionIds.includes(r.fromDecisionId));
   }
 
   isSuperseded(): boolean {
-    return this.status === 'superseded' && !!this.supersededByDecisionId;
+    return this.status === 'superseded' && 
+      !!this.relationships?.some(r => 
+        r.type === 'supersedes' && 
+        r.toDecisionId === this.id
+      );
   }
 
   addStakeholder(stakeholderId: string, role: StakeholderRole = "informed"): Decision {
@@ -192,37 +200,6 @@ export class Decision {
     });
   }
 
-  addBlockingDecision(blockingDecisionId: string): Decision {
-    if (blockingDecisionId === this.id) {
-      throw new DecisionDependencyError('A decision cannot block itself');
-    }
-
-    if (this.blockedByDecisionIds.includes(blockingDecisionId)) {
-      throw new DecisionDependencyError(`Decision ${blockingDecisionId} is already blocking this decision`);
-    }
-
-    return this.with({
-      blockedByDecisionIds: [...this.blockedByDecisionIds, blockingDecisionId]
-    });
-  }
-
-  removeBlockingDecision(blockingDecisionId: string): Decision {
-    return this.with({
-      blockedByDecisionIds: this.blockedByDecisionIds.filter(id => id !== blockingDecisionId)
-    });
-  }
-
-  markAsSupersededBy(newDecisionId: string): Decision {
-    if (this.status === 'superseded') {
-      throw new DecisionStateError(`Decision is already superseded by ${this.supersededByDecisionId}`);
-    }
-
-    return this.with({
-      supersededByDecisionId: newDecisionId,
-      status: 'superseded'
-    });
-  }
-
   private constructor(props: DecisionProps) {
     this.id = props.id;
     this.title = props.title;
@@ -242,8 +219,7 @@ export class Decision {
     this.organisationId = props.organisationId;
     this.teamId = props.teamId;
     this.projectId = props.projectId;
-    this.blockedByDecisionIds = props.blockedByDecisionIds || [];
-    this.supersededByDecisionId = props.supersededByDecisionId;
+    this.relationships = props.relationships || [];
   }
 
   static create(props: DecisionProps): Decision {
@@ -271,7 +247,7 @@ export class Decision {
       organisationId: '',
       teamId: '',
       projectId: '',
-      blockedByDecisionIds: [],
+      relationships: [],
     };
 
     return new Decision({
