@@ -200,6 +200,67 @@ export class Decision {
     });
   }
 
+  addBlockingDecision(blockingDecisionId: string): Decision {
+    if (blockingDecisionId === this.id) {
+      throw new DecisionDependencyError('A decision cannot block itself');
+    }
+
+    if (this.relationships?.some(r => 
+      r.type === 'blocks' && 
+      r.fromDecisionId === blockingDecisionId && 
+      r.toDecisionId === this.id
+    )) {
+      throw new DecisionDependencyError(`Decision ${blockingDecisionId} already blocks this decision`);
+    }
+
+    const relationship = DecisionRelationship.create({
+      id: DecisionRelationship.createId(blockingDecisionId, this.id),
+      type: 'blocks',
+      fromDecisionId: blockingDecisionId,
+      toDecisionId: this.id,
+      createdAt: new Date(),
+      fromTeamId: this.teamId,
+      fromProjectId: this.projectId,
+      toTeamId: this.teamId,
+      toProjectId: this.projectId,
+      organisationId: this.organisationId
+    });
+
+    return this.with({
+      relationships: [
+        ...(this.relationships || []),
+        relationship
+      ]
+    });
+  }
+
+  markAsSupersededBy(supersedingDecisionId: string): Decision {
+    if (this.status === 'superseded') {
+      throw new DecisionStateError('Decision is already superseded');
+    }
+
+    const relationship = DecisionRelationship.create({
+      id: DecisionRelationship.createId(supersedingDecisionId, this.id),
+      type: 'supersedes',
+      fromDecisionId: supersedingDecisionId,
+      toDecisionId: this.id,
+      createdAt: new Date(),
+      fromTeamId: this.teamId,
+      fromProjectId: this.projectId,
+      toTeamId: this.teamId,
+      toProjectId: this.projectId,
+      organisationId: this.organisationId
+    });
+
+    return this.with({
+      status: 'superseded',
+      relationships: [
+        ...(this.relationships || []),
+        relationship
+      ]
+    });
+  }
+
   private constructor(props: DecisionProps) {
     this.id = props.id;
     this.title = props.title;
@@ -257,15 +318,14 @@ export class Decision {
   }
 
   with(props: Partial<DecisionProps>): Decision {
-    if (this.status === 'published') {
-      throw new DecisionStateError('Cannot modify a published decision');
+    if (this.status === 'published' || this.status === 'superseded') {
+      throw new DecisionStateError(`Cannot modify ${this.status} decisions`);
     }
-    if (this.status === 'superseded') {
-      throw new DecisionStateError('Cannot modify a superseded decision');
-    }
+
     return Decision.create({
       ...this,
       ...props,
+      updatedAt: new Date()
     });
   }
 

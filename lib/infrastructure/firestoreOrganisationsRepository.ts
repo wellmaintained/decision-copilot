@@ -133,8 +133,7 @@ export class FirestoreOrganisationsRepository implements OrganisationsRepository
             organisationId: id,
             teamId: teamDoc.id,
             projectId: projectDoc.id,
-            blockedByDecisionIds: data.blockedByDecisionIds || [],
-            supersededByDecisionId: data.supersededByDecisionId,
+            relationships: data.relationships || [],
             supportingMaterials: data.supportingMaterials || []
           })
         })

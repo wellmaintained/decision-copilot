@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { Decision, DecisionProps } from '@/lib/domain/Decision'
 import { DecisionStateError, StakeholderError, DecisionDependencyError } from '@/lib/domain/DecisionError'
+import { DecisionRelationship } from '@/lib/domain/DecisionRelationship'
 
 describe('Decision Domain Model', () => {
   const defaultProps: DecisionProps = {
@@ -18,8 +19,8 @@ describe('Decision Domain Model', () => {
     organisationId: 'org-1',
     teamId: 'team-1',
     projectId: 'project-1',
-    blockedByDecisionIds: [],
-    supportingMaterials: []
+    supportingMaterials: [],
+    relationships: []
   }
 
   describe('Project Ownership', () => {
@@ -56,7 +57,7 @@ describe('Decision Domain Model', () => {
       const decision = Decision.create({
         ...defaultProps,
         stakeholders: [
-          { stakeholder_id: 'stakeholder-1', role: 'advisor' }
+          { stakeholder_id: 'stakeholder-1', role: 'consulted' }
         ]
       })
 
@@ -118,7 +119,32 @@ describe('Decision Domain Model', () => {
     it('should correctly determine if can proceed based on completed decisions', () => {
       const decision = Decision.create({
         ...defaultProps,
-        blockedByDecisionIds: ['decision-1', 'decision-2']
+        relationships: [
+          DecisionRelationship.create({
+            id: DecisionRelationship.createId('decision-1', defaultProps.id),
+            type: 'blocks',
+            fromDecisionId: 'decision-1',
+            toDecisionId: defaultProps.id,
+            createdAt: new Date(),
+            fromTeamId: defaultProps.teamId,
+            fromProjectId: defaultProps.projectId,
+            toTeamId: defaultProps.teamId,
+            toProjectId: defaultProps.projectId,
+            organisationId: defaultProps.organisationId
+          }),
+          DecisionRelationship.create({
+            id: DecisionRelationship.createId('decision-2', defaultProps.id),
+            type: 'blocks',
+            fromDecisionId: 'decision-2',
+            toDecisionId: defaultProps.id,
+            createdAt: new Date(),
+            fromTeamId: defaultProps.teamId,
+            fromProjectId: defaultProps.projectId,
+            toTeamId: defaultProps.teamId,
+            toProjectId: defaultProps.projectId,
+            organisationId: defaultProps.organisationId
+          })
+        ]
       })
 
       expect(decision.canProceed(['decision-1'])).toBe(false)
@@ -150,7 +176,32 @@ describe('Decision Domain Model', () => {
     it('should require all blocking decisions to be complete before proceeding', () => {
       const decision = Decision.create({
         ...defaultProps,
-        blockedByDecisionIds: ['blocking-1', 'blocking-2']
+        relationships: [
+          DecisionRelationship.create({
+            id: DecisionRelationship.createId('blocking-1', defaultProps.id),
+            type: 'blocks',
+            fromDecisionId: 'blocking-1',
+            toDecisionId: defaultProps.id,
+            createdAt: new Date(),
+            fromTeamId: defaultProps.teamId,
+            fromProjectId: defaultProps.projectId,
+            toTeamId: defaultProps.teamId,
+            toProjectId: defaultProps.projectId,
+            organisationId: defaultProps.organisationId
+          }),
+          DecisionRelationship.create({
+            id: DecisionRelationship.createId('blocking-2', defaultProps.id),
+            type: 'blocks',
+            fromDecisionId: 'blocking-2',
+            toDecisionId: defaultProps.id,
+            createdAt: new Date(),
+            fromTeamId: defaultProps.teamId,
+            fromProjectId: defaultProps.projectId,
+            toTeamId: defaultProps.teamId,
+            toProjectId: defaultProps.projectId,
+            organisationId: defaultProps.organisationId
+          })
+        ]
       })
 
       expect(decision.canProceed([])).toBe(false)

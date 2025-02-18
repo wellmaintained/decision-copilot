@@ -49,7 +49,7 @@ export class FirestoreDecisionsRepository implements DecisionsRepository {
       organisationId: scope.organisationId,
       teamId: scope.teamId,
       projectId: scope.projectId,
-      blockedByDecisionIds: data.blockedByDecisionIds || []
+      relationships: data.relationships || []
     })
   }
 
@@ -91,7 +91,7 @@ export class FirestoreDecisionsRepository implements DecisionsRepository {
       organisationId: scope.organisationId,
       teamId: scope.teamId,
       projectId: scope.projectId,
-      blockedByDecisionIds: [],
+      relationships: [],
       ...initialData
     } as DecisionProps)
 
@@ -112,14 +112,9 @@ export class FirestoreDecisionsRepository implements DecisionsRepository {
       organisationId: decision.organisationId,
       teamId: decision.teamId,
       projectId: decision.projectId,
-      blockedByDecisionIds: decision.blockedByDecisionIds,
+      relationships: decision.relationships,
       createdAt: Timestamp.fromDate(decision.createdAt),
       updatedAt: Timestamp.fromDate(decision.updatedAt || new Date())
-    }
-
-    // Only include supersededByDecisionId if it's defined
-    if (decision.supersededByDecisionId) {
-      createData.supersededByDecisionId = decision.supersededByDecisionId
     }
 
     await setDoc(docRef, createData)
@@ -147,13 +142,8 @@ export class FirestoreDecisionsRepository implements DecisionsRepository {
       organisationId: decision.organisationId,
       teamId: decision.teamId,
       projectId: decision.projectId,
-      blockedByDecisionIds: decision.blockedByDecisionIds,
+      relationships: decision.relationships,
       updatedAt: Timestamp.fromDate(new Date())
-    }
-
-    // Only include supersededByDecisionId if it's defined
-    if (decision.supersededByDecisionId) {
-      updateData.supersededByDecisionId = decision.supersededByDecisionId
     }
     
     await updateDoc(docRef, updateData)
@@ -315,7 +305,7 @@ export class FirestoreDecisionsRepository implements DecisionsRepository {
       toProjectId: blockedDecision.projectId
     })
 
-    // Update the blocked decision's blockedByDecisionIds
+    // Update the blocked decision's relationships
     const blockedDecisionRef = doc(
       db,
       this.getDecisionPath({
@@ -327,7 +317,14 @@ export class FirestoreDecisionsRepository implements DecisionsRepository {
     )
 
     batch.update(blockedDecisionRef, {
-      blockedByDecisionIds: [...blockedDecision.blockedByDecisionIds, blockingDecisionId]
+      relationships: [
+        ...(blockedDecision.relationships || []),
+        {
+          type: 'blocks',
+          fromDecisionId: blockingDecisionId,
+          toDecisionId: blockedDecisionId
+        }
+      ]
     })
 
     await batch.commit()
@@ -351,7 +348,7 @@ export class FirestoreDecisionsRepository implements DecisionsRepository {
     // Delete the relationship
     batch.delete(relationshipRef)
 
-    // Update the blocked decision's blockedByDecisionIds
+    // Update the blocked decision's relationships
     const blockedDecisionRef = doc(
       db,
       this.getDecisionPath({
@@ -363,7 +360,11 @@ export class FirestoreDecisionsRepository implements DecisionsRepository {
     )
 
     batch.update(blockedDecisionRef, {
-      blockedByDecisionIds: blockedDecision.blockedByDecisionIds.filter(id => id !== blockingDecisionId)
+      relationships: (blockedDecision.relationships || []).filter(
+        r => !(r.type === 'blocks' && 
+              r.fromDecisionId === blockingDecisionId && 
+              r.toDecisionId === blockedDecisionId)
+      )
     })
 
     await batch.commit()
