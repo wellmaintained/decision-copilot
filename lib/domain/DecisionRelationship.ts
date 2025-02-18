@@ -1,6 +1,6 @@
 import { IsDate, IsEnum, IsString } from 'class-validator'
 
-export type DecisionRelationshipType = "blocks" | "supersedes"
+export type DecisionRelationshipType = "blocked_by" | "supersedes"
 
 export interface DecisionRelationshipProps {
   id: string
@@ -25,7 +25,7 @@ export class DecisionRelationship {
   @IsString()
   readonly toDecisionId: string
 
-  @IsEnum(['blocks', 'supersedes'])
+  @IsEnum(['blocked_by', 'supersedes'])
   readonly type: DecisionRelationshipType
 
   @IsDate()

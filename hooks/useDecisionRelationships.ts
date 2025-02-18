@@ -35,7 +35,7 @@ export function useDecisionRelationships(decisionId: string, organisationId: str
     }
   }, [decisionId, organisationId])
 
-  const addRelationship = async (toDecisionId: string, type: 'blocks' | 'supersedes') => {
+  const addRelationship = async (toDecisionId: string, type: 'blocked_by' | 'supersedes') => {
     try {
       await decisionRelationshipsRepository.addRelationship(
         decisionId,

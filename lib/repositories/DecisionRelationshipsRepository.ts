@@ -13,7 +13,7 @@ export interface DecisionRelationshipsRepository {
   addRelationship(
     fromDecisionId: string,
     toDecisionId: string,
-    type: 'blocks' | 'supersedes',
+    type: 'blocked_by' | 'supersedes',
     organisationId: string
   ): Promise<void>;
 
@@ -53,7 +53,7 @@ export class FirebaseDecisionRelationshipsRepository implements DecisionRelation
   async addRelationship(
     fromDecisionId: string,
     toDecisionId: string,
-    type: 'blocks' | 'supersedes',
+    type: 'blocked_by' | 'supersedes',
     organisationId: string
   ): Promise<void> {
     const collectionPath = this.getCollectionPath(organisationId);

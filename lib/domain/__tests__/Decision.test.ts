@@ -122,9 +122,9 @@ describe('Decision Domain Model', () => {
         relationships: [
           DecisionRelationship.create({
             id: DecisionRelationship.createId('decision-1', defaultProps.id),
-            type: 'blocks',
-            fromDecisionId: 'decision-1',
-            toDecisionId: defaultProps.id,
+            type: 'blocked_by',
+            fromDecisionId: defaultProps.id,
+            toDecisionId: 'decision-1',
             createdAt: new Date(),
             fromTeamId: defaultProps.teamId,
             fromProjectId: defaultProps.projectId,
@@ -134,9 +134,9 @@ describe('Decision Domain Model', () => {
           }),
           DecisionRelationship.create({
             id: DecisionRelationship.createId('decision-2', defaultProps.id),
-            type: 'blocks',
-            fromDecisionId: 'decision-2',
-            toDecisionId: defaultProps.id,
+            type: 'blocked_by',
+            fromDecisionId: defaultProps.id,
+            toDecisionId: 'decision-2',
             createdAt: new Date(),
             fromTeamId: defaultProps.teamId,
             fromProjectId: defaultProps.projectId,
@@ -179,9 +179,9 @@ describe('Decision Domain Model', () => {
         relationships: [
           DecisionRelationship.create({
             id: DecisionRelationship.createId('blocking-1', defaultProps.id),
-            type: 'blocks',
-            fromDecisionId: 'blocking-1',
-            toDecisionId: defaultProps.id,
+            type: 'blocked_by',
+            fromDecisionId: defaultProps.id,
+            toDecisionId: 'blocking-1',
             createdAt: new Date(),
             fromTeamId: defaultProps.teamId,
             fromProjectId: defaultProps.projectId,
@@ -191,9 +191,9 @@ describe('Decision Domain Model', () => {
           }),
           DecisionRelationship.create({
             id: DecisionRelationship.createId('blocking-2', defaultProps.id),
-            type: 'blocks',
-            fromDecisionId: 'blocking-2',
-            toDecisionId: defaultProps.id,
+            type: 'blocked_by',
+            fromDecisionId: defaultProps.id,
+            toDecisionId: 'blocking-2',
             createdAt: new Date(),
             fromTeamId: defaultProps.teamId,
             fromProjectId: defaultProps.projectId,

@@ -11,8 +11,6 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog'
 import { Alert, AlertDescription } from '@/components/ui/alert'
-import { DecisionRelationship, DecisionRelationshipType } from '@/lib/domain/DecisionRelationship'
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import {
   Command,
   CommandEmpty,
@@ -30,15 +28,22 @@ import { cn } from '@/lib/utils'
 import { useProjectDecisions } from '@/hooks/useProjectDecisions'
 import { Decision } from '@/lib/domain/Decision'
 
+interface SelectedDecisionDetails {
+  toDecisionId: string
+  toTeamId: string
+  toProjectId: string
+  organisationId: string
+}
+
 interface AddDecisionRelationshipDialogProps {
-  onAdd: (relationship: Omit<DecisionRelationship, 'id' | 'createdAt'>) => Promise<void>
+  onAdd: (details: SelectedDecisionDetails) => Promise<void>
+  relationshipDescription: string
   children?: React.ReactNode
 }
 
-export function AddDecisionRelationshipDialog({ onAdd, children }: AddDecisionRelationshipDialogProps) {
+export function AddDecisionRelationshipDialog({ onAdd, relationshipDescription, children }: AddDecisionRelationshipDialogProps) {
   const [open, setOpen] = useState(false)
   const [selectedDecisionId, setSelectedDecisionId] = useState<string>('')
-  const [selectedType, setSelectedType] = useState<DecisionRelationshipType>('blocks')
   const [errors, setErrors] = useState<string[]>([])
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [comboboxOpen, setComboboxOpen] = useState(false)
@@ -47,7 +52,6 @@ export function AddDecisionRelationshipDialog({ onAdd, children }: AddDecisionRe
 
   const resetForm = () => {
     setSelectedDecisionId('')
-    setSelectedType('blocks')
     setErrors([])
     setIsSubmitting(false)
     setComboboxOpen(false)
@@ -70,11 +74,7 @@ export function AddDecisionRelationshipDialog({ onAdd, children }: AddDecisionRe
       }
 
       await onAdd({
-        fromDecisionId: selectedDecisionId,
         toDecisionId: selectedDecision.id,
-        type: selectedType,
-        fromTeamId: selectedDecision.teamId,
-        fromProjectId: selectedDecision.projectId,
         toTeamId: selectedDecision.teamId,
         toProjectId: selectedDecision.projectId,
         organisationId: selectedDecision.organisationId,
@@ -101,10 +101,7 @@ export function AddDecisionRelationshipDialog({ onAdd, children }: AddDecisionRe
       </DialogTrigger>
       <DialogContent className="sm:max-w-[700px]">
         <DialogHeader>
-          <DialogTitle>Add Related Decision</DialogTitle>
-          <DialogDescription>
-            Select a decision and specify how it relates to this decision.
-          </DialogDescription>
+          <DialogTitle>Select {relationshipDescription} decision</DialogTitle>
         </DialogHeader>
         <div className="grid gap-4 py-4">
           {errors.length > 0 && (
@@ -167,23 +164,6 @@ export function AddDecisionRelationshipDialog({ onAdd, children }: AddDecisionRe
               </PopoverContent>
             </Popover>
           </div>
-          <div className="grid gap-2">
-            <Label>Relationship Type</Label>
-            <RadioGroup
-              value={selectedType}
-              onValueChange={(value) => setSelectedType(value as DecisionRelationshipType)}
-              className="flex gap-4"
-            >
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem value="blocks" id="blocks" />
-                <Label htmlFor="blocks">Blocks</Label>
-              </div>
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem value="supersedes" id="supersedes" />
-                <Label htmlFor="supersedes">Supersedes</Label>
-              </div>
-            </RadioGroup>
-          </div>
         </div>
         <DialogFooter>
           <Button variant="outline" onClick={() => setOpen(false)}>
@@ -193,7 +173,7 @@ export function AddDecisionRelationshipDialog({ onAdd, children }: AddDecisionRe
             onClick={handleAddRelationship}
             disabled={isSubmitting}
           >
-            {isSubmitting ? 'Adding...' : 'Add Relationship'}
+            {isSubmitting ? 'Adding...' : `Add ${relationshipDescription} Decision`}
           </Button>
         </DialogFooter>
       </DialogContent>

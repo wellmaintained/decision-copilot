@@ -273,7 +273,7 @@ export class FirestoreDecisionsRepository implements DecisionsRepository {
     const wouldCreateCycle = await this.checkForCyclicRelationship(
       blockingDecisionId,
       blockedDecisionId,
-      'blocks',
+      'blocked_by',
       organisationId
     )
     if (wouldCreateCycle) {
@@ -297,7 +297,7 @@ export class FirestoreDecisionsRepository implements DecisionsRepository {
     batch.set(relationshipRef, {
       fromDecisionId: blockingDecisionId,
       toDecisionId: blockedDecisionId,
-      type: 'blocks' as DecisionRelationshipType,
+      type: 'blocked_by' as DecisionRelationshipType,
       createdAt: Timestamp.now(),
       fromTeamId: blockingDecision.teamId,
       fromProjectId: blockingDecision.projectId,
@@ -320,7 +320,7 @@ export class FirestoreDecisionsRepository implements DecisionsRepository {
       relationships: [
         ...(blockedDecision.relationships || []),
         {
-          type: 'blocks',
+          type: 'blocked_by',
           fromDecisionId: blockingDecisionId,
           toDecisionId: blockedDecisionId
         }
@@ -361,7 +361,7 @@ export class FirestoreDecisionsRepository implements DecisionsRepository {
 
     batch.update(blockedDecisionRef, {
       relationships: (blockedDecision.relationships || []).filter(
-        r => !(r.type === 'blocks' && 
+        r => !(r.type === 'blocked_by' && 
               r.fromDecisionId === blockingDecisionId && 
               r.toDecisionId === blockedDecisionId)
       )
@@ -467,7 +467,7 @@ export class FirestoreDecisionsRepository implements DecisionsRepository {
     const q = query(
       collection(db, this.getRelationshipsPath(organisationId)),
       where('fromDecisionId', '==', blockingDecisionId),
-      where('type', '==', 'blocks')
+      where('type', '==', 'blocked_by')
     )
     const relationships = await getDocs(q)
     
@@ -488,7 +488,7 @@ export class FirestoreDecisionsRepository implements DecisionsRepository {
     const q = query(
       collection(db, this.getRelationshipsPath(organisationId)),
       where('toDecisionId', '==', blockedDecisionId),
-      where('type', '==', 'blocks')
+      where('type', '==', 'blocked_by')
     )
     const relationships = await getDocs(q)
     

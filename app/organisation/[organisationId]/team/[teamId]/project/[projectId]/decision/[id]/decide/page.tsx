@@ -10,6 +10,7 @@ import { useDecision } from '@/hooks/useDecisions'
 import { DecisionItemList } from '@/components/decision-item-list'
 import { useAuth } from '@/hooks/useAuth'
 import { SupportingMaterialsList } from '@/components/supporting-materials-list'
+import { DecisionRelationshipsList } from '@/components/decision-relationships-list'
 
 export default function DecidePage() {
   const params = useParams()
@@ -79,6 +80,12 @@ export default function DecidePage() {
       <h1 className="text-3xl font-semibold">Decide</h1>
       
       <Card className="p-6 space-y-8">
+
+        <DecisionRelationshipsList
+          relationshipType="blocked_by"
+          fromDecision={decision}
+        />
+
         <DecisionItemList
           title="Options"
           items={decision.options}

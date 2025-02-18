@@ -50,7 +50,7 @@ import {
 } from "@/components/ui/popover";
 import { DecisionRelationshipsList } from '@/components/decision-relationships-list'
 import { useProjectDecisions } from '@/hooks/useProjectDecisions'
-import { DecisionRelationship } from '@/lib/domain/DecisionRelationship'
+import { DecisionRelationship, DecisionRelationshipType } from '@/lib/domain/DecisionRelationship'
 import { useDecisionRelationships } from '@/hooks/useDecisionRelationships'
 
 interface StakeholderGroupProps {
@@ -240,18 +240,6 @@ export default function DecisionIdentityPage() {
     ).values(),
   ).sort((a, b) => a.displayName.localeCompare(b.displayName));
 
-  const getDecisionTitle = (decisionId: string) => {
-    return decisions?.find(d => d.id === decisionId)?.title || 'Unknown Decision'
-  }
-
-  const handleAddRelationship = async (relationship: Omit<DecisionRelationship, 'id' | 'createdAt'>) => {
-    await addRelationship(relationship.toDecisionId, relationship.type);
-  }
-
-  const handleRemoveRelationship = async (relationshipId: string) => {
-    await removeRelationship(relationshipId);
-  }
-
   return (
     <>
       <div className="space-y-3">
@@ -364,6 +352,13 @@ export default function DecisionIdentityPage() {
             />
           </div>
 
+          <div className="space-y-6">
+            <DecisionRelationshipsList
+              relationshipType="supersedes"
+              fromDecision={decision}
+            />
+          </div>
+
           <div className="space-y-3">
             <Label className="text-base text-muted-foreground">Details</Label>
             <div className="border rounded-md">
@@ -417,13 +412,6 @@ export default function DecisionIdentityPage() {
               />
             </div>
           </div>
-
-          <DecisionRelationshipsList
-            relationships={relationships}
-            onAdd={handleAddRelationship}
-            onRemove={handleRemoveRelationship}
-            getDecisionTitle={getDecisionTitle}
-          />
 
           <div className="space-y-3">
             <div className="flex items-center gap-2">

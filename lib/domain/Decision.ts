@@ -143,18 +143,18 @@ export class Decision {
 
   isBlockedBy(decisionId: string): boolean {
     return this.relationships?.some(r => 
-      r.type === 'blocks' && 
-      r.fromDecisionId === decisionId && 
-      r.toDecisionId === this.id
+      r.type === 'blocked_by' && 
+      r.fromDecisionId === this.id && 
+      r.toDecisionId === decisionId
     ) ?? false;
   }
 
   canProceed(completedDecisionIds: string[]): boolean {
     const blockingDecisions = this.relationships?.filter(r => 
-      r.type === 'blocks' && 
-      r.toDecisionId === this.id
+      r.type === 'blocked_by' && 
+      r.fromDecisionId === this.id
     ) ?? [];
-    return blockingDecisions.every(r => completedDecisionIds.includes(r.fromDecisionId));
+    return blockingDecisions.every(r => completedDecisionIds.includes(r.toDecisionId));
   }
 
   isSuperseded(): boolean {
@@ -206,18 +206,18 @@ export class Decision {
     }
 
     if (this.relationships?.some(r => 
-      r.type === 'blocks' && 
-      r.fromDecisionId === blockingDecisionId && 
-      r.toDecisionId === this.id
+      r.type === 'blocked_by' && 
+      r.fromDecisionId === this.id && 
+      r.toDecisionId === blockingDecisionId
     )) {
       throw new DecisionDependencyError(`Decision ${blockingDecisionId} already blocks this decision`);
     }
 
     const relationship = DecisionRelationship.create({
-      id: DecisionRelationship.createId(blockingDecisionId, this.id),
-      type: 'blocks',
-      fromDecisionId: blockingDecisionId,
-      toDecisionId: this.id,
+      id: DecisionRelationship.createId(this.id, blockingDecisionId),
+      type: 'blocked_by',
+      fromDecisionId: this.id,
+      toDecisionId: blockingDecisionId,
       createdAt: new Date(),
       fromTeamId: this.teamId,
       fromProjectId: this.projectId,

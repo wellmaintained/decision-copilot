@@ -2,6 +2,9 @@ import { Button } from '@/components/ui/button'
 import { DecisionRelationship, DecisionRelationshipType } from '@/lib/domain/DecisionRelationship'
 import { X, Plus } from 'lucide-react'
 import { AddDecisionRelationshipDialog } from '@/components/add-decision-relationship-dialog'
+import { useDecisionRelationships } from '@/hooks/useDecisionRelationships'
+import { Decision } from '@/lib/domain/Decision'
+import { useProjectDecisions } from '@/hooks/useProjectDecisions'
 
 interface DecisionRelationshipItemProps {
   relationship: DecisionRelationship
@@ -13,7 +16,6 @@ function DecisionRelationshipItem({ relationship, onRemove, relatedDecisionTitle
   return (
     <div className="flex items-center justify-between p-2 bg-muted rounded-md group">
       <div className="flex items-center gap-2 flex-1 min-w-0">
-        <span className="text-sm text-muted-foreground capitalize">{relationship.type}:</span>
         <span className="text-sm truncate">{relatedDecisionTitle}</span>
       </div>
       <Button
@@ -29,55 +31,92 @@ function DecisionRelationshipItem({ relationship, onRemove, relatedDecisionTitle
   )
 }
 
-interface DecisionRelationshipsListProps {
-  relationships: DecisionRelationship[]
-  onAdd: (relationship: Omit<DecisionRelationship, 'id' | 'createdAt'>) => Promise<void>
-  onRemove: (relationshipId: string) => Promise<void>
-  getDecisionTitle: (decisionId: string) => string
+interface SelectedDecisionDetails {
+  toDecisionId: string
+  toTeamId: string
+  toProjectId: string
+  organisationId: string
 }
 
-export function DecisionRelationshipsList({ relationships, onAdd, onRemove, getDecisionTitle }: DecisionRelationshipsListProps) {
-  // Group relationships by type
-  const groupedRelationships = relationships.reduce((acc, relationship) => {
-    if (!acc[relationship.type]) {
-      acc[relationship.type] = [];
+interface DecisionRelationshipsListProps {
+  relationshipType: DecisionRelationshipType
+  fromDecision: Decision
+}
+
+export function DecisionRelationshipsList({ 
+  relationshipType, 
+  fromDecision
+}: DecisionRelationshipsListProps) {
+  const { addRelationship, removeRelationship, relationships } = useDecisionRelationships(fromDecision.id, fromDecision.organisationId);
+  const { decisions } = useProjectDecisions();
+
+  const getDecisionTitle = (decisionId: string) => {
+    return decisions?.find(d => d.id === decisionId)?.title || 'Unknown Decision'
+  }
+
+  // Filter relationships to only show the specified type
+  const filteredRelationships = relationships.filter(relationship => relationship.type === relationshipType);
+
+  const handleAdd = async (details: SelectedDecisionDetails) => {
+    await addRelationship(details.toDecisionId, relationshipType);
+  };
+
+  const handleRemove = async (relationshipId: string) => {
+    await removeRelationship(relationshipId);
+  };
+
+  const getRelationshipDescription = (type: DecisionRelationshipType): string => {
+    switch (type) {
+      case 'supersedes':
+        return 'supersedes';
+      case 'blocked_by':
+        return 'blocked by';
+      default:
+        return type;
     }
-    acc[relationship.type].push(relationship);
-    return acc;
-  }, {} as Record<DecisionRelationshipType, DecisionRelationship[]>);
+  };
+
+  const getRelationshipDescriptionForAddDialog = (type: DecisionRelationshipType): string => {
+    switch (type) {
+      case 'supersedes':
+        return 'superseded';
+      case 'blocked_by':
+        return 'blocking';
+      default:
+        return type;
+    }
+  };
 
   return (
     <div className="space-y-4">
       <div className="flex items-center gap-2">
-        <h2 className="text-xl text-muted-foreground">Related Decisions</h2>
-        <AddDecisionRelationshipDialog onAdd={onAdd}>
+        <h2 className="text-base text-muted-foreground"><span className="capitalize">{getRelationshipDescription(relationshipType)} decision</span>(s)</h2>
+        <AddDecisionRelationshipDialog 
+          onAdd={handleAdd}
+          relationshipDescription={getRelationshipDescriptionForAddDialog(relationshipType)}
+        >
           <Button 
             variant="ghost" 
             size="icon" 
             className="h-8 w-8"
-            title="Add related decision"
+            title={`Add ${relationshipType} decision`}
           >
             <Plus className="h-4 w-4" />
           </Button>
         </AddDecisionRelationshipDialog>
       </div>
-      <div className="space-y-4">
-        {Object.entries(groupedRelationships).map(([type, typeRelationships]) => (
-          <div key={type} className="space-y-2">
-            <h3 className="text-sm font-medium text-muted-foreground capitalize">{type}</h3>
-            {typeRelationships.map((relationship) => (
-              <DecisionRelationshipItem
-                key={relationship.id}
-                relationship={relationship}
-                onRemove={onRemove}
-                relatedDecisionTitle={getDecisionTitle(relationship.toDecisionId)}
-              />
-            ))}
-          </div>
+      <div className="space-y-2">
+        {filteredRelationships.map((relationship) => (
+          <DecisionRelationshipItem
+            key={relationship.id}
+            relationship={relationship}
+            onRemove={handleRemove}
+            relatedDecisionTitle={getDecisionTitle(relationship.toDecisionId)}
+          />
         ))}
-        {relationships.length === 0 && (
+        {filteredRelationships.length === 0 && (
           <p className="text-sm text-muted-foreground italic">
-            No related decisions added yet
+            None
           </p>
         )}
       </div>
