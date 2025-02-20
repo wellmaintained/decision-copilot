@@ -1,0 +1,12 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Allow read/write access to any authenticated user
+    // TODO: Add additional restrictions to only allow users to access their own organizations' documents
+    match /{document=**} {
+      allow read, write: if request.auth != null;
+    }
+    
+  }
+} 

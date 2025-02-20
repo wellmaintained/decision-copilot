@@ -27,8 +27,9 @@ export const db = getFirestore(app);
 export const auth = getAuth(app);
 export const functions = getFunctions(app);
 
-// Connect to emulators in development
-if (process.env.NODE_ENV === 'development') {
+// Connect to emulators in test and development
+if (process.env.NODE_ENV === 'development' || process.env.NODE_ENV === 'test') {
+  console.log('connecting to emulators because NODE_ENV:', process.env.NODE_ENV);
   connectFirestoreEmulator(db, '127.0.0.1', 8080);
   connectAuthEmulator(auth, 'http://127.0.0.1:9099');
   connectFunctionsEmulator(functions, '127.0.0.1', 5001);

@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "concurrently -n \"emulators,next\" \"pnpm run dev:emulators:with-data\" \"wait-on -l tcp:4400 -t 30000 && pnpm run dev:next\"",
     "dev:next": "next dev --turbopack",
-    "dev:emulators:with-data": "firebase emulators:start --import=.data/emulators/firebase-data",
+    "dev:emulators:with-data": "firebase emulators:start --import=.data/emulators/firebase-data --only auth,firestore",
     "emulators:export": "firebase emulators:export .data/emulators/firebase-data",
     "check:emulators": "wait-on -l tcp:4400 -t 5000 && echo 'Emulator Hub is available!'",
     "build": "next build",
@@ -14,7 +14,9 @@
     "firebase": "firebase",
     "deploy": "next build && firebase deploy",
     "test": "vitest --run",
-    "test:watch": "vitest --watch"
+    "test:watch": "vitest --watch",
+    "test:unit": "vitest run --exclude '**/*.integration.test.ts'",
+    "test:unit:watch": "vitest --watch --exclude '**/*.integration.test.ts'"
   },
   "dependencies": {
     "@google-cloud/functions-framework": "^3.4.5",

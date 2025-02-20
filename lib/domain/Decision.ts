@@ -14,7 +14,7 @@ export const DecisionWorkflowSteps = [
 
 export type DecisionWorkflowStep = typeof DecisionWorkflowSteps[number];
 
-export type DecisionStatus = "draft" | "published" | "superseded";
+export type DecisionStatus = "in_progress" | "blocked" | "published" | "superseded";
 export type DecisionMethod = "accountable_individual" | "consent";
 export type StakeholderRole = "decider" | "consulted" | "informed";
 export type Cost = "low" | "medium" | "high";
@@ -47,7 +47,7 @@ export type DecisionProps = {
   decisionMethod?: string;
   reversibility: Reversibility;
   stakeholders: DecisionStakeholderRole[];
-  status: DecisionStatus;
+  publishDate?: Date;
   updatedAt?: Date;
   driverStakeholderId: string;
   supportingMaterials?: SupportingMaterial[];
@@ -95,8 +95,9 @@ export class Decision {
   @IsArray()
   readonly stakeholders: DecisionStakeholderRole[];
 
-  @IsEnum(['draft', 'published', 'superseded'])
-  readonly status: DecisionStatus;
+  @IsOptional()
+  @IsDate()
+  readonly publishDate?: Date;
 
   @IsOptional()
   @IsDate()
@@ -120,6 +121,32 @@ export class Decision {
   @IsOptional()
   @IsArray()
   readonly relationships?: DecisionRelationship[];
+
+  get status(): DecisionStatus {
+    // Check if superseded
+    if (this.relationships?.some(r => 
+      r.type === 'supersedes' && 
+      r.toDecisionId === this.id
+    )) {
+      return 'superseded';
+    }
+
+    // Check if blocked
+    if (this.relationships?.some(r => 
+      r.type === 'blocked_by' && 
+      r.toDecisionId === this.id
+    )) {
+      return 'blocked';
+    }
+
+    // Check if published
+    if (this.publishDate) {
+      return 'published';
+    }
+
+    // Default state
+    return 'in_progress';
+  }
 
   get currentStep(): DecisionWorkflowStep {
     if (this.status === 'published' || this.status === 'superseded') {
@@ -253,7 +280,6 @@ export class Decision {
     });
 
     return this.with({
-      status: 'superseded',
       relationships: [
         ...(this.relationships || []),
         relationship
@@ -273,7 +299,7 @@ export class Decision {
     this.decisionMethod = props.decisionMethod;
     this.reversibility = props.reversibility;
     this.stakeholders = props.stakeholders;
-    this.status = props.status;
+    this.publishDate = props.publishDate;
     this.updatedAt = props.updatedAt;
     this.driverStakeholderId = props.driverStakeholderId;
     this.supportingMaterials = props.supportingMaterials || [];
@@ -299,7 +325,6 @@ export class Decision {
       options: [],
       reversibility: 'hat' as Reversibility,
       stakeholders: [],
-      status: 'draft',
       updatedAt: now,
       driverStakeholderId: '',
       decision: '',

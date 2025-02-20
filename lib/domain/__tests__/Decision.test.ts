@@ -14,7 +14,6 @@ describe('Decision Domain Model', () => {
     options: [],
     reversibility: 'hat',
     stakeholders: [],
-    status: 'draft',
     driverStakeholderId: 'driver-1',
     organisationId: 'org-1',
     teamId: 'team-1',
@@ -68,16 +67,90 @@ describe('Decision Domain Model', () => {
   })
 
   describe('Decision State Management', () => {
+    it('should compute status correctly based on relationships and publishDate', () => {
+      const baseDecision = Decision.create(defaultProps);
+      expect(baseDecision.status).toBe('in_progress');
+
+      // Test published status
+      const publishedDecision = Decision.create({
+        ...defaultProps,
+        publishDate: new Date()
+      });
+      expect(publishedDecision.status).toBe('published');
+
+      // Test blocked status
+      const blockedDecision = Decision.create({
+        ...defaultProps,
+        relationships: [
+          DecisionRelationship.create({
+            id: 'rel-1',
+            type: 'blocked_by',
+            fromDecisionId: 'other-decision',
+            toDecisionId: defaultProps.id,
+            createdAt: new Date(),
+            fromTeamId: defaultProps.teamId,
+            fromProjectId: defaultProps.projectId,
+            toTeamId: defaultProps.teamId,
+            toProjectId: defaultProps.projectId,
+            organisationId: defaultProps.organisationId
+          })
+        ]
+      });
+      expect(blockedDecision.status).toBe('blocked');
+
+      // Test superseded status
+      const supersededDecision = Decision.create({
+        ...defaultProps,
+        relationships: [
+          DecisionRelationship.create({
+            id: 'rel-2',
+            type: 'supersedes',
+            fromDecisionId: 'new-decision',
+            toDecisionId: defaultProps.id,
+            createdAt: new Date(),
+            fromTeamId: defaultProps.teamId,
+            fromProjectId: defaultProps.projectId,
+            toTeamId: defaultProps.teamId,
+            toProjectId: defaultProps.projectId,
+            organisationId: defaultProps.organisationId
+          })
+        ]
+      });
+      expect(supersededDecision.status).toBe('superseded');
+    });
+
+    it('should prioritize superseded status over other statuses', () => {
+      const decision = Decision.create({
+        ...defaultProps,
+        publishDate: new Date(),
+        relationships: [
+          DecisionRelationship.create({
+            id: 'rel-1',
+            type: 'supersedes',
+            fromDecisionId: 'new-decision',
+            toDecisionId: defaultProps.id,
+            createdAt: new Date(),
+            fromTeamId: defaultProps.teamId,
+            fromProjectId: defaultProps.projectId,
+            toTeamId: defaultProps.teamId,
+            toProjectId: defaultProps.projectId,
+            organisationId: defaultProps.organisationId
+          })
+        ]
+      });
+      expect(decision.status).toBe('superseded');
+    });
+
     it('should throw error when modifying published decisions', () => {
       const publishedDecision = Decision.create({
         ...defaultProps,
-        status: 'published'
-      })
+        publishDate: new Date()
+      });
 
       expect(() => {
         publishedDecision.with({ title: 'New Title' })
       }).toThrow(DecisionStateError)
-    })
+    });
   })
 
   describe('Workflow Steps', () => {
@@ -94,7 +167,7 @@ describe('Decision Domain Model', () => {
       const withDecision = withOptions.with({ decision: 'Final decision' })
       expect(withDecision.currentStep.label).toBe('Choose')
 
-      const published = withDecision.with({ status: 'published' })
+      const published = withDecision.with({ publishDate: new Date() })
       expect(published.currentStep.label).toBe('Publish')
     })
   })

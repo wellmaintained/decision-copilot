@@ -3,13 +3,25 @@ import path from 'path'
 
 export default defineConfig({
   test: {
-    environment: 'node',
-    globals: true,
+    include: [
+      'lib/**/*.integration.test.ts',
+      'lib/**/*.test.ts',
+      'lib/**/*.spec.ts'
+    ],
     exclude: [
       '**/node_modules/**',
       '**/.trunk/**',
-      '**/dist/**'
-    ]
+      '**/dist/**',
+      '**/.next/**'
+    ],
+    environment: 'node',
+    globals: true,
+    testTimeout: 10000,
+    setupFiles: ['./vitest.setup.ts'],
+    reporters: ['verbose'],
+    typecheck: {
+      enabled: true
+    }
   },
   resolve: {
     alias: {
