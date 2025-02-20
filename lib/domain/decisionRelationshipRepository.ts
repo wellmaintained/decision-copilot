@@ -9,10 +9,7 @@ export interface DecisionRelationshipRepository {
   ): () => void;
 
   addRelationship(
-    fromDecisionId: string,
-    toDecisionId: string,
-    type: 'blocked_by' | 'supersedes',
-    organisationId: string
+    relationship: DecisionRelationship
   ): Promise<string>;
 
   removeRelationship(relationshipId: string, organisationId: string): Promise<void>;

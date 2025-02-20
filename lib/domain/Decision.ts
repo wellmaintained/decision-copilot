@@ -229,19 +229,14 @@ export class Decision {
 
   addBlockingDecision(blockingDecisionId: string): Decision {
     if (blockingDecisionId === this.id) {
-      throw new DecisionDependencyError('A decision cannot block itself');
+      throw new DecisionDependencyError('Decision cannot block itself');
     }
 
-    if (this.relationships?.some(r => 
-      r.type === 'blocked_by' && 
-      r.fromDecisionId === this.id && 
-      r.toDecisionId === blockingDecisionId
-    )) {
+    if (this.isBlockedBy(blockingDecisionId)) {
       throw new DecisionDependencyError(`Decision ${blockingDecisionId} already blocks this decision`);
     }
 
     const relationship = DecisionRelationship.create({
-      id: DecisionRelationship.createId(this.id, blockingDecisionId),
       type: 'blocked_by',
       fromDecisionId: this.id,
       toDecisionId: blockingDecisionId,
@@ -267,7 +262,6 @@ export class Decision {
     }
 
     const relationship = DecisionRelationship.create({
-      id: DecisionRelationship.createId(supersedingDecisionId, this.id),
       type: 'supersedes',
       fromDecisionId: supersedingDecisionId,
       toDecisionId: this.id,

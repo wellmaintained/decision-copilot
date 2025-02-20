@@ -194,7 +194,6 @@ describe('Decision Domain Model', () => {
         ...defaultProps,
         relationships: [
           DecisionRelationship.create({
-            id: DecisionRelationship.createId('decision-1', defaultProps.id),
             type: 'blocked_by',
             fromDecisionId: defaultProps.id,
             toDecisionId: 'decision-1',
@@ -206,7 +205,6 @@ describe('Decision Domain Model', () => {
             organisationId: defaultProps.organisationId
           }),
           DecisionRelationship.create({
-            id: DecisionRelationship.createId('decision-2', defaultProps.id),
             type: 'blocked_by',
             fromDecisionId: defaultProps.id,
             toDecisionId: 'decision-2',
@@ -251,7 +249,6 @@ describe('Decision Domain Model', () => {
         ...defaultProps,
         relationships: [
           DecisionRelationship.create({
-            id: DecisionRelationship.createId('blocking-1', defaultProps.id),
             type: 'blocked_by',
             fromDecisionId: defaultProps.id,
             toDecisionId: 'blocking-1',
@@ -263,7 +260,6 @@ describe('Decision Domain Model', () => {
             organisationId: defaultProps.organisationId
           }),
           DecisionRelationship.create({
-            id: DecisionRelationship.createId('blocking-2', defaultProps.id),
             type: 'blocked_by',
             fromDecisionId: defaultProps.id,
             toDecisionId: 'blocking-2',

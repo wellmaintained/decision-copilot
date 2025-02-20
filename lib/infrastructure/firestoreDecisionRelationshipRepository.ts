@@ -1,4 +1,4 @@
-import { collection, query, where, onSnapshot, addDoc, deleteDoc, doc, serverTimestamp, QuerySnapshot, DocumentData } from 'firebase/firestore'
+import { collection, query, where, onSnapshot, setDoc, deleteDoc, doc, serverTimestamp, QuerySnapshot, DocumentData } from 'firebase/firestore'
 import { db } from '@/lib/firebase'
 import { DecisionRelationship } from '@/lib/domain/DecisionRelationship'
 import { DecisionRelationshipRepository } from '@/lib/domain/decisionRelationshipRepository'
@@ -34,19 +34,22 @@ export class FirestoreDecisionRelationshipRepository implements DecisionRelation
   }
 
   async addRelationship(
-    fromDecisionId: string,
-    toDecisionId: string,
-    type: 'blocked_by' | 'supersedes',
-    organisationId: string
+    relationship: DecisionRelationship
   ): Promise<string> {
-    const collectionPath = this.getCollectionPath(organisationId);
-    const docRef = await addDoc(collection(db, collectionPath), {
-      fromDecisionId,
-      toDecisionId,
-      type,
-      createdAt: serverTimestamp()
+    const collectionPath = this.getCollectionPath(relationship.organisationId);
+    const docRef = doc(db, collectionPath, relationship.id);
+    await setDoc(docRef, {
+      fromDecisionId: relationship.fromDecisionId,
+      toDecisionId: relationship.toDecisionId,
+      type: relationship.type,
+      createdAt: serverTimestamp(),
+      fromTeamId: relationship.fromTeamId,
+      fromProjectId: relationship.fromProjectId,
+      toTeamId: relationship.toTeamId,
+      toProjectId: relationship.toProjectId,
+      organisationId: relationship.organisationId
     });
-    return docRef.id;
+    return relationship.id;
   }
 
   async removeRelationship(relationshipId: string, organisationId: string): Promise<void> {

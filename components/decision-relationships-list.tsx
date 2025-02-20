@@ -2,7 +2,7 @@ import { Button } from '@/components/ui/button'
 import { DecisionRelationship, DecisionRelationshipType } from '@/lib/domain/DecisionRelationship'
 import { X, Plus } from 'lucide-react'
 import { AddDecisionRelationshipDialog } from '@/components/add-decision-relationship-dialog'
-import { useDecisionRelationships } from '@/hooks/useDecisionRelationships'
+import { useDecisionRelationships, SelectedDecisionDetails } from '@/hooks/useDecisionRelationships'
 import { Decision } from '@/lib/domain/Decision'
 import { useProjectDecisions } from '@/hooks/useProjectDecisions'
 
@@ -31,13 +31,6 @@ function DecisionRelationshipItem({ relationship, onRemove, relatedDecisionTitle
   )
 }
 
-interface SelectedDecisionDetails {
-  toDecisionId: string
-  toTeamId: string
-  toProjectId: string
-  organisationId: string
-}
-
 interface DecisionRelationshipsListProps {
   relationshipType: DecisionRelationshipType
   fromDecision: Decision
@@ -47,7 +40,7 @@ export function DecisionRelationshipsList({
   relationshipType, 
   fromDecision
 }: DecisionRelationshipsListProps) {
-  const { addRelationship, removeRelationship, relationships } = useDecisionRelationships(fromDecision.id, fromDecision.organisationId);
+  const { addRelationship, removeRelationship, relationships } = useDecisionRelationships(fromDecision);
   const { decisions } = useProjectDecisions();
 
   const getDecisionTitle = (decisionId: string) => {
@@ -57,8 +50,8 @@ export function DecisionRelationshipsList({
   // Filter relationships to only show the specified type
   const filteredRelationships = relationships.filter(relationship => relationship.type === relationshipType);
 
-  const handleAdd = async (details: SelectedDecisionDetails) => {
-    await addRelationship(details.toDecisionId, relationshipType);
+  const handleAdd = async (selectedDecisionDetails: SelectedDecisionDetails) => {
+    await addRelationship(selectedDecisionDetails, relationshipType);
   };
 
   const handleRemove = async (relationshipId: string) => {

@@ -3,7 +3,6 @@ import { IsDate, IsEnum, IsString } from 'class-validator'
 export type DecisionRelationshipType = "blocked_by" | "supersedes"
 
 export interface DecisionRelationshipProps {
-  id: string
   fromDecisionId: string
   toDecisionId: string
   type: DecisionRelationshipType
@@ -47,7 +46,7 @@ export class DecisionRelationship {
   readonly organisationId: string
 
   private constructor(props: DecisionRelationshipProps) {
-    this.id = props.id
+    this.id = `${props.fromDecisionId}_${props.toDecisionId}`
     this.fromDecisionId = props.fromDecisionId
     this.toDecisionId = props.toDecisionId
     this.type = props.type
@@ -61,9 +60,5 @@ export class DecisionRelationship {
 
   static create(props: DecisionRelationshipProps): DecisionRelationship {
     return new DecisionRelationship(props)
-  }
-
-  static createId(fromDecisionId: string, toDecisionId: string): string {
-    return `${fromDecisionId}_${toDecisionId}`
   }
 } 

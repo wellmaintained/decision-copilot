@@ -1,14 +1,22 @@
 import { useState, useEffect } from 'react'
-import { DecisionRelationship } from '@/lib/domain/DecisionRelationship'
+import { DecisionRelationship, DecisionRelationshipType } from '@/lib/domain/DecisionRelationship'
 import { decisionRelationshipRepository } from '@/lib/infrastructure/firestoreDecisionRelationshipRepository'
+import { Decision } from '@/lib/domain/Decision'
 
-export function useDecisionRelationships(decisionId: string, organisationId: string) {
+export interface SelectedDecisionDetails {
+  toDecisionId: string
+  toTeamId: string
+  toProjectId: string
+  organisationId: string
+}
+
+export function useDecisionRelationships(fromDecision: Decision) {
   const [relationships, setRelationships] = useState<DecisionRelationship[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<Error | null>(null)
 
   useEffect(() => {
-    if (!decisionId || !organisationId) {
+    if (!fromDecision) {
       setRelationships([])
       setLoading(false)
       return
@@ -18,8 +26,8 @@ export function useDecisionRelationships(decisionId: string, organisationId: str
     setError(null)
 
     const unsubscribe = decisionRelationshipRepository.subscribeToDecisionRelationships(
-      decisionId,
-      organisationId,
+      fromDecision.id,
+      fromDecision.organisationId,
       (relationships) => {
         setRelationships(relationships)
         setLoading(false)
@@ -33,16 +41,23 @@ export function useDecisionRelationships(decisionId: string, organisationId: str
     return () => {
       unsubscribe()
     }
-  }, [decisionId, organisationId])
+  }, [fromDecision])
 
-  const addRelationship = async (toDecisionId: string, type: 'blocked_by' | 'supersedes') => {
+  const addRelationship = async (toDecision: SelectedDecisionDetails, type: DecisionRelationshipType) => {
     try {
-      await decisionRelationshipRepository.addRelationship(
-        decisionId,
-        toDecisionId,
+      const relationship = DecisionRelationship.create({
+        fromDecisionId: fromDecision.id,
+        toDecisionId: toDecision.toDecisionId,
         type,
-        organisationId
-      )
+        createdAt: new Date(),
+        fromTeamId: fromDecision.teamId,
+        fromProjectId: fromDecision.projectId,
+        toTeamId: toDecision.toTeamId,
+        toProjectId: toDecision.toProjectId,
+        organisationId: fromDecision.organisationId
+      });
+
+      await decisionRelationshipRepository.addRelationship(relationship)
     } catch (error) {
       setError(error as Error)
       throw error
@@ -51,7 +66,7 @@ export function useDecisionRelationships(decisionId: string, organisationId: str
 
   const removeRelationship = async (relationshipId: string) => {
     try {
-      await decisionRelationshipRepository.removeRelationship(relationshipId, organisationId)
+      await decisionRelationshipRepository.removeRelationship(relationshipId, fromDecision.organisationId)
     } catch (error) {
       setError(error as Error)
       throw error

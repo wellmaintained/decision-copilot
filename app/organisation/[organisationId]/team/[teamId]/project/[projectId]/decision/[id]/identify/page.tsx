@@ -147,14 +147,6 @@ export default function DecisionIdentityPage() {
   } = useDecision(decisionId);
 
   const {
-    relationships,
-    loading: relationshipsLoading,
-    error: relationshipsError,
-    addRelationship,
-    removeRelationship,
-  } = useDecisionRelationships(decisionId, organisationId);
-
-  const {
     stakeholders,
     loading: stakeholdersLoading,
     error: stakeholdersError,
@@ -167,25 +159,17 @@ export default function DecisionIdentityPage() {
 
   const currentOrg = organisations?.find((org) => org.id === organisationId);
 
-  const {
-    decisions,
-    loading: projectDecisionsLoading,
-    error: projectDecisionsError,
-  } = useProjectDecisions()
-
   if (
     decisionsLoading ||
     stakeholdersLoading ||
     stakeholderTeamsLoading ||
-    organisationsLoading ||
-    projectDecisionsLoading ||
-    relationshipsLoading
+    organisationsLoading
   ) {
     return <div>Loading...</div>
   }
 
-  if (decisionsError || projectDecisionsError || relationshipsError) {
-    return <div>Error: {(decisionsError || projectDecisionsError || relationshipsError)?.message}</div>
+  if (decisionsError) {
+    return <div>Error: {(decisionsError)?.message}</div>
   }
 
   if (!decision || !currentOrg) {
