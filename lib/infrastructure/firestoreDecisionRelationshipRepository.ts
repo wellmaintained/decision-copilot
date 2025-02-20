@@ -1,26 +1,9 @@
 import { collection, query, where, onSnapshot, addDoc, deleteDoc, doc, serverTimestamp, QuerySnapshot, DocumentData } from 'firebase/firestore'
 import { db } from '@/lib/firebase'
 import { DecisionRelationship } from '@/lib/domain/DecisionRelationship'
+import { DecisionRelationshipRepository } from '@/lib/domain/decisionRelationshipRepository'
 
-export interface DecisionRelationshipsRepository {
-  subscribeToDecisionRelationships(
-    decisionId: string,
-    organisationId: string,
-    onData: (relationships: DecisionRelationship[]) => void,
-    onError: (error: Error) => void
-  ): () => void;
-
-  addRelationship(
-    fromDecisionId: string,
-    toDecisionId: string,
-    type: 'blocked_by' | 'supersedes',
-    organisationId: string
-  ): Promise<void>;
-
-  removeRelationship(relationshipId: string, organisationId: string): Promise<void>;
-}
-
-export class FirebaseDecisionRelationshipsRepository implements DecisionRelationshipsRepository {
+export class FirestoreDecisionRelationshipRepository implements DecisionRelationshipRepository {
   private getCollectionPath(organisationId: string): string {
     return `organisations/${organisationId}/decision_relationships`;
   }
@@ -55,14 +38,15 @@ export class FirebaseDecisionRelationshipsRepository implements DecisionRelation
     toDecisionId: string,
     type: 'blocked_by' | 'supersedes',
     organisationId: string
-  ): Promise<void> {
+  ): Promise<string> {
     const collectionPath = this.getCollectionPath(organisationId);
-    await addDoc(collection(db, collectionPath), {
+    const docRef = await addDoc(collection(db, collectionPath), {
       fromDecisionId,
       toDecisionId,
       type,
       createdAt: serverTimestamp()
     });
+    return docRef.id;
   }
 
   async removeRelationship(relationshipId: string, organisationId: string): Promise<void> {
@@ -72,4 +56,4 @@ export class FirebaseDecisionRelationshipsRepository implements DecisionRelation
 }
 
 // Export a singleton instance
-export const decisionRelationshipsRepository = new FirebaseDecisionRelationshipsRepository(); 
+export const decisionRelationshipRepository = new FirestoreDecisionRelationshipRepository(); 

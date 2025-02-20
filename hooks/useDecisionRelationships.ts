@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { DecisionRelationship } from '@/lib/domain/DecisionRelationship'
-import { decisionRelationshipsRepository } from '@/lib/repositories/DecisionRelationshipsRepository'
+import { decisionRelationshipRepository } from '@/lib/infrastructure/firestoreDecisionRelationshipRepository'
 
 export function useDecisionRelationships(decisionId: string, organisationId: string) {
   const [relationships, setRelationships] = useState<DecisionRelationship[]>([])
@@ -17,7 +17,7 @@ export function useDecisionRelationships(decisionId: string, organisationId: str
     setLoading(true)
     setError(null)
 
-    const unsubscribe = decisionRelationshipsRepository.subscribeToDecisionRelationships(
+    const unsubscribe = decisionRelationshipRepository.subscribeToDecisionRelationships(
       decisionId,
       organisationId,
       (relationships) => {
@@ -37,7 +37,7 @@ export function useDecisionRelationships(decisionId: string, organisationId: str
 
   const addRelationship = async (toDecisionId: string, type: 'blocked_by' | 'supersedes') => {
     try {
-      await decisionRelationshipsRepository.addRelationship(
+      await decisionRelationshipRepository.addRelationship(
         decisionId,
         toDecisionId,
         type,
@@ -51,7 +51,7 @@ export function useDecisionRelationships(decisionId: string, organisationId: str
 
   const removeRelationship = async (relationshipId: string) => {
     try {
-      await decisionRelationshipsRepository.removeRelationship(relationshipId, organisationId)
+      await decisionRelationshipRepository.removeRelationship(relationshipId, organisationId)
     } catch (error) {
       setError(error as Error)
       throw error
