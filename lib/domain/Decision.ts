@@ -122,32 +122,46 @@ export class Decision {
   @IsArray()
   readonly relationships?: DecisionRelationship[];
 
-  get supersededBy(): DecisionRelationship[] {
-    return this.relationships?.filter(r => 
-      r.type === 'supersedes' && 
-      r.toDecisionId === this.id
-    ) ?? [];
-  }
-
+  // These relationship are captured in the UI and stored as DecisionRelationship objects
   get supersedes(): DecisionRelationship[] {
     return this.relationships?.filter(r => 
       r.type === 'supersedes' && 
       r.fromDecisionId === this.id
     ) ?? [];
   }
-
   get blockedBy(): DecisionRelationship[] {
-    return this.relationships?.filter(r => 
-      r.type === 'blocked_by' && 
-      r.toDecisionId === this.id
-    ) ?? [];
-  }
-
-  get blocks(): DecisionRelationship[] {
     return this.relationships?.filter(r => 
       r.type === 'blocked_by' && 
       r.fromDecisionId === this.id
     ) ?? [];
+  }
+
+  // These relationships are the inverse of the DecisionRelationship objects
+  get blocks(): DecisionRelationship[] {
+    const blockedByWithThisDecisionAsTheToDecision = this.relationships?.filter(r => 
+      r.type === 'blocked_by' && 
+      r.toDecisionId === this.id
+    ) ?? [];
+    // Invert the relationship to derive 'blocks' relationships
+    return blockedByWithThisDecisionAsTheToDecision.map(r => DecisionRelationship.create({
+      ...r,
+      type: 'blocks',
+      fromDecisionId: r.toDecisionId,
+      toDecisionId: r.fromDecisionId,
+    }));
+  }
+  get supersededBy(): DecisionRelationship[] {
+    const supersedesWithThisDecisionAsTheToDecision = this.relationships?.filter(r => 
+      r.type === 'supersedes' && 
+      r.toDecisionId === this.id
+    ) ?? [];
+    // Invert the relationship to derive 'superseded_by' relationships
+    return supersedesWithThisDecisionAsTheToDecision.map(r => DecisionRelationship.create({
+      ...r,
+      type: 'superseded_by',
+      fromDecisionId: r.toDecisionId,
+      toDecisionId: r.fromDecisionId,
+    }));
   }
 
   get status(): DecisionStatus {
@@ -156,14 +170,14 @@ export class Decision {
       return 'superseded';
     }
 
-    // Check if blocked
-    if (this.blockedBy.length > 0) {
-      return 'blocked';
-    }
-
     // Check if published
     if (this.publishDate) {
       return 'published';
+    }
+
+    // Check if blocked
+    if (this.blockedBy.length > 0) {
+      return 'blocked';
     }
 
     // Default state
@@ -188,14 +202,6 @@ export class Decision {
 
   get decisionStakeholderIds(): string[] {
     return this.stakeholders.map(s => s.stakeholder_id);
-  }
-
-  isBlockedBy(decisionId: string): boolean {
-    return this.blocks.some(r => r.toDecisionId === decisionId);
-  }
-
-  canProceed(completedDecisionIds: string[]): boolean {
-    return this.blocks.every(r => completedDecisionIds.includes(r.toDecisionId));
   }
 
   isSuperseded(): boolean {
@@ -293,15 +299,17 @@ export class Decision {
   }
 
   with(props: Partial<DecisionProps>): Decision {
-    if (this.status === 'published' || this.status === 'superseded') {
-      throw new DecisionStateError(`Cannot modify ${this.status} decisions`);
-    }
-
-    return Decision.create({
+    const newDecision = Decision.create({
       ...this,
       ...props,
       updatedAt: new Date()
     });
+
+    if (this.status === 'published' && !newDecision.isSuperseded()) {
+      throw new DecisionStateError(`Cannot modify published decisions`);
+    }
+
+    return newDecision;
   }
 
   withoutId(): Omit<DecisionProps, "id"> {

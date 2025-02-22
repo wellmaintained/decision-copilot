@@ -2,7 +2,7 @@ import { IsDate, IsEnum, IsString } from 'class-validator'
 import { DecisionDependencyError } from '@/lib/domain/DecisionError'
 import { Decision } from '@/lib/domain/Decision'
 
-export type DecisionRelationshipType = "blocked_by" | "supersedes"
+export type DecisionRelationshipType = "blocked_by" | "supersedes" | "blocks" | "superseded_by"
 
 export interface DecisionRelationshipProps {
   fromDecisionId: string
@@ -26,7 +26,7 @@ export class DecisionRelationship {
   @IsString()
   readonly toDecisionId: string
 
-  @IsEnum(['blocked_by', 'supersedes'])
+  @IsEnum(['blocked_by', 'supersedes', 'blocks', 'superseded_by'])
   readonly type: DecisionRelationshipType
 
   @IsDate()
@@ -64,53 +64,53 @@ export class DecisionRelationship {
     return new DecisionRelationship(props)
   }
 
-  static createBlockingRelationship(
-    blockingDecision: Decision,
-    blockedDecision: Decision
+  static createBlockedByRelationship(
+    fromDecision: Decision,
+    toDecision: Decision
   ): DecisionRelationship {
-    if (blockingDecision.id === blockedDecision.id) {
+    if (fromDecision.id === toDecision.id) {
       throw new DecisionDependencyError('Decision cannot block itself')
     }
 
-    if (blockingDecision.organisationId !== blockedDecision.organisationId) {
+    if (fromDecision.organisationId !== toDecision.organisationId) {
       throw new DecisionDependencyError('Decisions must belong to the same organisation')
     }
 
     return DecisionRelationship.create({
+      fromDecisionId: fromDecision.id,
+      fromTeamId: fromDecision.teamId,
+      fromProjectId: fromDecision.projectId,
       type: 'blocked_by',
-      fromDecisionId: blockingDecision.id,
-      toDecisionId: blockedDecision.id,
+      toDecisionId: toDecision.id,
+      toTeamId: toDecision.teamId,
+      toProjectId: toDecision.projectId,
       createdAt: new Date(),
-      fromTeamId: blockingDecision.teamId,
-      fromProjectId: blockingDecision.projectId,
-      toTeamId: blockedDecision.teamId,
-      toProjectId: blockedDecision.projectId,
-      organisationId: blockingDecision.organisationId
+      organisationId: fromDecision.organisationId
     })
   }
 
-  static createSupersedingRelationship(
-    supersedingDecision: Decision,
-    supersededDecision: Decision
+  static createSupersedesRelationship(
+    fromDecision: Decision,
+    toDecision: Decision
   ): DecisionRelationship {
-    if (supersedingDecision.id === supersededDecision.id) {
+    if (fromDecision.id === toDecision.id) {
       throw new DecisionDependencyError('Decision cannot supersede itself')
     }
 
-    if (supersedingDecision.organisationId !== supersededDecision.organisationId) {
+    if (fromDecision.organisationId !== toDecision.organisationId) {
       throw new DecisionDependencyError('Decisions must belong to the same organisation')
     }
 
     return DecisionRelationship.create({
+      fromDecisionId: fromDecision.id,
+      fromTeamId: fromDecision.teamId,
+      fromProjectId: fromDecision.projectId,
       type: 'supersedes',
-      fromDecisionId: supersedingDecision.id,
-      toDecisionId: supersededDecision.id,
+      toDecisionId: toDecision.id,
+      toTeamId: toDecision.teamId,
+      toProjectId: toDecision.projectId,
       createdAt: new Date(),
-      fromTeamId: supersedingDecision.teamId,
-      fromProjectId: supersedingDecision.projectId,
-      toTeamId: supersededDecision.teamId,
-      toProjectId: supersededDecision.projectId,
-      organisationId: supersedingDecision.organisationId
+      organisationId: fromDecision.organisationId
     })
   }
 } 

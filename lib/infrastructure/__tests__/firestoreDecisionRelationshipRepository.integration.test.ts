@@ -123,12 +123,12 @@ describe('FirestoreDecisionRelationshipRepository Integration Tests', () => {
         );
 
         // Create a blocking relationship
-        const blockingRelationship = DecisionRelationship.createBlockingRelationship(decisionA, decisionB);
-        repository.addRelationship(blockingRelationship);
-        relationshipsToCleanUp.push(blockingRelationship);
+        const blockedRelationship = DecisionRelationship.createBlockedByRelationship(decisionA, decisionB);
+        repository.addRelationship(blockedRelationship);
+        relationshipsToCleanUp.push(blockedRelationship);
 
         // Create a superseding relationship
-        const supersedingRelationship = DecisionRelationship.createSupersedingRelationship(decisionB, decisionC);
+        const supersedingRelationship = DecisionRelationship.createSupersedesRelationship(decisionB, decisionC);
         repository.addRelationship(supersedingRelationship);
         relationshipsToCleanUp.push(supersedingRelationship);
       });
@@ -168,9 +168,9 @@ describe('FirestoreDecisionRelationshipRepository Integration Tests', () => {
       const onError = vi.fn()
 
       // Create a blocking relationship
-      const blockingRelationship = DecisionRelationship.createBlockingRelationship(decisionA, decisionB);
-      await repository.addRelationship(blockingRelationship);
-      relationshipsToCleanUp.push(blockingRelationship);
+      const blockedRelationship = DecisionRelationship.createBlockedByRelationship(decisionA, decisionB);
+      await repository.addRelationship(blockedRelationship);
+      relationshipsToCleanUp.push(blockedRelationship);
       
       const allUpdatesReceived = new Promise<void>((resolve) => {
         const checkIfAllUpdatesReceived = () => {
@@ -211,7 +211,7 @@ describe('FirestoreDecisionRelationshipRepository Integration Tests', () => {
         );
 
         // Remove the blocking relationship 
-        repository.removeRelationship(blockingRelationship);
+        repository.removeRelationship(blockedRelationship);
       });
 
       // Wait for all updates to be received
@@ -233,29 +233,29 @@ describe('FirestoreDecisionRelationshipRepository Integration Tests', () => {
   describe('blocking relationships', () => {
     it('should allow a decision to be blocked by 2 decisions', async () => {
       // Mark A as blocked by B
-      const blockingRelationshipAB = DecisionRelationship.createBlockingRelationship(decisionA, decisionB);
-      await repository.addRelationship(blockingRelationshipAB);
-      relationshipsToCleanUp.push(blockingRelationshipAB);
+      const blockedRelationshipAB = DecisionRelationship.createBlockedByRelationship(decisionA, decisionB);
+      await repository.addRelationship(blockedRelationshipAB);
+      relationshipsToCleanUp.push(blockedRelationshipAB);
 
       // Mark A as blocked by C
-      const blockingRelationshipAC = DecisionRelationship.createBlockingRelationship(decisionA, decisionC);
-      await repository.addRelationship(blockingRelationshipAC);
-      relationshipsToCleanUp.push(blockingRelationshipAC);
+      const blockedRelationshipAC = DecisionRelationship.createBlockedByRelationship(decisionA, decisionC);
+      await repository.addRelationship(blockedRelationshipAC);
+      relationshipsToCleanUp.push(blockedRelationshipAC);
     })
 
     it('should prevent cyclic blocking relationships', async () => {
       // Create A blocks B
-      const blockingRelationshipAB = DecisionRelationship.createBlockingRelationship(decisionA, decisionB);
-      await repository.addRelationship(blockingRelationshipAB);
-      relationshipsToCleanUp.push(blockingRelationshipAB);
+      const blockedRelationshipAB = DecisionRelationship.createBlockedByRelationship(decisionA, decisionB);
+      await repository.addRelationship(blockedRelationshipAB);
+      relationshipsToCleanUp.push(blockedRelationshipAB);
 
       // Create B blocks C
-      const blockingRelationshipBC = DecisionRelationship.createBlockingRelationship(decisionB, decisionC);
-      await repository.addRelationship(blockingRelationshipBC);
-      relationshipsToCleanUp.push(blockingRelationshipBC);
+      const blockedRelationshipBC = DecisionRelationship.createBlockedByRelationship(decisionB, decisionC);
+      await repository.addRelationship(blockedRelationshipBC);
+      relationshipsToCleanUp.push(blockedRelationshipBC);
 
       // Attempt to create C blocks A (which would create a cycle)
-      await expect(repository.addRelationship(DecisionRelationship.createBlockingRelationship(decisionC, decisionA)))
+      await expect(repository.addRelationship(DecisionRelationship.createBlockedByRelationship(decisionC, decisionA)))
         .rejects
         .toThrow(DecisionRelationshipError);
     })
@@ -263,8 +263,8 @@ describe('FirestoreDecisionRelationshipRepository Integration Tests', () => {
 
   describe('superseding relationships', () => {
     it('should prevent superceding an already superceded decision', async () => {
-      const supersedingRelationshipBA = DecisionRelationship.createSupersedingRelationship(decisionB, decisionA);
-      const supersedingRelationshipBC = DecisionRelationship.createSupersedingRelationship(decisionB, decisionC);
+      const supersedingRelationshipBA = DecisionRelationship.createSupersedesRelationship(decisionB, decisionA);
+      const supersedingRelationshipBC = DecisionRelationship.createSupersedesRelationship(decisionB, decisionC);
       relationshipsToCleanUp.push(supersedingRelationshipBA);
       relationshipsToCleanUp.push(supersedingRelationshipBC);
      
@@ -279,17 +279,17 @@ describe('FirestoreDecisionRelationshipRepository Integration Tests', () => {
 
     it('should prevent cyclic superseding relationships', async () => {
       // Create A supersedes B
-      const supersedingRelationshipAB = DecisionRelationship.createSupersedingRelationship(decisionA, decisionB);
+      const supersedingRelationshipAB = DecisionRelationship.createSupersedesRelationship(decisionA, decisionB);
       await repository.addRelationship(supersedingRelationshipAB);
       relationshipsToCleanUp.push(supersedingRelationshipAB);
 
       // Create B supersedes C
-      const supersedingRelationshipBC = DecisionRelationship.createSupersedingRelationship(decisionB, decisionC);
+      const supersedingRelationshipBC = DecisionRelationship.createSupersedesRelationship(decisionB, decisionC);
       await repository.addRelationship(supersedingRelationshipBC);
       relationshipsToCleanUp.push(supersedingRelationshipBC);
 
       // Attempt to create C supersedes A (which would create a cycle)
-      await expect(repository.addRelationship(DecisionRelationship.createSupersedingRelationship(decisionC, decisionA)))
+      await expect(repository.addRelationship(DecisionRelationship.createSupersedesRelationship(decisionC, decisionA)))
         .rejects
         .toThrow(DecisionRelationshipError);
     })

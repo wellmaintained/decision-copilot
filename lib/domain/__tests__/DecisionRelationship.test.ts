@@ -20,17 +20,17 @@ describe('DecisionRelationship Domain Model', () => {
         id: 'blocked-decision'
       })
 
-      const relationship = DecisionRelationship.createBlockingRelationship(
+      const relationship = DecisionRelationship.createBlockedByRelationship(
+        blockedDecision,
         blockingDecision,
-        blockedDecision
       )
 
       expect(relationship.organisationId).toBe('org-1')
-      expect(relationship.fromDecisionId).toBe('blocking-decision')
+      expect(relationship.fromDecisionId).toBe('blocked-decision')
       expect(relationship.fromTeamId).toBe('team-1')
       expect(relationship.fromProjectId).toBe('project-1')
       expect(relationship.type).toBe('blocked_by')
-      expect(relationship.toDecisionId).toBe('blocked-decision')
+      expect(relationship.toDecisionId).toBe('blocking-decision')
       expect(relationship.toTeamId).toBe('team-1')
       expect(relationship.toProjectId).toBe('project-1')
     })
@@ -38,7 +38,7 @@ describe('DecisionRelationship Domain Model', () => {
     it('should throw error when attempting self-blocking', () => {
       const decision1 = emptyDecision.with({id: "decision-1"})
       expect(() => {
-        DecisionRelationship.createBlockingRelationship(decision1, decision1)
+        DecisionRelationship.createBlockedByRelationship(decision1, decision1)
       }).toThrow(DecisionDependencyError)
     })
 
@@ -53,7 +53,7 @@ describe('DecisionRelationship Domain Model', () => {
       })
 
       expect(() => {
-        DecisionRelationship.createBlockingRelationship(blockingDecision, blockedDecision)
+        DecisionRelationship.createBlockedByRelationship(blockingDecision, blockedDecision)
       }).toThrow(DecisionDependencyError)
     })
   })
@@ -67,7 +67,7 @@ describe('DecisionRelationship Domain Model', () => {
         id: 'superseded-decision'
       })
 
-      const relationship = DecisionRelationship.createSupersedingRelationship(
+      const relationship = DecisionRelationship.createSupersedesRelationship(
         supersedingDecision,
         supersededDecision
       )
@@ -86,7 +86,7 @@ describe('DecisionRelationship Domain Model', () => {
       const decision1 = emptyDecision.with({id: "decision-1"})
 
       expect(() => {
-        DecisionRelationship.createSupersedingRelationship(decision1, decision1)
+        DecisionRelationship.createSupersedesRelationship(decision1, decision1)
       }).toThrow(DecisionDependencyError)
     })
 
@@ -101,7 +101,7 @@ describe('DecisionRelationship Domain Model', () => {
       })
 
       expect(() => {
-        DecisionRelationship.createSupersedingRelationship(supersedingDecision, supersededDecision)
+        DecisionRelationship.createSupersedesRelationship(supersedingDecision, supersededDecision)
       }).toThrow(DecisionDependencyError)
     })
   })
@@ -117,11 +117,11 @@ describe('DecisionRelationship Domain Model', () => {
       const decision2 = emptyDecision.with({
         id: 'decision-2'
       })
-      const superceededRelationship = DecisionRelationship.createSupersedingRelationship(decision1_1, decision1);
-      const blockingRelationship = DecisionRelationship.createBlockingRelationship(decision2, decision1_1);
+      const superceededRelationship = DecisionRelationship.createSupersedesRelationship(decision1_1, decision1);
+      const blockedRelationship = DecisionRelationship.createBlockedByRelationship(decision2, decision1_1);
       
       expect(superceededRelationship.id).toBe('decision-1.1_decision-1')
-      expect(blockingRelationship.id).toBe('decision-2_decision-1.1')
+      expect(blockedRelationship.id).toBe('decision-2_decision-1.1')
     })
   })
 }) 

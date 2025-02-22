@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, beforeAll } from 'vitest'
 import { Decision, DecisionProps } from '@/lib/domain/Decision'
 import { DecisionStateError, StakeholderError } from '@/lib/domain/DecisionError'
 import { DecisionRelationship } from '@/lib/domain/DecisionRelationship'
@@ -68,74 +68,38 @@ describe('Decision Domain Model', () => {
 
   describe('Decision State Management', () => {
     it('should compute status correctly based on relationships and publishDate', () => {
-      const baseDecision = Decision.create(defaultProps);
+      const baseDecision = Decision.create({...defaultProps, id: 'base-decision'});
       expect(baseDecision.status).toBe('in_progress');
 
-      // Test published status
-      const publishedDecision = Decision.create({
-        ...defaultProps,
-        publishDate: new Date()
-      });
-      expect(publishedDecision.status).toBe('published');
-
-      // Test blocked status
-      const blockedDecision = Decision.create({
-        ...defaultProps,
+      const blockingDecision = Decision.create({...defaultProps, id: 'blocking-decision'});
+      // Once a decision has a blockedBy relationship, it becomes blocked
+      const blockedDecision = baseDecision.with({
         relationships: [
-          DecisionRelationship.create({
-            type: 'blocked_by',
-            fromDecisionId: 'other-decision',
-            toDecisionId: defaultProps.id,
-            createdAt: new Date(),
-            fromTeamId: defaultProps.teamId,
-            fromProjectId: defaultProps.projectId,
-            toTeamId: defaultProps.teamId,
-            toProjectId: defaultProps.projectId,
-            organisationId: defaultProps.organisationId
-          })
+          DecisionRelationship.createBlockedByRelationship(
+            baseDecision,
+            blockingDecision
+          )
         ]
       });
       expect(blockedDecision.status).toBe('blocked');
 
-      // Test superseded status
-      const supersededDecision = Decision.create({
-        ...defaultProps,
+      // Once a decision gets a publishDate, it becomes published
+      const publishedDecision = blockedDecision.with({
+        publishDate: new Date()
+      });
+      expect(publishedDecision.status).toBe('published');
+
+      // Once a decision has a supersededBy relationship, it becomes superseded
+      const supercedingDecision = Decision.create({...defaultProps, id: 'superceding-decision'});
+      const supersededDecision = publishedDecision.with({
         relationships: [
-          DecisionRelationship.create({
-            type: 'supersedes',
-            fromDecisionId: 'new-decision',
-            toDecisionId: defaultProps.id,
-            createdAt: new Date(),
-            fromTeamId: defaultProps.teamId,
-            fromProjectId: defaultProps.projectId,
-            toTeamId: defaultProps.teamId,
-            toProjectId: defaultProps.projectId,
-            organisationId: defaultProps.organisationId
-          })
+          DecisionRelationship.createSupersedesRelationship(
+            supercedingDecision,
+            publishedDecision,
+          )
         ]
       });
       expect(supersededDecision.status).toBe('superseded');
-    })
-
-    it('should prioritize superseded status over other statuses', () => {
-      const decision = Decision.create({
-        ...defaultProps,
-        publishDate: new Date(),
-        relationships: [
-          DecisionRelationship.create({
-            type: 'supersedes',
-            fromDecisionId: 'new-decision',
-            toDecisionId: defaultProps.id,
-            createdAt: new Date(),
-            fromTeamId: defaultProps.teamId,
-            fromProjectId: defaultProps.projectId,
-            toTeamId: defaultProps.teamId,
-            toProjectId: defaultProps.projectId,
-            organisationId: defaultProps.organisationId
-          })
-        ]
-      });
-      expect(decision.status).toBe('superseded');
     })
 
     it('should throw error when modifying published decisions', () => {
@@ -170,145 +134,72 @@ describe('Decision Domain Model', () => {
   })
 
   describe('Relationship Queries', () => {
-    it('should correctly check if decision is blocked by another decision', () => {
-      const decision = Decision.create({
-        ...defaultProps,
-        relationships: [
-          DecisionRelationship.create({
-            type: 'blocked_by',
-            fromDecisionId: defaultProps.id,
-            toDecisionId: 'blocking-decision',
-            createdAt: new Date(),
-            fromTeamId: defaultProps.teamId,
-            fromProjectId: defaultProps.projectId,
-            toTeamId: defaultProps.teamId,
-            toProjectId: defaultProps.projectId,
-            organisationId: defaultProps.organisationId
-          })
-        ]
+    let decisionA: Decision
+    let decisionA1: Decision
+    let decisionB: Decision
+    let decisionC: Decision
+    let decisionA1SupersedesA: DecisionRelationship
+    let decisionCIsBlockedByB: DecisionRelationship
+
+    beforeAll(() => {
+      decisionA = Decision.create({...defaultProps, id: 'decision-a', title: 'Decision A'})
+      decisionA1 = Decision.create({...defaultProps, id: 'decision-a1', title: 'Decision A1'})
+      decisionB = Decision.create({...defaultProps, id: 'decision-b', title: 'Decision B'})
+      decisionC = Decision.create({...defaultProps, id: 'decision-c', title: 'Decision C'})
+      decisionA1SupersedesA = DecisionRelationship.createSupersedesRelationship(
+        decisionA1,
+        decisionA
+      )
+      // Decision A1 has 1 relationship as the fromDecision:
+      // - (from) A1 supersedes (to) A
+      decisionA1 = decisionA1.with({
+        relationships: [decisionA1SupersedesA]
+      })
+      // Decision A gets the same relationship because its the toDecision
+      // - (from) A1 supersedes (to) A - gets inverted to: (from) A superceeded_by (to) A1
+      decisionA = decisionA.with({
+        relationships: [decisionA1SupersedesA]
       })
 
-      expect(decision.isBlockedBy('blocking-decision')).toBe(true)
-      expect(decision.isBlockedBy('non-blocking-decision')).toBe(false)
+      decisionCIsBlockedByB = DecisionRelationship.createBlockedByRelationship(
+        decisionC,
+        decisionB
+      )
+      // Decision C has 1 relationship as the fromDecision:
+      // - (from) C is blocked_by (to) B
+      decisionC = decisionC.with({
+        relationships: [decisionCIsBlockedByB]
+      })
+      // Decision B gets the same relationship because its the toDecision
+      // - (from) C is blocked_by (to) B - gets inverted to: (from) B blocks (to) C
+      decisionB = decisionB.with({
+        relationships: [decisionCIsBlockedByB]
+      })
     })
 
-    it('should correctly determine if decision can proceed based on completed decisions', () => {
-      const decision = Decision.create({
-        ...defaultProps,
-        relationships: [
-          DecisionRelationship.create({
-            type: 'blocked_by',
-            fromDecisionId: defaultProps.id,
-            toDecisionId: 'blocking-1',
-            createdAt: new Date(),
-            fromTeamId: defaultProps.teamId,
-            fromProjectId: defaultProps.projectId,
-            toTeamId: defaultProps.teamId,
-            toProjectId: defaultProps.projectId,
-            organisationId: defaultProps.organisationId
-          }),
-          DecisionRelationship.create({
-            type: 'blocked_by',
-            fromDecisionId: defaultProps.id,
-            toDecisionId: 'blocking-2',
-            createdAt: new Date(),
-            fromTeamId: defaultProps.teamId,
-            fromProjectId: defaultProps.projectId,
-            toTeamId: defaultProps.teamId,
-            toProjectId: defaultProps.projectId,
-            organisationId: defaultProps.organisationId
-          })
-        ]
-      })
-
-      expect(decision.canProceed([])).toBe(false)
-      expect(decision.canProceed(['blocking-1'])).toBe(false)
-      expect(decision.canProceed(['blocking-1', 'blocking-2'])).toBe(true)
+    it('should show that A1 supersedes A', () => {
+      expect(decisionA1.supersedes.length).toBe(1)
+      expect(decisionA1.supersedes[0].fromDecisionId).toBe(decisionA1.id)
+      expect(decisionA1.supersedes[0].toDecisionId).toBe(decisionA.id)
+    })
+    it('(inverted) should show that A is superseded by A1', () => {
+      expect(decisionA.supersededBy.length).toBe(1)
+      expect(decisionA.supersededBy[0].fromDecisionId).toBe(decisionA.id)
+      expect(decisionA.supersededBy[0].toDecisionId).toBe(decisionA1.id)
+    })
+    it('show A as superceeded', () => {
+      expect(decisionA.isSuperseded()).toBe(true)
     })
 
-    it('should correctly check if decision is superseded', () => {
-      const decision = Decision.create({
-        ...defaultProps,
-        relationships: [
-          DecisionRelationship.create({
-            type: 'supersedes',
-            fromDecisionId: 'new-decision',
-            toDecisionId: defaultProps.id,
-            createdAt: new Date(),
-            fromTeamId: defaultProps.teamId,
-            fromProjectId: defaultProps.projectId,
-            toTeamId: defaultProps.teamId,
-            toProjectId: defaultProps.projectId,
-            organisationId: defaultProps.organisationId
-          })
-        ]
-      })
-
-      expect(decision.isSuperseded()).toBe(true)
+    it('should show that C is blocked_by B', () => {
+      expect(decisionC.blockedBy.length).toBe(1)
+      expect(decisionC.blockedBy[0].fromDecisionId).toBe(decisionC.id)
+      expect(decisionC.blockedBy[0].toDecisionId).toBe(decisionB.id)
     })
-
-    it('should correctly get relationship collections', () => {
-      const decision = Decision.create({
-        ...defaultProps,
-        relationships: [
-          DecisionRelationship.create({
-            type: 'supersedes',
-            fromDecisionId: defaultProps.id,
-            toDecisionId: 'old-decision',
-            createdAt: new Date(),
-            fromTeamId: defaultProps.teamId,
-            fromProjectId: defaultProps.projectId,
-            toTeamId: defaultProps.teamId,
-            toProjectId: defaultProps.projectId,
-            organisationId: defaultProps.organisationId
-          }),
-          DecisionRelationship.create({
-            type: 'supersedes',
-            fromDecisionId: 'new-decision',
-            toDecisionId: defaultProps.id,
-            createdAt: new Date(),
-            fromTeamId: defaultProps.teamId,
-            fromProjectId: defaultProps.projectId,
-            toTeamId: defaultProps.teamId,
-            toProjectId: defaultProps.projectId,
-            organisationId: defaultProps.organisationId
-          }),
-          DecisionRelationship.create({
-            type: 'blocked_by',
-            fromDecisionId: defaultProps.id,
-            toDecisionId: 'blocking-decision',
-            createdAt: new Date(),
-            fromTeamId: defaultProps.teamId,
-            fromProjectId: defaultProps.projectId,
-            toTeamId: defaultProps.teamId,
-            toProjectId: defaultProps.projectId,
-            organisationId: defaultProps.organisationId
-          }),
-          DecisionRelationship.create({
-            type: 'blocked_by',
-            fromDecisionId: 'blocked-decision',
-            toDecisionId: defaultProps.id,
-            createdAt: new Date(),
-            fromTeamId: defaultProps.teamId,
-            fromProjectId: defaultProps.projectId,
-            toTeamId: defaultProps.teamId,
-            toProjectId: defaultProps.projectId,
-            organisationId: defaultProps.organisationId
-          })
-        ]
-      })
-
-      expect(decision.supersedes.length).toBe(1)
-      expect(decision.supersedes[0].toDecisionId).toBe('old-decision')
-
-      expect(decision.supersededBy.length).toBe(1)
-      expect(decision.supersededBy[0].fromDecisionId).toBe('new-decision')
-
-      expect(decision.blocks.length).toBe(1)
-      expect(decision.blocks[0].toDecisionId).toBe('blocking-decision')
-
-      expect(decision.blockedBy.length).toBe(1)
-      expect(decision.blockedBy[0].fromDecisionId).toBe('blocked-decision')
+    it('(inverted) should show that B blocks C', () => {
+      expect(decisionB.blocks.length).toBe(1)
+      expect(decisionB.blocks[0].fromDecisionId).toBe(decisionB.id)
+      expect(decisionB.blocks[0].toDecisionId).toBe(decisionC.id)
     })
   })
 }) 

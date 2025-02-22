@@ -53,7 +53,7 @@ export function DecisionRelationshipsList({
       case 'supersedes':
         return fromDecision.supersedes;
       case 'blocked_by':
-        return fromDecision.blocks;
+        return fromDecision.blockedBy;
       default:
         return [];
     }
