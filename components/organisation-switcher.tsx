@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { ChevronsUpDown, Plus, Building2 } from 'lucide-react'
+import { ChevronsUpDown, Building2 } from 'lucide-react'
 import { Organisation } from '@/lib/domain/Organisation'
 import { useOrganisations } from '@/hooks/useOrganisations'
 import { useRouter, usePathname } from 'next/navigation'
@@ -11,7 +11,6 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import {
@@ -114,10 +113,10 @@ export function OrganisationSwitcher() {
                 key={organisation.id}
                 className="gap-2 p-2"
                 onClick={() => setSelectedOrganisation(organisation)}
-            >
-              <div className="flex size-6 items-center justify-center rounded-sm border">
-                <Building2 className="size-4 shrink-0" />
-              </div>
+              >
+                <div className="flex size-6 items-center justify-center rounded-sm border">
+                  <Building2 className="size-4 shrink-0" />
+                </div>
                 {organisation.name}
               </DropdownMenuItem>
             ))}

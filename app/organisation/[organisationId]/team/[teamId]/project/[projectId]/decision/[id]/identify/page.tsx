@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -32,7 +32,6 @@ import { useOrganisations } from "@/hooks/useOrganisations";
 import {
   Cost,
   Reversibility,
-  DecisionStakeholderRole,
 } from "@/lib/domain/Decision";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Stakeholder } from "@/lib/domain/Stakeholder";
@@ -49,9 +48,6 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { DecisionRelationshipsList } from '@/components/decision-relationships-list'
-import { useProjectDecisions } from '@/hooks/useProjectDecisions'
-import { DecisionRelationship, DecisionRelationshipType } from '@/lib/domain/DecisionRelationship'
-import { useDecisionRelationships } from '@/hooks/useDecisionRelationships'
 
 interface StakeholderGroupProps {
   teamName: string;
@@ -149,7 +145,6 @@ export default function DecisionIdentityPage() {
   const {
     stakeholders,
     loading: stakeholdersLoading,
-    error: stakeholdersError,
   } = useStakeholders();
   const { stakeholderTeams, loading: stakeholderTeamsLoading } =
     useStakeholderTeams();

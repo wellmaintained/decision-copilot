@@ -4,16 +4,6 @@ import { ReactNode } from 'react'
 import { usePathname } from 'next/navigation'
 import WorkflowProgress from '@/components/workflow-progress'
 
-interface DecisionLayoutProps {
-  children: ReactNode
-  params: {
-    organisationId: string
-    teamId: string
-    projectId: string
-    id: string
-  }
-}
-
 export default function DecisionLayout({ 
   children 
 }: {

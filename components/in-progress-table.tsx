@@ -2,7 +2,6 @@
 
 import * as React from "react"
 import { Check, ChevronsUpDown } from 'lucide-react'
-import { Search, Settings, Lightbulb, Zap, BookOpen } from 'lucide-react'
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Card, CardHeader, CardContent, CardTitle } from "@/components/ui/card"
@@ -37,14 +36,6 @@ const projects = [
   { value: "cloud", label: "Cloud Migration" },
   { value: "portal", label: "Customer Portal" },
   { value: "analytics", label: "Data Analytics Platform" },
-] as const
-
-const workflowSteps = [
-  { icon: Search, label: 'Identify' },
-  { icon: Settings, label: 'Method' },
-  { icon: Lightbulb, label: 'Options' },
-  { icon: Zap, label: 'Choose' },
-  { icon: BookOpen, label: 'Publish' },
 ] as const
 
 const inProgressDecisions = [

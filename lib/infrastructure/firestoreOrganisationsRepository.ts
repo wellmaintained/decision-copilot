@@ -1,4 +1,4 @@
-import { collection, doc, getDoc, getDocs, addDoc, updateDoc, deleteDoc, query, where, Timestamp, limit } from 'firebase/firestore'
+import { collection, doc, getDoc, getDocs, addDoc, updateDoc, deleteDoc, query, where, Timestamp } from 'firebase/firestore'
 import { db } from '@/lib/firebase'
 import { Organisation, OrganisationProps } from '@/lib/domain/Organisation'
 import { OrganisationsRepository } from '@/lib/domain/organisationsRepository'
@@ -127,7 +127,6 @@ export class FirestoreOrganisationsRepository implements OrganisationsRepository
             decisionMethod: data.decisionMethod,
             reversibility: data.reversibility,
             stakeholders: data.stakeholders || [],
-            status: data.status || 'draft',
             updatedAt: data.updatedAt?.toDate(),
             driverStakeholderId: data.driverStakeholderId,
             organisationId: id,
@@ -236,7 +235,6 @@ export class FirestoreOrganisationsRepository implements OrganisationsRepository
             decisionMethod: decision.decisionMethod,
             reversibility: decision.reversibility,
             stakeholders: decision.stakeholders,
-            status: decision.status,
             updatedAt: Timestamp.fromDate(decision.updatedAt || new Date())
           })
         }

@@ -15,6 +15,9 @@ import {
   setDoc,
   getDocs,
   serverTimestamp,
+  DocumentData,
+  QueryDocumentSnapshot,
+  FieldValue,
 } from "firebase/firestore";
 import { DecisionRelationship } from "@/lib/domain/DecisionRelationship";
 import { FirestoreDecisionRelationshipRepository } from "@/lib/infrastructure/firestoreDecisionRelationshipRepository";
@@ -30,17 +33,30 @@ export class FirestoreDecisionsRepository implements DecisionsRepository {
     return `organisations/${scope.organisationId}/teams/${scope.teamId}/projects/${scope.projectId}/decisions`
   }
 
-  private decisionFromFirestore(doc: any, scope: DecisionScope): Decision {
-    const data = doc.data()
-    return Decision.create({
-      ...data,
+  private decisionFromFirestore(doc: QueryDocumentSnapshot<DocumentData>, scope: DecisionScope): Decision {
+    const data = doc.data();
+    const props: DecisionProps = {
       id: doc.id,
+      title: data.title || '',
+      description: data.description || '',
+      cost: data.cost || 'low',
+      criteria: data.criteria || [],
+      options: data.options || [],
+      decision: data.decision,
+      decisionMethod: data.decisionMethod,
+      reversibility: data.reversibility || 'haircut',
+      stakeholders: data.stakeholders || [],
+      driverStakeholderId: data.driverStakeholderId || '',
+      supportingMaterials: data.supportingMaterials || [],
       createdAt: (data.createdAt as unknown as Timestamp).toDate(),
       updatedAt: data.updatedAt ? (data.updatedAt as unknown as Timestamp).toDate() : undefined,
+      publishDate: data.publishDate ? (data.publishDate as unknown as Timestamp).toDate() : undefined,
       organisationId: scope.organisationId,
       teamId: scope.teamId,
       projectId: scope.projectId,
-    })
+      relationships: data.relationships || [],
+    };
+    return Decision.create(props);
   }
 
   async getAll(scope: DecisionScope): Promise<Decision[]> {
@@ -63,7 +79,7 @@ export class FirestoreDecisionsRepository implements DecisionsRepository {
   async create(initialData: Partial<Omit<DecisionProps, "id">>, scope: DecisionScope): Promise<Decision> {
     const docRef = doc(collection(db, this.getDecisionPath(scope)))
     
-    const createData: Record<string, any> = {
+    const createData: Record<string, FieldValue | Partial<unknown> | undefined> = {
       title: initialData.title,
       description: initialData.description,
       cost: initialData.cost,
@@ -90,8 +106,7 @@ export class FirestoreDecisionsRepository implements DecisionsRepository {
   async update(decision: Decision, scope: DecisionScope): Promise<void> {
     const docRef = doc(db, this.getDecisionPath(scope), decision.id)
     
-    // Create an update object with only defined values
-    const updateData: Record<string, any> = {
+    const updateData: Record<string, FieldValue | Partial<unknown> | undefined> = {
       title: decision.title,
       description: decision.description,
       cost: decision.cost,
@@ -216,6 +231,7 @@ export class FirestoreDecisionsRepository implements DecisionsRepository {
         organisationId: scope.organisationId,
         teamId: scope.teamId,
         projectId: scope.projectId,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } as any), // Using 'as any' since we don't need all Decision props just for the relationship subscription
       (relationships) => {
         currentRelationships = relationships;

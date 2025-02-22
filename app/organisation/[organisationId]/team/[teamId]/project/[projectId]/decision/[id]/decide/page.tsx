@@ -1,14 +1,12 @@
 'use client'
 
-import { useState } from 'react'
+import { useParams } from 'next/navigation'
+import { useDecision } from '@/hooks/useDecisions'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Editor } from '@/components/editor'
-import { useParams } from 'next/navigation'
-import { useDecision } from '@/hooks/useDecisions'
 import { DecisionItemList } from '@/components/decision-item-list'
-import { useAuth } from '@/hooks/useAuth'
 import { SupportingMaterialsList } from '@/components/supporting-materials-list'
 import { DecisionRelationshipsList } from '@/components/decision-relationships-list'
 
@@ -18,7 +16,6 @@ export default function DecidePage() {
   const projectId = params.projectId as string
   const teamId = params.teamId as string
   const organisationId = params.organisationId as string
-  const { user } = useAuth()
 
   const {
     decision,

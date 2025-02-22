@@ -3,7 +3,7 @@
 import { useState } from "react";
 
 import { Organisation } from "@/lib/domain/Organisation";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Team } from "@/lib/domain/Team";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -14,7 +14,6 @@ import {
   ChevronRight,
   ChevronDown,
 } from "lucide-react";
-import Link from "next/link";
 import {
   Table,
   TableBody,
@@ -88,43 +87,44 @@ export function OrgSection({
   });
 
   const handleSave = (id: string, type: "org" | "team") => {
-    //   if (type === 'org') {
-    //     setOrganisations(
-    //       organisations.map((org) =>
-    //         org.id === id ? { ...org, name: editingName } : org
-    //       )
-    //     )
-    //   } else {
-    //     setTeams(
-    //       teams.map((team) =>
-    //         team.id === id ? { ...team, name: editingName } : team
-    //       )
-    //     )
-    //   }
+    if (type === 'org') {
+      setOrganisations(
+        organisations.map((org) =>
+          org.id === id ? Organisation.create({ ...org, name: editingName }) : org
+        )
+      );
+    } else {
+      setOrganisations(
+        organisations.map((org) => 
+          Organisation.create({
+            ...org,
+            teams: org.teams.map((team) =>
+              team.id === id ? Team.create({ ...team, name: editingName }) : team
+            )
+          })
+        )
+      );
+    }
     setEditingId(null);
   };
 
-  const handleCancel = (id: string, type: "org" | "team") => {
-    //   if (type === 'org') {
-    //     if (!organisations.find((org) => org.id === id)?.name) {
-    //       setOrganisations(organisations.filter((org) => org.id !== id))
-    //     }
-    //   } else {
-    //     if (!teams.find((team) => team.id === id)?.name) {
-    //       setTeams(teams.filter((team) => team.id !== id))
-    //     }
-    //   }
+  const handleCancel = () => {
     setEditingId(null);
   };
 
   const handleDelete = (id: string, type: "org" | "team") => {
-    //   if (type === 'org') {
-    //     setOrganisations(organisations.filter((org) => org.id !== id))
-    //     // Delete all teams belonging to this org
-    //     setTeams(teams.filter((team) => team.organisationId !== id))
-    //   } else {
-    //     setTeams(teams.filter((team) => team.id !== id))
-    //   }
+    if (type === 'org') {
+      setOrganisations(organisations.filter((org) => org.id !== id));
+    } else {
+      setOrganisations(
+        organisations.map((org) =>
+          Organisation.create({
+            ...org,
+            teams: org.teams.filter((team) => team.id !== id)
+          })
+        )
+      );
+    }
   };
 
   const toggleExpand = (id: string) => {
@@ -209,7 +209,7 @@ export function OrgSection({
                     <Button
                       variant="ghost"
                       size="icon"
-                      onClick={() => handleCancel(item.id, item.type)}
+                      onClick={() => handleCancel()}
                     >
                       <X className="w-4 h-4" />
                     </Button>

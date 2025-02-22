@@ -11,7 +11,6 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
-import Link from "next/link";
 import { useStakeholders } from "@/hooks/useStakeholders";
 import { useStakeholderTeams } from "@/hooks/useStakeholderTeams";
 import { OrgSection } from "@/components/org-section";
@@ -19,13 +18,7 @@ import { StakeholderSection } from "@/components/stakeholder-section";
 import { Organisation } from "@/lib/domain/Organisation";
 import { Team } from "@/lib/domain/Team";
 
-interface OrganisationPageProps {
-  params: Promise<{
-    organisationId: string;
-  }>;
-}
-
-export default function OrganisationPage({ params }: OrganisationPageProps) {
+export default function OrganisationPage() {
   const { organisations, setOrganisations, addOrganisation } =
     useOrganisations();
   const { stakeholders, addStakeholder, updateStakeholder, removeStakeholder } = useStakeholders();

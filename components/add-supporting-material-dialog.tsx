@@ -13,7 +13,6 @@ import {
 } from '@/components/ui/dialog'
 import { SupportingMaterial, SupportingMaterialFactory, SupportingMaterialValidator } from '@/lib/domain/SupportingMaterial'
 import { Alert, AlertDescription } from '@/components/ui/alert'
-import { X } from 'lucide-react'
 
 interface AddSupportingMaterialDialogProps {
   onAdd: (material: SupportingMaterial) => Promise<void>

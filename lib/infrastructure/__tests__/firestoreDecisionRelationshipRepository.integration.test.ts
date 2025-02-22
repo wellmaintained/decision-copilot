@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, afterEach, afterAll, beforeAll, vi } from 'vitest'
+import { describe, it, expect, afterEach, afterAll, beforeAll, vi } from 'vitest'
 import { FirestoreDecisionsRepository } from '@/lib/infrastructure/firestoreDecisionsRepository'
 import { FirestoreDecisionRelationshipRepository } from '@/lib/infrastructure/firestoreDecisionRelationshipRepository'
 import { Decision } from '@/lib/domain/Decision'
@@ -12,7 +12,7 @@ describe('FirestoreDecisionRelationshipRepository Integration Tests', () => {
   let decisionA: Decision;
   let decisionB: Decision;
   let decisionC: Decision;
-  var relationshipsToCleanUp: DecisionRelationship[] = [];
+  const relationshipsToCleanUp: DecisionRelationship[] = [];
 
   beforeAll(async () => {
     await signInTestUser()
@@ -63,11 +63,11 @@ describe('FirestoreDecisionRelationshipRepository Integration Tests', () => {
   describe('subscribeToDecisionRelationships', () => {
     it('should receive updates when relationships are added', async () => {
       const relationshipsForAFromSubscribe: Map<number, DecisionRelationship[]> = new Map<number, DecisionRelationship[]>;
-      var updatesRecievedForA = 0;
+      let updatesRecievedForA = 0;
       const relationshipsForBFromSubscribe: Map<number, DecisionRelationship[]> = new Map<number, DecisionRelationship[]>;
-      var updatesRecievedForB = 0;
+      let updatesRecievedForB = 0;
       const relationshipsForCFromSubscribe: Map<number, DecisionRelationship[]> = new Map<number, DecisionRelationship[]>;
-      var updatesRecievedForC = 0;
+      let updatesRecievedForC = 0;
       const onError = vi.fn()
       
       const allUpdatesReceived = new Promise<void>((resolve) => {
@@ -162,9 +162,9 @@ describe('FirestoreDecisionRelationshipRepository Integration Tests', () => {
     })
     it('should receive updates when relationships are removed', async () => {
       const relationshipsForAFromSubscribe: Map<number, DecisionRelationship[]> = new Map<number, DecisionRelationship[]>;
-      var updatesRecievedForA = 0;
+      let updatesRecievedForA = 0;
       const relationshipsForBFromSubscribe: Map<number, DecisionRelationship[]> = new Map<number, DecisionRelationship[]>;
-      var updatesRecievedForB = 0;
+      let updatesRecievedForB = 0;
       const onError = vi.fn()
 
       // Create a blocking relationship

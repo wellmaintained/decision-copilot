@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, afterEach, afterAll, beforeAll, vi } from 'vitest'
+import { describe, it, expect, beforeEach, afterEach, beforeAll, vi } from 'vitest'
 import { FirestoreDecisionsRepository } from '@/lib/infrastructure/firestoreDecisionsRepository'
 import { Decision } from '@/lib/domain/Decision'
 import { TEST_SCOPE, signInTestUser } from './helpers/firebaseTestHelper'
@@ -11,7 +11,7 @@ describe('FirestoreDecisionsRepository Integration Tests', () => {
   const emptyDecision = Decision.createEmptyDecision();
   let sampleDecision: Decision;
   let sampleDecision2: Decision;
-  var relationshipsToCleanUp: DecisionRelationship[] = [];
+  const relationshipsToCleanUp: DecisionRelationship[] = [];
 
   beforeAll(async () => {
     await signInTestUser()
@@ -55,7 +55,7 @@ describe('FirestoreDecisionsRepository Integration Tests', () => {
     it('should receive updates when a decision is modified', async () => {
       const decisionId = sampleDecision.id;
       const decisionsFromSubscribeToOne: Map<number, Decision> = new Map<number, Decision>();
-      var updatesRecievedFromSubscribeToOne = 0; 
+      let updatesRecievedFromSubscribeToOne = 0; 
       const onError = vi.fn()
       
       // Create a promise that resolves when we get both the initial and updated decision
@@ -110,7 +110,7 @@ describe('FirestoreDecisionsRepository Integration Tests', () => {
 
     it('changes to decision relationships update the affected decisions', async () => {
       const decisionsFromSubscribeToOne: Map<number, Decision> = new Map<number, Decision>();
-      var updatesRecievedFromSubscribeToOne = 0; 
+      let updatesRecievedFromSubscribeToOne = 0; 
       const onError = vi.fn()
       
       // Create a promise that resolves when we get both the initial and updated decision
@@ -170,7 +170,7 @@ describe('FirestoreDecisionsRepository Integration Tests', () => {
   describe('subscribeToAll', () => {
     it('should receive updates when a decision is modified', async () => {
       const decisionsFromSubscribeToAll: Map<number, Decision[]> = new Map<number, Decision[]>();
-      var updatesReceivedFromSubscribeToAll = 0; 
+      let updatesReceivedFromSubscribeToAll = 0; 
       const onError = vi.fn()
       
       // Create a promise that resolves when we get both the initial and updated decisions
@@ -228,21 +228,13 @@ describe('FirestoreDecisionsRepository Integration Tests', () => {
 
     it('changes to decision relationships update the affected decisions in the list', async () => {
       const decisionsFromSubscribeToAll: Map<number, Decision[]> = new Map<number, Decision[]>();
-      var updatesReceivedFromSubscribeToAll = 0; 
+      let updatesReceivedFromSubscribeToAll = 0; 
       const onError = vi.fn()
       let unsubscribe: (() => void) | undefined;
       
       // Create a promise that resolves when we get both the initial and updated decisions
       const allUpdatesReceived = new Promise<void>(async (resolve, reject) => {
-        let timeoutId: NodeJS.Timeout;
-
-        const cleanup = () => {
-          if (timeoutId) clearTimeout(timeoutId);
-          if (unsubscribe) unsubscribe();
-        };
-
-        // Set a timeout that will provide more debug info
-        timeoutId = setTimeout(() => {
+        const timeoutId = setTimeout(() => {
           console.error('Test timed out. Current state:', {
             updatesReceived: updatesReceivedFromSubscribeToAll,
             decisions: decisionsFromSubscribeToAll
@@ -250,6 +242,11 @@ describe('FirestoreDecisionsRepository Integration Tests', () => {
           cleanup();
           reject(new Error('Test timed out waiting for updates'));
         }, 8000);
+
+        const cleanup = () => {
+          if (timeoutId) clearTimeout(timeoutId);
+          if (unsubscribe) unsubscribe();
+        };
 
         const checkIfAllUpdatesReceived = () => {
           // We expect at least 2 updates

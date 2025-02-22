@@ -1,4 +1,4 @@
-import { IsString, MinLength, ValidateNested, validateSync } from 'class-validator'
+import { IsString, MinLength, validateSync } from 'class-validator'
 import { Type } from 'class-transformer'
 import { Decision } from '@/lib/domain/Decision'
 import { DomainValidationError } from '@/lib/domain/DomainValidationError'

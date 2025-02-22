@@ -8,8 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import Link from "next/link"
 import { useParams } from 'next/navigation'
 import { useDecision } from "@/hooks/useDecisions"
-import { useStakeholderTeams } from "@/hooks/useStakeholderTeams"
-import { useOrganisations } from "@/hooks/useOrganisations"
+import { useStakeholders } from "@/hooks/useStakeholders"
 import { DecisionMethod } from "@/lib/domain/Decision"
 
 export default function DecisionProcess() {
@@ -25,8 +24,9 @@ export default function DecisionProcess() {
     error: decisionsError, 
     updateDecisionMethod 
   } = useDecision(decisionId)
-  const { stakeholderTeams, loading: stakeholderTeamsLoading } = useStakeholderTeams()
-  const { organisations, loading: organisationsLoading } = useOrganisations()
+  const {
+    loading: stakeholdersLoading,
+  } = useStakeholders()
 
   const [selectedMethod, setSelectedMethod] = useState<DecisionMethod>("consent")
 
@@ -36,7 +36,10 @@ export default function DecisionProcess() {
     }
   }, [decision?.decisionMethod])
 
-  if (decisionsLoading || stakeholderTeamsLoading || organisationsLoading) {
+  if (
+    decisionsLoading ||
+    stakeholdersLoading
+  ) {
     return <div>Loading...</div>
   }
 

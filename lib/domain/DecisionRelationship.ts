@@ -1,7 +1,6 @@
 import { IsDate, IsEnum, IsString } from 'class-validator'
 import { DecisionDependencyError } from '@/lib/domain/DecisionError'
 import { Decision } from '@/lib/domain/Decision'
-import { Timestamp } from 'firebase/firestore'
 
 export type DecisionRelationshipType = "blocked_by" | "supersedes"
 

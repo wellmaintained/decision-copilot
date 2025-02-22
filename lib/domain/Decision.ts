@@ -1,7 +1,7 @@
 import { Search, Settings, Lightbulb, Zap, BookOpen } from 'lucide-react'
 import { SupportingMaterial } from '@/lib/domain/SupportingMaterial'
 import { IsArray, IsDate, IsEnum, IsOptional, IsString } from 'class-validator'
-import { DecisionStateError, StakeholderError, DecisionDependencyError } from '@/lib/domain/DecisionError'
+import { DecisionStateError, StakeholderError } from '@/lib/domain/DecisionError'
 import { DecisionRelationship } from '@/lib/domain/DecisionRelationship'
 
 export const DecisionWorkflowSteps = [
@@ -305,6 +305,7 @@ export class Decision {
   }
 
   withoutId(): Omit<DecisionProps, "id"> {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { id, ...propsWithoutId } = this;
     return propsWithoutId;
   }

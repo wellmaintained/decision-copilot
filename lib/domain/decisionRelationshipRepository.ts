@@ -1,4 +1,4 @@
-import { DecisionRelationship, DecisionRelationshipType } from '@/lib/domain/DecisionRelationship'
+import { DecisionRelationship } from '@/lib/domain/DecisionRelationship'
 import { Decision } from '@/lib/domain/Decision'
 
 export interface DecisionRelationshipRepository {

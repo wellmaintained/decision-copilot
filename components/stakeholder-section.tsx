@@ -12,12 +12,11 @@ import {
 import { Checkbox } from "@/components/ui/checkbox"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Plus, Check, X, Trash2, UserPlus } from 'lucide-react'
+import { Check, X, Trash2 } from 'lucide-react'
 
-import { Stakeholder, StakeholderProps } from "@/lib/domain/Stakeholder"
+import { Stakeholder } from "@/lib/domain/Stakeholder"
 import { StakeholderTeam, StakeholderTeamProps } from "@/lib/domain/StakeholderTeam"
 import { Organisation } from "@/lib/domain/Organisation"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 
 interface StakeholderSectionProps {
@@ -52,7 +51,7 @@ export function StakeholderSection({
       setEditingId(null)
     }
   
-    const handleCancel = (id: string) => {
+    const handleCancel = () => {
       setEditingId(null)
     }
   
@@ -235,7 +234,7 @@ export function StakeholderSection({
                           <Button
                             variant="ghost"
                             size="icon"
-                            onClick={() => handleCancel(stakeholder.id)}
+                            onClick={() => handleCancel()}
                           >
                             <X className="w-4 h-4" />
                           </Button>
