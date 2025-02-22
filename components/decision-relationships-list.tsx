@@ -8,7 +8,7 @@ import { useProjectDecisions } from '@/hooks/useProjectDecisions'
 
 interface DecisionRelationshipItemProps {
   relationship: DecisionRelationship
-  onRemove: (relationshipId: string) => Promise<void>
+  onRemove: (relationship: DecisionRelationship) => Promise<void>
   relatedDecisionTitle: string
 }
 
@@ -21,7 +21,7 @@ function DecisionRelationshipItem({ relationship, onRemove, relatedDecisionTitle
       <Button
         variant="ghost"
         size="sm"
-        onClick={() => onRemove(relationship.id)}
+        onClick={() => onRemove(relationship)}
         className="opacity-0 group-hover:opacity-100 transition-opacity"
         title="Remove relationship"
       >
@@ -40,22 +40,34 @@ export function DecisionRelationshipsList({
   relationshipType, 
   fromDecision
 }: DecisionRelationshipsListProps) {
-  const { addRelationship, removeRelationship, relationships } = useDecisionRelationships(fromDecision);
+  const { addRelationship, removeRelationship } = useDecisionRelationships(fromDecision);
   const { decisions } = useProjectDecisions();
 
   const getDecisionTitle = (decisionId: string) => {
     return decisions?.find(d => d.id === decisionId)?.title || 'Unknown Decision'
   }
 
+  // Get relationships based on type
+  const getRelationshipsForType = (type: DecisionRelationshipType): DecisionRelationship[] => {
+    switch (type) {
+      case 'supersedes':
+        return fromDecision.supersedes;
+      case 'blocked_by':
+        return fromDecision.blocks;
+      default:
+        return [];
+    }
+  };
+
   // Filter relationships to only show the specified type
-  const filteredRelationships = relationships.filter(relationship => relationship.type === relationshipType);
+  const filteredRelationships = getRelationshipsForType(relationshipType);
 
   const handleAdd = async (selectedDecisionDetails: SelectedDecisionDetails) => {
     await addRelationship(selectedDecisionDetails, relationshipType);
   };
 
-  const handleRemove = async (relationshipId: string) => {
-    await removeRelationship(relationshipId);
+  const handleRemove = async (relationship: DecisionRelationship) => {
+    await removeRelationship(relationship);
   };
 
   const getRelationshipDescription = (type: DecisionRelationshipType): string => {

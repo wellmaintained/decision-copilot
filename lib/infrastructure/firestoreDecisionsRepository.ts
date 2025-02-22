@@ -6,32 +6,19 @@ import { Decision, DecisionProps } from "@/lib/domain/Decision";
 import { db } from "@/lib/firebase";
 import {
   collection,
-  query,
-  orderBy,
   onSnapshot,
   doc,
   updateDoc,
-  addDoc,
   Timestamp,
   deleteDoc,
   getDoc,
   setDoc,
-  QueryDocumentSnapshot,
-  DocumentSnapshot,
   getDocs,
-  where,
-  writeBatch,
-  documentId,
   serverTimestamp,
 } from "firebase/firestore";
 import { DecisionRelationship } from "@/lib/domain/DecisionRelationship";
 import { FirestoreDecisionRelationshipRepository } from "@/lib/infrastructure/firestoreDecisionRelationshipRepository";
 
-/**
- * Single Responsibility:
- * - Implements DecisionsRepository for Firestore
- * - Translates raw data into domain Decision objects, and handles updates
- */
 export class FirestoreDecisionsRepository implements DecisionsRepository {
   private relationshipRepository: FirestoreDecisionRelationshipRepository;
 
@@ -137,15 +124,59 @@ export class FirestoreDecisionsRepository implements DecisionsRepository {
     scope: DecisionScope
   ): () => void {
     const q = collection(db, this.getDecisionPath(scope))
+    let currentDecisions: Map<string, Decision> = new Map();
+    let relationshipsByDecisionId: Map<string, DecisionRelationship[]> = new Map();
     
-    return onSnapshot(
+    // Helper to emit the current state
+    const emitCurrentState = () => {
+      const decisions = Array.from(currentDecisions.values()).map(decision => 
+        decision.with({ relationships: relationshipsByDecisionId.get(decision.id) || [] })
+      );
+      onData(decisions);
+    };
+
+    // Subscribe to all decisions
+    const decisionsUnsubscribe = onSnapshot(
       q,
       (snapshot) => {
-        const decisions = snapshot.docs.map(doc => this.decisionFromFirestore(doc, scope))
-        onData(decisions)
+        currentDecisions = new Map(
+          snapshot.docs.map(doc => {
+            const decision = this.decisionFromFirestore(doc, scope);
+            return [decision.id, decision];
+          })
+        );
+        emitCurrentState();
       },
       onError
-    )
+    );
+
+    // Subscribe to all relationships for these decisions
+    const relationshipsUnsubscribe = this.relationshipRepository.subscribeToAllRelationships(
+      scope,
+      (relationships) => {
+        // Group relationships by decision ID
+        relationshipsByDecisionId = new Map();
+        for (const relationship of relationships) {
+          // Add to fromDecision's relationships
+          const fromRelationships = relationshipsByDecisionId.get(relationship.fromDecisionId) || [];
+          fromRelationships.push(relationship);
+          relationshipsByDecisionId.set(relationship.fromDecisionId, fromRelationships);
+
+          // Add to toDecision's relationships
+          const toRelationships = relationshipsByDecisionId.get(relationship.toDecisionId) || [];
+          toRelationships.push(relationship);
+          relationshipsByDecisionId.set(relationship.toDecisionId, toRelationships);
+        }
+        emitCurrentState();
+      },
+      onError
+    );
+
+    // Return a function that unsubscribes from both
+    return () => {
+      decisionsUnsubscribe();
+      relationshipsUnsubscribe();
+    };
   }
 
   subscribeToOne(

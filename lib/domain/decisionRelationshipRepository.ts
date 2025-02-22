@@ -8,6 +8,12 @@ export interface DecisionRelationshipRepository {
     onError: (error: Error) => void
   ): () => void;
 
+  subscribeToAllRelationships(
+    scope: { organisationId: string; teamId: string; projectId: string },
+    onData: (relationships: DecisionRelationship[]) => void,
+    onError: (error: Error) => void
+  ): () => void;
+
   addRelationship(
     relationship: DecisionRelationship
   ): Promise<string>;

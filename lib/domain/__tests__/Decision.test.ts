@@ -246,5 +246,69 @@ describe('Decision Domain Model', () => {
 
       expect(decision.isSuperseded()).toBe(true)
     })
+
+    it('should correctly get relationship collections', () => {
+      const decision = Decision.create({
+        ...defaultProps,
+        relationships: [
+          DecisionRelationship.create({
+            type: 'supersedes',
+            fromDecisionId: defaultProps.id,
+            toDecisionId: 'old-decision',
+            createdAt: new Date(),
+            fromTeamId: defaultProps.teamId,
+            fromProjectId: defaultProps.projectId,
+            toTeamId: defaultProps.teamId,
+            toProjectId: defaultProps.projectId,
+            organisationId: defaultProps.organisationId
+          }),
+          DecisionRelationship.create({
+            type: 'supersedes',
+            fromDecisionId: 'new-decision',
+            toDecisionId: defaultProps.id,
+            createdAt: new Date(),
+            fromTeamId: defaultProps.teamId,
+            fromProjectId: defaultProps.projectId,
+            toTeamId: defaultProps.teamId,
+            toProjectId: defaultProps.projectId,
+            organisationId: defaultProps.organisationId
+          }),
+          DecisionRelationship.create({
+            type: 'blocked_by',
+            fromDecisionId: defaultProps.id,
+            toDecisionId: 'blocking-decision',
+            createdAt: new Date(),
+            fromTeamId: defaultProps.teamId,
+            fromProjectId: defaultProps.projectId,
+            toTeamId: defaultProps.teamId,
+            toProjectId: defaultProps.projectId,
+            organisationId: defaultProps.organisationId
+          }),
+          DecisionRelationship.create({
+            type: 'blocked_by',
+            fromDecisionId: 'blocked-decision',
+            toDecisionId: defaultProps.id,
+            createdAt: new Date(),
+            fromTeamId: defaultProps.teamId,
+            fromProjectId: defaultProps.projectId,
+            toTeamId: defaultProps.teamId,
+            toProjectId: defaultProps.projectId,
+            organisationId: defaultProps.organisationId
+          })
+        ]
+      })
+
+      expect(decision.supersedes.length).toBe(1)
+      expect(decision.supersedes[0].toDecisionId).toBe('old-decision')
+
+      expect(decision.supersededBy.length).toBe(1)
+      expect(decision.supersededBy[0].fromDecisionId).toBe('new-decision')
+
+      expect(decision.blocks.length).toBe(1)
+      expect(decision.blocks[0].toDecisionId).toBe('blocking-decision')
+
+      expect(decision.blockedBy.length).toBe(1)
+      expect(decision.blockedBy[0].fromDecisionId).toBe('blocked-decision')
+    })
   })
 }) 

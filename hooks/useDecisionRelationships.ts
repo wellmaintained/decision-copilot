@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { DecisionRelationship, DecisionRelationshipType } from '@/lib/domain/DecisionRelationship'
 import { FirestoreDecisionRelationshipRepository } from '@/lib/infrastructure/firestoreDecisionRelationshipRepository'
 import { Decision } from '@/lib/domain/Decision'
@@ -13,36 +13,7 @@ export interface SelectedDecisionDetails {
 }
 
 export function useDecisionRelationships(fromDecision: Decision) {
-  const [relationships, setRelationships] = useState<DecisionRelationship[]>([])
-  const [loading, setLoading] = useState(true)
   const [error, setError] = useState<Error | null>(null)
-
-  useEffect(() => {
-    if (!fromDecision) {
-      setRelationships([])
-      setLoading(false)
-      return
-    }
-
-    setLoading(true)
-    setError(null)
-
-    const unsubscribe = decisionRelationshipRepository.subscribeToDecisionRelationships(
-      fromDecision,
-      (relationships: DecisionRelationship[]) => {
-        setRelationships(relationships)
-        setLoading(false)
-      },
-      (error: Error) => {
-        setError(error)
-        setLoading(false)
-      }
-    )
-
-    return () => {
-      unsubscribe()
-    }
-  }, [fromDecision])
 
   const addRelationship = async (toDecision: SelectedDecisionDetails, type: DecisionRelationshipType) => {
     try {
@@ -75,8 +46,6 @@ export function useDecisionRelationships(fromDecision: Decision) {
   }
 
   return {
-    relationships,
-    loading,
     error,
     addRelationship,
     removeRelationship

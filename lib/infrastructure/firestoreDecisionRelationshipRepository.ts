@@ -42,6 +42,39 @@ export class FirestoreDecisionRelationshipRepository implements DecisionRelation
     return unsubscribe;
   }
 
+  subscribeToAllRelationships(
+    scope: { organisationId: string; teamId: string; projectId: string },
+    onData: (relationships: DecisionRelationship[]) => void,
+    onError: (error: Error) => void
+  ): () => void {
+    const collectionPath = this.getCollectionPath(scope.organisationId);
+    const q = query(
+      collection(db, collectionPath),
+      or(
+        and(
+          where('fromTeamId', '==', scope.teamId),
+          where('fromProjectId', '==', scope.projectId)
+        ),
+        and(
+          where('toTeamId', '==', scope.teamId),
+          where('toProjectId', '==', scope.projectId)
+        )
+      )
+    );
+
+    return onSnapshot(
+      q,
+      (snapshot: QuerySnapshot<DocumentData>) => {
+        const relationships = snapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data()
+        } as DecisionRelationship));
+        onData(relationships);
+      },
+      onError
+    );
+  }
+
   private async ensureDecisionNotAlreadySuperceded(fromDecisionId: string, organisationId: string): Promise<void> {
     const collectionPath = this.getCollectionPath(organisationId);
     const qFrom = query(

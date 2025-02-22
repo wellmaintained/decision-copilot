@@ -122,20 +122,42 @@ export class Decision {
   @IsArray()
   readonly relationships?: DecisionRelationship[];
 
-  get status(): DecisionStatus {
-    // Check if superseded
-    if (this.relationships?.some(r => 
+  get supersededBy(): DecisionRelationship[] {
+    return this.relationships?.filter(r => 
       r.type === 'supersedes' && 
       r.toDecisionId === this.id
-    )) {
+    ) ?? [];
+  }
+
+  get supersedes(): DecisionRelationship[] {
+    return this.relationships?.filter(r => 
+      r.type === 'supersedes' && 
+      r.fromDecisionId === this.id
+    ) ?? [];
+  }
+
+  get blockedBy(): DecisionRelationship[] {
+    return this.relationships?.filter(r => 
+      r.type === 'blocked_by' && 
+      r.toDecisionId === this.id
+    ) ?? [];
+  }
+
+  get blocks(): DecisionRelationship[] {
+    return this.relationships?.filter(r => 
+      r.type === 'blocked_by' && 
+      r.fromDecisionId === this.id
+    ) ?? [];
+  }
+
+  get status(): DecisionStatus {
+    // Check if superseded
+    if (this.supersededBy.length > 0) {
       return 'superseded';
     }
 
     // Check if blocked
-    if (this.relationships?.some(r => 
-      r.type === 'blocked_by' && 
-      r.toDecisionId === this.id
-    )) {
+    if (this.blockedBy.length > 0) {
       return 'blocked';
     }
 
@@ -169,27 +191,15 @@ export class Decision {
   }
 
   isBlockedBy(decisionId: string): boolean {
-    return this.relationships?.some(r => 
-      r.type === 'blocked_by' && 
-      r.fromDecisionId === this.id && 
-      r.toDecisionId === decisionId
-    ) ?? false;
+    return this.blocks.some(r => r.toDecisionId === decisionId);
   }
 
   canProceed(completedDecisionIds: string[]): boolean {
-    const blockingDecisions = this.relationships?.filter(r => 
-      r.type === 'blocked_by' && 
-      r.fromDecisionId === this.id
-    ) ?? [];
-    return blockingDecisions.every(r => completedDecisionIds.includes(r.toDecisionId));
+    return this.blocks.every(r => completedDecisionIds.includes(r.toDecisionId));
   }
 
   isSuperseded(): boolean {
-    return this.status === 'superseded' && 
-      !!this.relationships?.some(r => 
-        r.type === 'supersedes' && 
-        r.toDecisionId === this.id
-      );
+    return this.status === 'superseded' && this.supersededBy.length > 0;
   }
 
   addStakeholder(stakeholderId: string, role: StakeholderRole = "informed"): Decision {
