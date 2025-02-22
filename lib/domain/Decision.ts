@@ -227,60 +227,6 @@ export class Decision {
     });
   }
 
-  addBlockingDecision(blockingDecisionId: string): Decision {
-    if (blockingDecisionId === this.id) {
-      throw new DecisionDependencyError('Decision cannot block itself');
-    }
-
-    if (this.isBlockedBy(blockingDecisionId)) {
-      throw new DecisionDependencyError(`Decision ${blockingDecisionId} already blocks this decision`);
-    }
-
-    const relationship = DecisionRelationship.create({
-      type: 'blocked_by',
-      fromDecisionId: this.id,
-      toDecisionId: blockingDecisionId,
-      createdAt: new Date(),
-      fromTeamId: this.teamId,
-      fromProjectId: this.projectId,
-      toTeamId: this.teamId,
-      toProjectId: this.projectId,
-      organisationId: this.organisationId
-    });
-
-    return this.with({
-      relationships: [
-        ...(this.relationships || []),
-        relationship
-      ]
-    });
-  }
-
-  markAsSupersededBy(supersedingDecisionId: string): Decision {
-    if (this.status === 'superseded') {
-      throw new DecisionStateError('Decision is already superseded');
-    }
-
-    const relationship = DecisionRelationship.create({
-      type: 'supersedes',
-      fromDecisionId: supersedingDecisionId,
-      toDecisionId: this.id,
-      createdAt: new Date(),
-      fromTeamId: this.teamId,
-      fromProjectId: this.projectId,
-      toTeamId: this.teamId,
-      toProjectId: this.projectId,
-      organisationId: this.organisationId
-    });
-
-    return this.with({
-      relationships: [
-        ...(this.relationships || []),
-        relationship
-      ]
-    });
-  }
-
   private constructor(props: DecisionProps) {
     this.id = props.id;
     this.title = props.title;

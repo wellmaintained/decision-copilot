@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react'
 import { DecisionRelationship, DecisionRelationshipType } from '@/lib/domain/DecisionRelationship'
-import { decisionRelationshipRepository } from '@/lib/infrastructure/firestoreDecisionRelationshipRepository'
+import { FirestoreDecisionRelationshipRepository } from '@/lib/infrastructure/firestoreDecisionRelationshipRepository'
 import { Decision } from '@/lib/domain/Decision'
+
+const decisionRelationshipRepository = new FirestoreDecisionRelationshipRepository();
 
 export interface SelectedDecisionDetails {
   toDecisionId: string
@@ -26,13 +28,12 @@ export function useDecisionRelationships(fromDecision: Decision) {
     setError(null)
 
     const unsubscribe = decisionRelationshipRepository.subscribeToDecisionRelationships(
-      fromDecision.id,
-      fromDecision.organisationId,
-      (relationships) => {
+      fromDecision,
+      (relationships: DecisionRelationship[]) => {
         setRelationships(relationships)
         setLoading(false)
       },
-      (error) => {
+      (error: Error) => {
         setError(error)
         setLoading(false)
       }
@@ -64,9 +65,9 @@ export function useDecisionRelationships(fromDecision: Decision) {
     }
   }
 
-  const removeRelationship = async (relationshipId: string) => {
+  const removeRelationship = async (relationship: DecisionRelationship) => {
     try {
-      await decisionRelationshipRepository.removeRelationship(relationshipId, fromDecision.organisationId)
+      await decisionRelationshipRepository.removeRelationship(relationship)
     } catch (error) {
       setError(error as Error)
       throw error

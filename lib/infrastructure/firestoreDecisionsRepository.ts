@@ -24,7 +24,8 @@ import {
   documentId,
   serverTimestamp,
 } from "firebase/firestore";
-import { DecisionRelationship, DecisionRelationshipType } from '@/lib/domain/DecisionRelationship'
+import { DecisionRelationship } from "@/lib/domain/DecisionRelationship";
+import { FirestoreDecisionRelationshipRepository } from "@/lib/infrastructure/firestoreDecisionRelationshipRepository";
 
 /**
  * Single Responsibility:
@@ -32,12 +33,14 @@ import { DecisionRelationship, DecisionRelationshipType } from '@/lib/domain/Dec
  * - Translates raw data into domain Decision objects, and handles updates
  */
 export class FirestoreDecisionsRepository implements DecisionsRepository {
-  private getDecisionPath(scope: DecisionScope) {
-    return `organisations/${scope.organisationId}/teams/${scope.teamId}/projects/${scope.projectId}/decisions`
+  private relationshipRepository: FirestoreDecisionRelationshipRepository;
+
+  constructor() {
+    this.relationshipRepository = new FirestoreDecisionRelationshipRepository();
   }
 
-  private getRelationshipsPath(organisationId: string) {
-    return `organisations/${organisationId}/decision_relationships`
+  private getDecisionPath(scope: DecisionScope) {
+    return `organisations/${scope.organisationId}/teams/${scope.teamId}/projects/${scope.projectId}/decisions`
   }
 
   private decisionFromFirestore(doc: any, scope: DecisionScope): Decision {
@@ -50,7 +53,6 @@ export class FirestoreDecisionsRepository implements DecisionsRepository {
       organisationId: scope.organisationId,
       teamId: scope.teamId,
       projectId: scope.projectId,
-      relationships: data.relationships || []
     })
   }
 
@@ -125,40 +127,6 @@ export class FirestoreDecisionsRepository implements DecisionsRepository {
   }
 
   async delete(id: string, scope: DecisionScope): Promise<void> {
-    // Check for any relationships where this decision is referenced
-    const relationshipsQuery = query(
-      collection(db, this.getRelationshipsPath(scope.organisationId)),
-      where('fromDecisionId', '==', id)
-    )
-    const toRelationshipsQuery = query(
-      collection(db, this.getRelationshipsPath(scope.organisationId)),
-      where('toDecisionId', '==', id)
-    )
-
-    const [fromRelationships, toRelationships] = await Promise.all([
-      getDocs(relationshipsQuery),
-      getDocs(toRelationshipsQuery)
-    ])
-
-    if (!fromRelationships.empty || !toRelationships.empty) {
-      const relationships = [...fromRelationships.docs, ...toRelationships.docs]
-      const relationshipTypes = relationships.map(r => r.data().type)
-      
-      const blockingCount = relationshipTypes.filter(t => t === 'blocks').length
-      const supersedesCount = relationshipTypes.filter(t => t === 'supersedes').length
-
-      let errorMessage = 'Cannot delete decision that is still referenced by relationships:'
-      if (blockingCount > 0) {
-        errorMessage += `\n- Used in ${blockingCount} blocking relationship${blockingCount > 1 ? 's' : ''}`
-      }
-      if (supersedesCount > 0) {
-        errorMessage += `\n- Used in ${supersedesCount} supersedes relationship${supersedesCount > 1 ? 's' : ''}`
-      }
-      errorMessage += '\nPlease remove these relationships before deleting the decision.'
-
-      throw new Error(errorMessage)
-    }
-
     const docRef = doc(db, this.getDecisionPath(scope), id)
     await deleteDoc(docRef)
   }
@@ -182,7 +150,7 @@ export class FirestoreDecisionsRepository implements DecisionsRepository {
 
   subscribeToOne(
     id: string,
-    onData: (decision: Decision | null) => void,
+    onData: (decision: Decision) => void,
     onError: (error: Error) => void,
     scope: DecisionScope
   ): () => void {
@@ -190,413 +158,45 @@ export class FirestoreDecisionsRepository implements DecisionsRepository {
     let currentDecision: Decision | null = null;
     let currentRelationships: DecisionRelationship[] = [];
     
-    // Helper to emit the latest state
-    const emitLatestState = () => {
-      if (!currentDecision) {
-        onData(null);
-        return;
+    // Helper to emit the current state
+    const emitCurrentState = () => {
+      if (currentDecision) {
+        onData(currentDecision.with({ relationships: currentRelationships }));
       }
-      onData(currentDecision.with({ relationships: currentRelationships }));
     };
 
-    // Subscribe to decision document changes
-    const unsubscribeFromDoc = onSnapshot(
+    // Subscribe to the decision document
+    const decisionUnsubscribe = onSnapshot(
       docRef,
       (snapshot) => {
-        if (!snapshot.exists()) {
-          currentDecision = null;
-          emitLatestState();
-          return;
+        if (snapshot.exists()) {
+          currentDecision = this.decisionFromFirestore(snapshot, scope);
+          emitCurrentState();
         }
-        
-        currentDecision = this.decisionFromFirestore(snapshot, scope);
-        emitLatestState();
       },
       onError
     );
 
-    // Subscribe to relationships where this decision is the source
-    const fromRelationshipsQuery = query(
-      collection(db, this.getRelationshipsPath(scope.organisationId)),
-      where('fromDecisionId', '==', id)
-    );
-
-    const unsubscribeFromRelationships = onSnapshot(
-      fromRelationshipsQuery,
-      (snapshot) => {
-        currentRelationships = snapshot.docs.map(doc => {
-          const data = doc.data();
-          return DecisionRelationship.create({
-            type: data.type,
-            fromDecisionId: data.fromDecisionId,
-            toDecisionId: data.toDecisionId,
-            createdAt: data.createdAt ? data.createdAt.toDate() : new Date(),
-            fromTeamId: data.fromTeamId,
-            fromProjectId: data.fromProjectId,
-            toTeamId: data.toTeamId,
-            toProjectId: data.toProjectId,
-            organisationId: scope.organisationId
-          });
-        });
-        emitLatestState();
+    // Subscribe to relationship changes
+    const relationshipsUnsubscribe = this.relationshipRepository.subscribeToDecisionRelationships(
+      // Create a minimal Decision object just for the subscription
+      Decision.create({
+        id,
+        organisationId: scope.organisationId,
+        teamId: scope.teamId,
+        projectId: scope.projectId,
+      } as any), // Using 'as any' since we don't need all Decision props just for the relationship subscription
+      (relationships) => {
+        currentRelationships = relationships;
+        emitCurrentState();
       },
       onError
     );
 
-    // Subscribe to relationships where this decision is the target
-    const toRelationshipsQuery = query(
-      collection(db, this.getRelationshipsPath(scope.organisationId)),
-      where('toDecisionId', '==', id)
-    );
-
-    const unsubscribeToRelationships = onSnapshot(
-      toRelationshipsQuery,
-      (snapshot) => {
-        const toRelationships = snapshot.docs.map(doc => {
-          const data = doc.data();
-          return DecisionRelationship.create({
-            type: data.type,
-            fromDecisionId: data.fromDecisionId,
-            toDecisionId: data.toDecisionId,
-            createdAt: data.createdAt ? data.createdAt.toDate() : new Date(),
-            fromTeamId: data.fromTeamId,
-            fromProjectId: data.fromProjectId,
-            toTeamId: data.toTeamId,
-            toProjectId: data.toProjectId,
-            organisationId: scope.organisationId
-          });
-        });
-        // Merge with existing relationships, avoiding duplicates
-        currentRelationships = [...currentRelationships, ...toRelationships]
-          .filter((relationship, index, self) => 
-            index === self.findIndex((r) => 
-              r.fromDecisionId === relationship.fromDecisionId && 
-              r.toDecisionId === relationship.toDecisionId && 
-              r.type === relationship.type
-            )
-          );
-        emitLatestState();
-      },
-      onError
-    );
-
-    // Return a cleanup function that unsubscribes from all listeners
+    // Return a function that unsubscribes from both
     return () => {
-      unsubscribeFromDoc();
-      unsubscribeFromRelationships();
-      unsubscribeToRelationships();
+      decisionUnsubscribe();
+      relationshipsUnsubscribe();
     };
-  }
-
-  // Relationship methods
-  private async checkForCyclicRelationship(
-    fromDecisionId: string,
-    toDecisionId: string,
-    type: DecisionRelationshipType,
-    organisationId: string
-  ): Promise<boolean> {
-    const visited = new Set<string>()
-    const stack = new Set<string>()
-
-    const traverse = async (currentId: string): Promise<boolean> => {
-      if (stack.has(currentId)) return true // Found cycle
-      if (visited.has(currentId)) return false
-      
-      visited.add(currentId)
-      stack.add(currentId)
-
-      const q = query(
-        collection(db, this.getRelationshipsPath(organisationId)),
-        where('fromDecisionId', '==', currentId),
-        where('type', '==', type)
-      )
-      const relationships = await getDocs(q)
-
-      for (const rel of relationships.docs) {
-        const data = rel.data()
-        if (await traverse(data.toDecisionId)) return true
-      }
-
-      stack.delete(currentId)
-      return false
-    }
-
-    return traverse(toDecisionId)
-  }
-
-  async addBlockingRelationship(
-    blockingDecisionId: string,
-    blockedDecisionId: string,
-    organisationId: string
-  ): Promise<void> {
-    // Check for cycles
-    const wouldCreateCycle = await this.checkForCyclicRelationship(
-      blockingDecisionId,
-      blockedDecisionId,
-      'blocked_by',
-      organisationId
-    )
-    if (wouldCreateCycle) {
-      throw new Error('Cannot create cyclic blocking relationship')
-    }
-
-    // Get both decisions to verify they exist and get their metadata
-    const blockingDecision = await this.findDecisionInOrg(blockingDecisionId, organisationId)
-    const blockedDecision = await this.findDecisionInOrg(blockedDecisionId, organisationId)
-
-    if (!blockingDecision || !blockedDecision) {
-      throw new Error('One or both decisions not found')
-    }
-
-    const relationshipId = DecisionRelationship.createId(blockingDecisionId, blockedDecisionId)
-    const relationshipRef = doc(db, this.getRelationshipsPath(organisationId), relationshipId)
-
-    const batch = writeBatch(db)
-
-    // Create the relationship
-    batch.set(relationshipRef, {
-      fromDecisionId: blockingDecisionId,
-      toDecisionId: blockedDecisionId,
-      type: 'blocked_by' as DecisionRelationshipType,
-      createdAt: Timestamp.now(),
-      fromTeamId: blockingDecision.teamId,
-      fromProjectId: blockingDecision.projectId,
-      toTeamId: blockedDecision.teamId,
-      toProjectId: blockedDecision.projectId
-    })
-
-    // Update the blocked decision's relationships
-    const blockedDecisionRef = doc(
-      db,
-      this.getDecisionPath({
-        organisationId,
-        teamId: blockedDecision.teamId,
-        projectId: blockedDecision.projectId
-      }),
-      blockedDecisionId
-    )
-
-    batch.update(blockedDecisionRef, {
-      relationships: [
-        ...(blockedDecision.relationships || []),
-        {
-          type: 'blocked_by',
-          fromDecisionId: blockingDecisionId,
-          toDecisionId: blockedDecisionId
-        }
-      ]
-    })
-
-    await batch.commit()
-  }
-
-  async removeBlockingRelationship(
-    blockingDecisionId: string,
-    blockedDecisionId: string,
-    organisationId: string
-  ): Promise<void> {
-    const relationshipId = DecisionRelationship.createId(blockingDecisionId, blockedDecisionId)
-    const relationshipRef = doc(db, this.getRelationshipsPath(organisationId), relationshipId)
-
-    const blockedDecision = await this.findDecisionInOrg(blockedDecisionId, organisationId)
-    if (!blockedDecision) {
-      throw new Error('Blocked decision not found')
-    }
-
-    const batch = writeBatch(db)
-
-    // Delete the relationship
-    batch.delete(relationshipRef)
-
-    // Update the blocked decision's relationships
-    const blockedDecisionRef = doc(
-      db,
-      this.getDecisionPath({
-        organisationId,
-        teamId: blockedDecision.teamId,
-        projectId: blockedDecision.projectId
-      }),
-      blockedDecisionId
-    )
-
-    batch.update(blockedDecisionRef, {
-      relationships: (blockedDecision.relationships || []).filter(
-        r => !(r.type === 'blocked_by' && 
-              r.fromDecisionId === blockingDecisionId && 
-              r.toDecisionId === blockedDecisionId)
-      )
-    })
-
-    await batch.commit()
-  }
-
-  async markAsSuperseded(
-    oldDecisionId: string,
-    newDecisionId: string,
-    organisationId: string
-  ): Promise<void> {
-    // Check for cycles
-    const wouldCreateCycle = await this.checkForCyclicRelationship(
-      newDecisionId,
-      oldDecisionId,
-      'supersedes',
-      organisationId
-    )
-    if (wouldCreateCycle) {
-      throw new Error('Cannot create cyclic supersession relationship')
-    }
-
-    const oldDecision = await this.findDecisionInOrg(oldDecisionId, organisationId)
-    const newDecision = await this.findDecisionInOrg(newDecisionId, organisationId)
-
-    if (!oldDecision || !newDecision) {
-      throw new Error('One or both decisions not found')
-    }
-
-    if (oldDecision.status === 'superseded') {
-      throw new Error('Decision is already superseded')
-    }
-
-    const relationshipId = DecisionRelationship.createId(newDecisionId, oldDecisionId)
-    const relationshipRef = doc(db, this.getRelationshipsPath(organisationId), relationshipId)
-
-    const batch = writeBatch(db)
-
-    // Create the relationship
-    batch.set(relationshipRef, {
-      fromDecisionId: newDecisionId,
-      toDecisionId: oldDecisionId,
-      type: 'supersedes' as DecisionRelationshipType,
-      createdAt: Timestamp.now(),
-      fromTeamId: newDecision.teamId,
-      fromProjectId: newDecision.projectId,
-      toTeamId: oldDecision.teamId,
-      toProjectId: oldDecision.projectId
-    })
-
-    // Update the old decision
-    const oldDecisionRef = doc(
-      db,
-      this.getDecisionPath({
-        organisationId,
-        teamId: oldDecision.teamId,
-        projectId: oldDecision.projectId
-      }),
-      oldDecisionId
-    )
-
-    batch.update(oldDecisionRef, {
-      status: 'superseded',
-      supersededByDecisionId: newDecisionId
-    })
-
-    await batch.commit()
-  }
-
-  private async findDecisionInOrg(
-    decisionId: string,
-    organisationId: string
-  ): Promise<Decision | null> {
-    // Query all teams/projects in the org for this decision
-    const teamsSnapshot = await getDocs(collection(db, `organisations/${organisationId}/teams`))
-    
-    for (const teamDoc of teamsSnapshot.docs) {
-      const projectsSnapshot = await getDocs(collection(db, `organisations/${organisationId}/teams/${teamDoc.id}/projects`))
-      
-      for (const projectDoc of projectsSnapshot.docs) {
-        const decisionRef = doc(db, `organisations/${organisationId}/teams/${teamDoc.id}/projects/${projectDoc.id}/decisions`, decisionId)
-        const decisionSnap = await getDoc(decisionRef)
-        
-        if (decisionSnap.exists()) {
-          return this.decisionFromFirestore(decisionSnap, {
-            organisationId,
-            teamId: teamDoc.id,
-            projectId: projectDoc.id
-          })
-        }
-      }
-    }
-    
-    return null
-  }
-
-  async getBlockedDecisions(
-    blockingDecisionId: string,
-    organisationId: string
-  ): Promise<Decision[]> {
-    const q = query(
-      collection(db, this.getRelationshipsPath(organisationId)),
-      where('fromDecisionId', '==', blockingDecisionId),
-      where('type', '==', 'blocked_by')
-    )
-    const relationships = await getDocs(q)
-    
-    const decisions: Decision[] = []
-    for (const rel of relationships.docs) {
-      const data = rel.data()
-      const decision = await this.findDecisionInOrg(data.toDecisionId, organisationId)
-      if (decision) decisions.push(decision)
-    }
-    
-    return decisions
-  }
-
-  async getBlockingDecisions(
-    blockedDecisionId: string,
-    organisationId: string
-  ): Promise<Decision[]> {
-    const q = query(
-      collection(db, this.getRelationshipsPath(organisationId)),
-      where('toDecisionId', '==', blockedDecisionId),
-      where('type', '==', 'blocked_by')
-    )
-    const relationships = await getDocs(q)
-    
-    const decisions: Decision[] = []
-    for (const rel of relationships.docs) {
-      const data = rel.data()
-      const decision = await this.findDecisionInOrg(data.fromDecisionId, organisationId)
-      if (decision) decisions.push(decision)
-    }
-    
-    return decisions
-  }
-
-  async getSupersededDecisions(
-    supersedingDecisionId: string,
-    organisationId: string
-  ): Promise<Decision[]> {
-    const q = query(
-      collection(db, this.getRelationshipsPath(organisationId)),
-      where('fromDecisionId', '==', supersedingDecisionId),
-      where('type', '==', 'supersedes')
-    )
-    const relationships = await getDocs(q)
-    
-    const decisions: Decision[] = []
-    for (const rel of relationships.docs) {
-      const data = rel.data()
-      const decision = await this.findDecisionInOrg(data.toDecisionId, organisationId)
-      if (decision) decisions.push(decision)
-    }
-    
-    return decisions
-  }
-
-  async getSupersedingDecision(
-    supersededDecisionId: string,
-    organisationId: string
-  ): Promise<Decision | null> {
-    const q = query(
-      collection(db, this.getRelationshipsPath(organisationId)),
-      where('toDecisionId', '==', supersededDecisionId),
-      where('type', '==', 'supersedes')
-    )
-    const relationships = await getDocs(q)
-    
-    if (relationships.empty) return null
-    
-    const data = relationships.docs[0].data()
-    return this.findDecisionInOrg(data.fromDecisionId, organisationId)
   }
 }

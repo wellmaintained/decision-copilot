@@ -25,3 +25,10 @@ export class DecisionDependencyError extends DecisionError {
     this.name = 'DecisionDependencyError';
   }
 } 
+
+export class DecisionRelationshipError extends DecisionError {
+  constructor(message: string) {
+    super(message);
+    this.name = 'DecisionRelationshipError';
+  }
+} 

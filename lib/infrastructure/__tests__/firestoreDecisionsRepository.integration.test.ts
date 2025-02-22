@@ -9,39 +9,33 @@ describe('FirestoreDecisionsRepository Integration Tests', () => {
   const repository = new FirestoreDecisionsRepository();
   const decisionRelationshipRepository = new FirestoreDecisionRelationshipRepository();
   let sampleDecision: Decision;
-  let supersededDecision: Decision;
-  let supersededRelationshipId: string;
+  let sampleDecision2: Decision;
+  let supersededRelationship: DecisionRelationship;
 
   beforeAll(async () => {
     await signInTestUser()
     const emptyDecision = Decision.createEmptyDecision();
-    supersededDecision = await repository.create(
-      emptyDecision
-        .with({ title: 'Superseded Decision' })
-        .withoutId(),
-      TEST_SCOPE
-    );
     sampleDecision = await repository.create(
       emptyDecision
       .with({ title: 'Sample Decision' })
       .withoutId(),
       TEST_SCOPE
     );
+    sampleDecision2 = await repository.create(
+      emptyDecision
+        .with({ title: 'Sample Decision 2 (superceeds Sample Decision)' })
+        .withoutId(),
+      TEST_SCOPE
+    );
   })
   
-  beforeEach(async () => {
-  })
-  
-  afterEach(async () => {
-  })
-
   afterAll(async () => {
     try {
-      if (supersededRelationshipId) {
-        await decisionRelationshipRepository.removeRelationship(supersededRelationshipId, TEST_SCOPE.organisationId);
+      if (supersededRelationship) {
+        await decisionRelationshipRepository.removeRelationship(supersededRelationship);
       }
       await repository.delete(sampleDecision.id, TEST_SCOPE);
-      await repository.delete(supersededDecision.id, TEST_SCOPE);
+      await repository.delete(sampleDecision2.id, TEST_SCOPE);
     } catch (error) {
       console.error('Error in afterAll:', error);
       throw error;
@@ -104,57 +98,61 @@ describe('FirestoreDecisionsRepository Integration Tests', () => {
     })
 
     it('changes to decision relationships update the affected decisions', async () => {
-      const decisionsFromSubscribeToOne: (Decision | null)[] = []
+      const decisionsFromSubscribeToOne: Map<number, Decision> = new Map<number, Decision>();
+      var updatesRecievedFromSubscribeToOne = 0; 
       const onError = vi.fn()
       
       // Create a promise that resolves when we get both the initial and updated decision
-      const allUpdatesReceived = new Promise<void>(async (resolve) => {
+      const allUpdatesReceived = new Promise<void>( (resolve) => {
         const checkIfAllUpdatesReceived = () => {
-          if (decisionsFromSubscribeToOne.length === 2) {
+          if (updatesRecievedFromSubscribeToOne === 2) {
+            console.debug('All expected updates received:');
+            console.debug('decisions from subscribeToOne', decisionsFromSubscribeToOne);
+            console.debug('unsubscribing from subscribeToOne');
+            unsubscribe();
             resolve();
           }
         };
         
         // Subscribe to changes
         const unsubscribe = repository.subscribeToOne(
-          sampleDecision.id,
+          sampleDecision2.id,
           (decision) => {
-            console.debug(decision);
-            decisionsFromSubscribeToOne.push(decision)
+            console.debug('decision from subscribeToOne', decision);
+            updatesRecievedFromSubscribeToOne = updatesRecievedFromSubscribeToOne + 1;
+            decisionsFromSubscribeToOne.set(updatesRecievedFromSubscribeToOne, decision)
             checkIfAllUpdatesReceived();
           },
           onError,
           TEST_SCOPE
         );
       
-        // Add a relationship indicating the sampleDecision supersedes supersededDecision
-        const relationship = DecisionRelationship.create({
-          fromDecisionId: sampleDecision.id,
-          toDecisionId: supersededDecision.id,
+        // Add a relationship indicating the supersededDecision
+        supersededRelationship = DecisionRelationship.create({
+          fromTeamId: sampleDecision2.teamId,
+          fromProjectId: sampleDecision2.projectId,
+          fromDecisionId: sampleDecision2.id,
           type: 'supersedes',
+          toDecisionId: sampleDecision.id,
+          toTeamId: sampleDecision.teamId,
+          toProjectId: sampleDecision.projectId,
+          organisationId: TEST_SCOPE.organisationId,
           createdAt: new Date(),
-          fromTeamId: sampleDecision.teamId,
-          fromProjectId: sampleDecision.projectId,
-          toTeamId: supersededDecision.teamId,
-          toProjectId: supersededDecision.projectId,
-          organisationId: TEST_SCOPE.organisationId
         });
-        supersededRelationshipId = relationship.id;
-        await decisionRelationshipRepository.addRelationship(relationship);
-
-        return unsubscribe;
+        decisionRelationshipRepository.addRelationship(supersededRelationship);
       });
 
       // Wait for both updates to be received
       await allUpdatesReceived;
 
-      // Verify results
-      expect(decisionsFromSubscribeToOne.length).toBe(2)
-      expect(decisionsFromSubscribeToOne[0]?.relationships?.length).toBe(0)
-      expect(decisionsFromSubscribeToOne[1]?.relationships?.length).toBe(1)
-      expect(decisionsFromSubscribeToOne[1]?.relationships?.[0].type).toBe('supersedes')
-      expect(decisionsFromSubscribeToOne[1]?.relationships?.[0].toDecisionId).toBe(supersededDecision.id)
       expect(onError).not.toHaveBeenCalled()
+
+      // Initial decision has no relationships
+      expect(decisionsFromSubscribeToOne.get(1)?.relationships?.length).toBe(0)
+      // Updated decision has one supercedes relationship
+      expect(decisionsFromSubscribeToOne.get(2)?.relationships?.length).toBe(1)
+      expect(decisionsFromSubscribeToOne.get(2)?.relationships?.[0].type).toBe('supersedes')
+      expect(decisionsFromSubscribeToOne.get(2)?.relationships?.[0].toDecisionId).toBe(sampleDecision.id)
     })
   })
 })

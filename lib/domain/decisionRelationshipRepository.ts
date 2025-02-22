@@ -1,9 +1,9 @@
-import { DecisionRelationship } from '@/lib/domain/DecisionRelationship'
+import { DecisionRelationship, DecisionRelationshipType } from '@/lib/domain/DecisionRelationship'
+import { Decision } from '@/lib/domain/Decision'
 
 export interface DecisionRelationshipRepository {
   subscribeToDecisionRelationships(
-    decisionId: string,
-    organisationId: string,
+    decision: Decision,
     onData: (relationships: DecisionRelationship[]) => void,
     onError: (error: Error) => void
   ): () => void;
@@ -12,5 +12,7 @@ export interface DecisionRelationshipRepository {
     relationship: DecisionRelationship
   ): Promise<string>;
 
-  removeRelationship(relationshipId: string, organisationId: string): Promise<void>;
+  removeRelationship(
+    relationship: DecisionRelationship
+  ): Promise<void>;
 } 

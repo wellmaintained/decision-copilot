@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { Decision, DecisionProps } from '@/lib/domain/Decision'
-import { DecisionStateError, StakeholderError, DecisionDependencyError } from '@/lib/domain/DecisionError'
+import { DecisionStateError, StakeholderError } from '@/lib/domain/DecisionError'
 import { DecisionRelationship } from '@/lib/domain/DecisionRelationship'
 
 describe('Decision Domain Model', () => {
@@ -83,7 +83,6 @@ describe('Decision Domain Model', () => {
         ...defaultProps,
         relationships: [
           DecisionRelationship.create({
-            id: 'rel-1',
             type: 'blocked_by',
             fromDecisionId: 'other-decision',
             toDecisionId: defaultProps.id,
@@ -103,7 +102,6 @@ describe('Decision Domain Model', () => {
         ...defaultProps,
         relationships: [
           DecisionRelationship.create({
-            id: 'rel-2',
             type: 'supersedes',
             fromDecisionId: 'new-decision',
             toDecisionId: defaultProps.id,
@@ -117,7 +115,7 @@ describe('Decision Domain Model', () => {
         ]
       });
       expect(supersededDecision.status).toBe('superseded');
-    });
+    })
 
     it('should prioritize superseded status over other statuses', () => {
       const decision = Decision.create({
@@ -125,7 +123,6 @@ describe('Decision Domain Model', () => {
         publishDate: new Date(),
         relationships: [
           DecisionRelationship.create({
-            id: 'rel-1',
             type: 'supersedes',
             fromDecisionId: 'new-decision',
             toDecisionId: defaultProps.id,
@@ -139,7 +136,7 @@ describe('Decision Domain Model', () => {
         ]
       });
       expect(decision.status).toBe('superseded');
-    });
+    })
 
     it('should throw error when modifying published decisions', () => {
       const publishedDecision = Decision.create({
@@ -172,42 +169,15 @@ describe('Decision Domain Model', () => {
     })
   })
 
-  describe('Decision Dependencies', () => {
-    it('should throw error when attempting self-blocking', () => {
-      const decision = Decision.create(defaultProps)
-      expect(() => {
-        decision.addBlockingDecision(decision.id)
-      }).toThrow(DecisionDependencyError)
-    })
-
-    it('should throw error when adding duplicate blocking relationship', () => {
-      const decision = Decision.create(defaultProps)
-      const withBlock = decision.addBlockingDecision('blocking-decision-1')
-      
-      expect(() => {
-        withBlock.addBlockingDecision('blocking-decision-1')
-      }).toThrow(DecisionDependencyError)
-    })
-
-    it('should correctly determine if can proceed based on completed decisions', () => {
+  describe('Relationship Queries', () => {
+    it('should correctly check if decision is blocked by another decision', () => {
       const decision = Decision.create({
         ...defaultProps,
         relationships: [
           DecisionRelationship.create({
             type: 'blocked_by',
             fromDecisionId: defaultProps.id,
-            toDecisionId: 'decision-1',
-            createdAt: new Date(),
-            fromTeamId: defaultProps.teamId,
-            fromProjectId: defaultProps.projectId,
-            toTeamId: defaultProps.teamId,
-            toProjectId: defaultProps.projectId,
-            organisationId: defaultProps.organisationId
-          }),
-          DecisionRelationship.create({
-            type: 'blocked_by',
-            fromDecisionId: defaultProps.id,
-            toDecisionId: 'decision-2',
+            toDecisionId: 'blocking-decision',
             createdAt: new Date(),
             fromTeamId: defaultProps.teamId,
             fromProjectId: defaultProps.projectId,
@@ -218,33 +188,11 @@ describe('Decision Domain Model', () => {
         ]
       })
 
-      expect(decision.canProceed(['decision-1'])).toBe(false)
-      expect(decision.canProceed(['decision-1', 'decision-2'])).toBe(true)
-    })
-  })
-
-  describe('Decision Supersession', () => {
-    it('should throw error when attempting to supersede an already superseded decision', () => {
-      const decision = Decision.create(defaultProps)
-      const superseded = decision.markAsSupersededBy('new-decision-1')
-      
-      expect(() => {
-        superseded.markAsSupersededBy('new-decision-2')
-      }).toThrow(DecisionStateError)
+      expect(decision.isBlockedBy('blocking-decision')).toBe(true)
+      expect(decision.isBlockedBy('non-blocking-decision')).toBe(false)
     })
 
-    it('should throw error when modifying superseded decisions', () => {
-      const decision = Decision.create(defaultProps)
-      const superseded = decision.markAsSupersededBy('new-decision-1')
-      
-      expect(() => {
-        superseded.with({ title: 'New Title' })
-      }).toThrow(DecisionStateError)
-    })
-  })
-
-  describe('Decision Blocking', () => {
-    it('should require all blocking decisions to be complete before proceeding', () => {
+    it('should correctly determine if decision can proceed based on completed decisions', () => {
       const decision = Decision.create({
         ...defaultProps,
         relationships: [
@@ -276,6 +224,27 @@ describe('Decision Domain Model', () => {
       expect(decision.canProceed([])).toBe(false)
       expect(decision.canProceed(['blocking-1'])).toBe(false)
       expect(decision.canProceed(['blocking-1', 'blocking-2'])).toBe(true)
+    })
+
+    it('should correctly check if decision is superseded', () => {
+      const decision = Decision.create({
+        ...defaultProps,
+        relationships: [
+          DecisionRelationship.create({
+            type: 'supersedes',
+            fromDecisionId: 'new-decision',
+            toDecisionId: defaultProps.id,
+            createdAt: new Date(),
+            fromTeamId: defaultProps.teamId,
+            fromProjectId: defaultProps.projectId,
+            toTeamId: defaultProps.teamId,
+            toProjectId: defaultProps.projectId,
+            organisationId: defaultProps.organisationId
+          })
+        ]
+      })
+
+      expect(decision.isSuperseded()).toBe(true)
     })
   })
 }) 
