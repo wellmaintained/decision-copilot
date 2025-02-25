@@ -4,7 +4,8 @@ A web app the helps teams make great decisions
 
 ## Use the application
 
-https://decision-copilot.web.app/
+https://decision-copilot.wellmaintained.org/
+
 
 ## Development
 
