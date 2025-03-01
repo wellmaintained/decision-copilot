@@ -1,10 +1,9 @@
-import { collection, doc, getDoc, getDocs, addDoc, updateDoc, deleteDoc, query, where, Timestamp } from 'firebase/firestore'
+import { collection, doc, getDoc, getDocs, addDoc, updateDoc, deleteDoc, query, where } from 'firebase/firestore'
 import { db } from '@/lib/firebase'
 import { Organisation, OrganisationProps } from '@/lib/domain/Organisation'
 import { OrganisationsRepository } from '@/lib/domain/organisationsRepository'
 import { Team } from '@/lib/domain/Team'
 import { Project } from '@/lib/domain/Project'
-import { Decision } from '@/lib/domain/Decision'
 import { FirestoreStakeholdersRepository } from '@/lib/infrastructure/firestoreStakeholdersRepository'
 
 export class FirestoreOrganisationsRepository implements OrganisationsRepository {
@@ -36,41 +35,17 @@ export class FirestoreOrganisationsRepository implements OrganisationsRepository
       const projectsWithIds = await Promise.all(team.projects.map(async project => {
         const projectDoc = await addDoc(collection(db, 'organisations', orgDoc.id, 'teams', teamDoc.id, 'projects'), {
           name: project.name,
-          description: project.description
+          description: project.description,
+          teamId: teamDoc.id,
+          organisationId: orgDoc.id
         })
-
-        // Add decisions to a subcollection within the project
-        const decisionsWithIds = await Promise.all(project.decisions.map(async decision => {
-          const decisionDoc = await addDoc(
-            collection(db, 'organisations', orgDoc.id, 'teams', teamDoc.id, 'projects', projectDoc.id, 'decisions'),
-            {
-              title: decision.title,
-              description: decision.description,
-              cost: decision.cost,
-              createdAt: Timestamp.fromDate(decision.createdAt),
-              criteria: decision.criteria,
-              options: decision.options,
-              decision: decision.decision,
-              decisionMethod: decision.decisionMethod,
-              reversibility: decision.reversibility,
-              stakeholders: decision.stakeholders,
-              status: decision.status,
-              updatedAt: decision.updatedAt ? Timestamp.fromDate(decision.updatedAt) : null,
-              driverStakeholderId: decision.driverStakeholderId
-            }
-          )
-          return Decision.create({
-            ...decision,
-            id: decisionDoc.id
-          })
-        }))
 
         return Project.create({
           id: projectDoc.id,
           name: project.name,
           description: project.description,
           teamId: teamDoc.id,
-          decisions: decisionsWithIds
+          organisationId: orgDoc.id
         })
       }))
 
@@ -109,41 +84,13 @@ export class FirestoreOrganisationsRepository implements OrganisationsRepository
       // Get projects from subcollection within team
       const projectsSnap = await getDocs(collection(db, 'organisations', id, 'teams', teamDoc.id, 'projects'))
       const projects = await Promise.all(projectsSnap.docs.map(async projectDoc => {
-        // Get decisions from subcollection within project
-        const decisionsSnap = await getDocs(
-          collection(db, 'organisations', id, 'teams', teamDoc.id, 'projects', projectDoc.id, 'decisions')
-        )
-        const decisions = decisionsSnap.docs.map(decisionDoc => {
-          const data = decisionDoc.data()
-          return Decision.create({
-            id: decisionDoc.id,
-            title: data.title,
-            description: data.description,
-            cost: data.cost,
-            createdAt: data.createdAt.toDate(),
-            criteria: data.criteria || [],
-            options: data.options || [],
-            decision: data.decision,
-            decisionMethod: data.decisionMethod,
-            reversibility: data.reversibility,
-            stakeholders: data.stakeholders || [],
-            updatedAt: data.updatedAt?.toDate(),
-            driverStakeholderId: data.driverStakeholderId,
-            organisationId: id,
-            teamId: teamDoc.id,
-            projectId: projectDoc.id,
-            relationships: data.relationships || [],
-            supportingMaterials: data.supportingMaterials || []
-          })
-        })
-
         const projectData = projectDoc.data()
         return Project.create({
           id: projectDoc.id,
           name: projectData.name,
           description: projectData.description,
           teamId: teamDoc.id,
-          decisions: decisions
+          organisationId: id
         })
       }))
 
@@ -211,33 +158,6 @@ export class FirestoreOrganisationsRepository implements OrganisationsRepository
           name: project.name,
           description: project.description
         })
-
-        // Update decisions subcollection within project
-        for (const decision of project.decisions) {
-          const decisionRef = doc(
-            db,
-            'organisations',
-            organisation.id,
-            'teams',
-            team.id,
-            'projects',
-            project.id,
-            'decisions',
-            decision.id
-          )
-          await updateDoc(decisionRef, {
-            title: decision.title,
-            description: decision.description,
-            cost: decision.cost,
-            criteria: decision.criteria,
-            options: decision.options,
-            decision: decision.decision,
-            decisionMethod: decision.decisionMethod,
-            reversibility: decision.reversibility,
-            stakeholders: decision.stakeholders,
-            updatedAt: Timestamp.fromDate(decision.updatedAt || new Date())
-          })
-        }
       }
     }
   }

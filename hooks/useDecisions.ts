@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react";
-import { useParams } from "next/navigation";
 import {
   Decision,
   Cost,
@@ -13,42 +12,51 @@ import { DecisionScope } from "@/lib/domain/decisionsRepository";
 
 const decisionsRepository = new FirestoreDecisionsRepository();
 
-export function useDecision(decisionId: string) {
-  const params = useParams();
-  const organisationId = params.organisationId as string;
-  const teamId = params.teamId as string;
-  const projectId = params.projectId as string;
-
+export function useDecision(decisionId: string, organisationId: string, teamId: string, projectId: string) {
   const [decision, setDecision] = useState<Decision | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
-  const scope: DecisionScope = { organisationId, teamId, projectId };
-
   useEffect(() => {
-    const unsubscribe = decisionsRepository.subscribeToOne(
-      decisionId,
-      (decision: Decision | null) => {
-        setDecision(decision);
+    let unsubscribe: () => void;
+    const fetchDecision = async () => {
+      try {
+        // First get the decision by ID to ensure we have a valid Decision object
+        const scope: DecisionScope = { organisationId, teamId, projectId };
+        const fetchedDecision = await decisionsRepository.getById(decisionId, scope);
+        // Then subscribe to updates
+        unsubscribe = decisionsRepository.subscribeToOne(
+          fetchedDecision,
+          (decision: Decision | null) => {
+            setDecision(decision);
+            setLoading(false);
+            setError(null);
+          },
+          (error: Error) => {
+            setError(error);
+            setLoading(false);
+          }
+        );
+      } catch (err) {
+        setError(err as Error);
         setLoading(false);
-        setError(null);
-      },
-      (error: Error) => {
-        setError(error);
-        setLoading(false);
-      },
-      scope,
-    );
+      }
+    }
 
-    return () => unsubscribe();
-  }, [organisationId, teamId, projectId, decisionId]);
+    fetchDecision();
+
+    return () => {
+      if (unsubscribe) {
+        unsubscribe();
+      }
+    };
+  }, [decisionId, organisationId, projectId, teamId]);
 
   const updateDecisionTitle = async (title: string) => {
     try {
       if (!decision) return;
       await decisionsRepository.update(
         decision.with({ title }),
-        scope,
       );
     } catch (error) {
       setError(error as Error);
@@ -61,7 +69,6 @@ export function useDecision(decisionId: string) {
       if (!decision) return;
       await decisionsRepository.update(
         decision.with({ description }),
-        scope,
       );
     } catch (error) {
       setError(error as Error);
@@ -74,7 +81,6 @@ export function useDecision(decisionId: string) {
       if (!decision) return;
       await decisionsRepository.update(
         decision.with({ cost }),
-        scope,
       );
     } catch (error) {
       setError(error as Error);
@@ -87,7 +93,6 @@ export function useDecision(decisionId: string) {
       if (!decision) return;
       await decisionsRepository.update(
         decision.with({ reversibility }),
-        scope,
       );
     } catch (error) {
       setError(error as Error);
@@ -100,7 +105,6 @@ export function useDecision(decisionId: string) {
       if (!decision) return;
       await decisionsRepository.update(
         decision.setDecisionDriver(driverStakeholderId),
-        scope,
       );
     } catch (error) {
       setError(error as Error);
@@ -113,7 +117,6 @@ export function useDecision(decisionId: string) {
       if (!decision) return;
       await decisionsRepository.update(
         decision.with({ stakeholders }),
-        scope,
       );
     } catch (error) {
       setError(error as Error);
@@ -129,7 +132,6 @@ export function useDecision(decisionId: string) {
       if (!decision) return;
       await decisionsRepository.update(
         decision.addStakeholder(stakeholderId, role),
-        scope,
       );
     } catch (error) {
       setError(error as Error);
@@ -142,7 +144,6 @@ export function useDecision(decisionId: string) {
       if (!decision) return;
       await decisionsRepository.update(
         decision.removeStakeholder(stakeholderId),
-        scope,
       );
     } catch (error) {
       setError(error as Error);
@@ -155,7 +156,6 @@ export function useDecision(decisionId: string) {
       if (!decision) return;
       await decisionsRepository.update(
         decision.with({ decisionMethod: method }),
-        scope,
       );
     } catch (error) {
       setError(error as Error);
@@ -168,7 +168,6 @@ export function useDecision(decisionId: string) {
       if (!decision) return;
       await decisionsRepository.update(
         decision.with({ options }),
-        scope,
       );
     } catch (error) {
       setError(error as Error);
@@ -181,7 +180,6 @@ export function useDecision(decisionId: string) {
       if (!decision) return;
       await decisionsRepository.update(
         decision.with({ criteria }),
-        scope,
       );
     } catch (error) {
       setError(error as Error);
@@ -194,7 +192,6 @@ export function useDecision(decisionId: string) {
       if (!decision) return;
       await decisionsRepository.update(
         decision.with({ decision: content }),
-        scope,
       );
     } catch (error) {
       setError(error as Error);
@@ -207,7 +204,6 @@ export function useDecision(decisionId: string) {
       if (!decision) return;
       await decisionsRepository.update(
         decision.with({ supportingMaterials: materials }),
-        scope,
       );
     } catch (error) {
       setError(error as Error);
@@ -221,7 +217,6 @@ export function useDecision(decisionId: string) {
       const newMaterials = [...(decision.supportingMaterials || []), material];
       await decisionsRepository.update(
         decision.with({ supportingMaterials: newMaterials }),
-        scope,
       );
     } catch (error) {
       setError(error as Error);
@@ -235,7 +230,6 @@ export function useDecision(decisionId: string) {
       const newMaterials = decision.supportingMaterials.filter(m => m.url !== materialUrl);
       await decisionsRepository.update(
         decision.with({ supportingMaterials: newMaterials }),
-        scope,
       );
     } catch (error) {
       setError(error as Error);
