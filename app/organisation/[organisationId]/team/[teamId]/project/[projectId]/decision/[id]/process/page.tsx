@@ -23,7 +23,7 @@ export default function DecisionProcess() {
     loading: decisionsLoading, 
     error: decisionsError, 
     updateDecisionMethod 
-  } = useDecision(decisionId)
+  } = useDecision(decisionId, organisationId, teamId, projectId)
   const {
     loading: stakeholdersLoading,
   } = useStakeholders()
