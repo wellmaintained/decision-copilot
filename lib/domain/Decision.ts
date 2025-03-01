@@ -259,6 +259,10 @@ export class Decision {
     return this.status === 'superseded' && this.getRelationshipsByType('superseded_by').length > 0;
   }
 
+  isBlocked(): boolean {
+    return this.status === 'blocked' && this.getRelationshipsByType('blocked_by').length > 0;
+  }
+
   addStakeholder(stakeholderId: string, role: StakeholderRole = "informed"): Decision {
     if (this.stakeholders.some(s => s.stakeholder_id === stakeholderId)) {
       throw new StakeholderError(`Stakeholder ${stakeholderId} is already part of this decision`);
