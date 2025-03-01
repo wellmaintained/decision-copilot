@@ -1,5 +1,5 @@
 import { HttpsError, beforeUserCreated } from 'firebase-functions/v2/identity';
-import * as logger from 'firebase-functions/logger';
+import { info } from 'firebase-functions/logger';
 
 function isAllowed(email: string | undefined): boolean {
 	if (!email) {
@@ -22,7 +22,7 @@ function isAllowed(email: string | undefined): boolean {
 export const beforecreated = beforeUserCreated((event) => {
 	const user = event.data;
 	if (!isAllowed(user?.email)) {
-		logger.info("Blocking registration because email isn't from recognised domain", { user: user });
+		info("Blocking registration because email isn't from recognised domain", { user: user });
 		throw new HttpsError(
 			'invalid-argument',
 			"Registration blocked because email isn't from recognised domain"
