@@ -1,8 +1,8 @@
 import { Search, Settings, Lightbulb, Zap, BookOpen } from 'lucide-react'
 import { SupportingMaterial } from '@/lib/domain/SupportingMaterial'
 import { IsArray, IsDate, IsEnum, IsOptional, IsString } from 'class-validator'
-import { DecisionStateError, StakeholderError } from '@/lib/domain/DecisionError'
-import { DecisionRelationship } from '@/lib/domain/DecisionRelationship'
+import { StakeholderError, DecisionStateError } from '@/lib/domain/DecisionError'
+import { DocumentReference } from 'firebase/firestore'
 
 export const DecisionWorkflowSteps = [
   { icon: Search, label: 'Identify' },
@@ -19,6 +19,8 @@ export type DecisionMethod = "accountable_individual" | "consent";
 export type StakeholderRole = "decider" | "consulted" | "informed";
 export type Cost = "low" | "medium" | "high";
 export type Reversibility = "hat" | "haircut" | "tattoo";
+export type DecisionRelationshipType = "blocked_by" | "supersedes" | "blocks" | "superseded_by";
+
 
 export interface Criterion {
   id: string;
@@ -33,6 +35,48 @@ export interface Option {
 export type DecisionStakeholderRole = {
   stakeholder_id: string;
   role: StakeholderRole;
+};
+
+export interface DecisionRelationship {
+  targetDecision: DocumentReference;
+  targetDecisionTitle: string;
+  type: DecisionRelationshipType;
+}
+
+export class DecisionRelationshipTools {
+
+  static getTargetDecisionOrganisationId(decisionRelationship: DecisionRelationship): string {
+    const pathParts = decisionRelationship.targetDecision.path.split('/');
+    const orgIndex = pathParts.indexOf('organisations');
+    return orgIndex >= 0 ? pathParts[orgIndex + 1] : '';
+  }
+
+  static getTargetDecisionTeamId(decisionRelationship: DecisionRelationship): string {
+    const pathParts = decisionRelationship.targetDecision.path.split('/');
+    const teamsIndex = pathParts.indexOf('teams');
+    return teamsIndex >= 0 ? pathParts[teamsIndex + 1] : '';
+  }
+
+  static getTargetDecisionProjectId(decisionRelationship: DecisionRelationship): string {
+    const pathParts = decisionRelationship.targetDecision.path.split('/');
+    const projectsIndex = pathParts.indexOf('projects');
+    return projectsIndex >= 0 ? pathParts[projectsIndex + 1] : '';
+  }
+
+  static getInverseRelationshipType(type: DecisionRelationshipType): DecisionRelationshipType {
+    const lookupInverse: Record<DecisionRelationshipType, DecisionRelationshipType> = {
+      'supersedes': 'superseded_by',
+      'blocked_by': 'blocks',
+      'blocks': 'blocked_by',
+      'superseded_by': 'supersedes'
+    } 
+    return lookupInverse[type];
+  }
+
+}
+
+export type DecisionRelationshipMap = {
+  [key: string]: DecisionRelationship;
 };
 
 export type DecisionProps = {
@@ -54,7 +98,7 @@ export type DecisionProps = {
   organisationId: string;
   teamId: string;
   projectId: string;
-  relationships?: DecisionRelationship[];
+  relationships?: DecisionRelationshipMap;
 };
 
 export class Decision {
@@ -119,54 +163,61 @@ export class Decision {
   readonly projectId: string;
 
   @IsOptional()
-  @IsArray()
-  readonly relationships?: DecisionRelationship[];
+  readonly relationships?: DecisionRelationshipMap;
 
-  // These relationship are captured in the UI and stored as DecisionRelationship objects
-  get supersedes(): DecisionRelationship[] {
-    return this.relationships?.filter(r => 
-      r.type === 'supersedes' && 
-      r.fromDecisionId === this.id
-    ) ?? [];
-  }
-  get blockedBy(): DecisionRelationship[] {
-    return this.relationships?.filter(r => 
-      r.type === 'blocked_by' && 
-      r.fromDecisionId === this.id
-    ) ?? [];
+  toDocumentReference(): DocumentReference {
+    return {
+      id: this.id,
+      path: `organisations/${this.organisationId}/teams/${this.teamId}/projects/${this.projectId}/decisions/${this.id}`
+    } as DocumentReference;
   }
 
-  // These relationships are the inverse of the DecisionRelationship objects
-  get blocks(): DecisionRelationship[] {
-    const blockedByWithThisDecisionAsTheToDecision = this.relationships?.filter(r => 
-      r.type === 'blocked_by' && 
-      r.toDecisionId === this.id
-    ) ?? [];
-    // Invert the relationship to derive 'blocks' relationships
-    return blockedByWithThisDecisionAsTheToDecision.map(r => DecisionRelationship.create({
-      ...r,
-      type: 'blocks',
-      fromDecisionId: r.toDecisionId,
-      toDecisionId: r.fromDecisionId,
-    }));
+  private getRelationshipKey(type: DecisionRelationshipType, targetDecisionId: string): string {
+    return `${type}_${targetDecisionId}`;
   }
-  get supersededBy(): DecisionRelationship[] {
-    const supersedesWithThisDecisionAsTheToDecision = this.relationships?.filter(r => 
-      r.type === 'supersedes' && 
-      r.toDecisionId === this.id
-    ) ?? [];
-    // Invert the relationship to derive 'superseded_by' relationships
-    return supersedesWithThisDecisionAsTheToDecision.map(r => DecisionRelationship.create({
-      ...r,
-      type: 'superseded_by',
-      fromDecisionId: r.toDecisionId,
-      toDecisionId: r.fromDecisionId,
-    }));
+
+  getRelationshipsByType(type: DecisionRelationshipType): DecisionRelationship[] {
+    if (!this.relationships) return [];
+    
+    return Object.entries(this.relationships)
+      .filter(([, relationship]) => relationship.type === type)
+      .map(([, relationship]) => relationship);
+  }
+
+  setRelationship(type: DecisionRelationshipType, targetDecision: Decision): Decision {
+    const key = this.getRelationshipKey(type, targetDecision.id);
+    const newRelationship = {
+      targetDecision: targetDecision.toDocumentReference(),
+      targetDecisionTitle: targetDecision.title,
+      type
+    } as DecisionRelationship;
+
+    return this.with({
+      relationships: {
+        ...this.relationships,
+        [key]: newRelationship
+      }
+    });
+  }
+
+  unsetRelationship(type: DecisionRelationshipType, targetDecisionId: string): Decision {
+    const key = this.getRelationshipKey(type, targetDecisionId);
+    
+    if (!this.relationships?.[key]) {
+      return this;
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { [key]: _, ...remainingRelationships } = this.relationships;
+    
+    return this.with({
+      relationships: remainingRelationships
+    });
   }
 
   get status(): DecisionStatus {
     // Check if superseded
-    if (this.supersededBy.length > 0) {
+    if (this.getRelationshipsByType('superseded_by').length > 0) {
       return 'superseded';
     }
 
@@ -176,7 +227,7 @@ export class Decision {
     }
 
     // Check if blocked
-    if (this.blockedBy.length > 0) {
+    if (this.getRelationshipsByType('blocked_by').length > 0) {
       return 'blocked';
     }
 
@@ -205,7 +256,11 @@ export class Decision {
   }
 
   isSuperseded(): boolean {
-    return this.status === 'superseded' && this.supersededBy.length > 0;
+    return this.status === 'superseded' && this.getRelationshipsByType('superseded_by').length > 0;
+  }
+
+  isBlocked(): boolean {
+    return this.status === 'blocked' && this.getRelationshipsByType('blocked_by').length > 0;
   }
 
   addStakeholder(stakeholderId: string, role: StakeholderRole = "informed"): Decision {
@@ -258,11 +313,11 @@ export class Decision {
     this.publishDate = props.publishDate;
     this.updatedAt = props.updatedAt;
     this.driverStakeholderId = props.driverStakeholderId;
-    this.supportingMaterials = props.supportingMaterials || [];
+    this.supportingMaterials = props.supportingMaterials ?? [];
     this.organisationId = props.organisationId;
     this.teamId = props.teamId;
     this.projectId = props.projectId;
-    this.relationships = props.relationships || [];
+    this.relationships = props.relationships;
   }
 
   static create(props: DecisionProps): Decision {
@@ -271,29 +326,22 @@ export class Decision {
 
   static createEmptyDecision(defaultOverrides: Partial<DecisionProps> = {}): Decision {
     const now = new Date();
-    const defaults: DecisionProps = {
-      id: 'unsaved',
+    return Decision.create({
+      id: '',
       title: '',
       description: '',
-      cost: 'medium' as Cost,
+      cost: 'low',
       createdAt: now,
       criteria: [],
       options: [],
-      reversibility: 'hat' as Reversibility,
+      reversibility: 'hat',
       stakeholders: [],
-      updatedAt: now,
       driverStakeholderId: '',
-      decision: '',
-      decisionMethod: '',
       supportingMaterials: [],
       organisationId: '',
       teamId: '',
       projectId: '',
-      relationships: [],
-    };
-
-    return new Decision({
-      ...defaults,
+      relationships: {},
       ...defaultOverrides,
     });
   }
@@ -314,7 +362,7 @@ export class Decision {
 
   withoutId(): Omit<DecisionProps, "id"> {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { id, ...propsWithoutId } = this;
-    return propsWithoutId;
+    const { id, ...rest } = this;
+    return rest;
   }
 }

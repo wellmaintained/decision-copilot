@@ -35,7 +35,7 @@ export default function DecisionView() {
   const teamId = params.teamId as string
   const organisationId = params.organisationId as string
 
-  const { decision, loading, error } = useDecision(decisionId)
+  const { decision, loading, error } = useDecision(decisionId, organisationId, teamId, projectId)
   const { stakeholders } = useStakeholders()
 
   if (loading) {

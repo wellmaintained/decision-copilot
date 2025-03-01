@@ -26,7 +26,7 @@ export default function DecidePage() {
     updateDecisionContent,
     addSupportingMaterial,
     removeSupportingMaterial,
-  } = useDecision(decisionId)
+  } = useDecision(decisionId, organisationId, teamId, projectId)
 
   if (decisionsLoading) {
     return <div>Loading...</div>
@@ -81,6 +81,7 @@ export default function DecidePage() {
         <DecisionRelationshipsList
           relationshipType="blocked_by"
           fromDecision={decision}
+          title="Blocked By Decision(s)"
         />
 
         <DecisionItemList

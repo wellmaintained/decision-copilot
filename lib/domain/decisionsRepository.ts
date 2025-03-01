@@ -1,4 +1,4 @@
-import { Decision, DecisionProps } from "./Decision";
+import { Decision, DecisionProps, DecisionRelationship } from "./Decision";
 
 export interface DecisionScope {
   organisationId: string;
@@ -13,7 +13,7 @@ export interface DecisionsRepository {
     initialData: Partial<Omit<DecisionProps, "id">>,
     scope: DecisionScope,
   ): Promise<Decision>;
-  update(decision: Decision, scope: DecisionScope): Promise<void>;
+  update(decision: Decision): Promise<void>;
   delete(id: string, scope: DecisionScope): Promise<void>;
   subscribeToAll(
     onData: (decisions: Decision[]) => void,
@@ -21,9 +21,19 @@ export interface DecisionsRepository {
     scope: DecisionScope,
   ): () => void;
   subscribeToOne(
-    id: string,
+    decision: Decision,
     onData: (decision: Decision | null) => void,
     onError: (error: Error) => void,
-    scope: DecisionScope,
   ): () => void;
+
+  // Updated relationship methods
+  addRelationship(
+    sourceDecision: Decision,
+    targetDecisionRelationship: DecisionRelationship,
+  ): Promise<void>;
+
+  removeRelationship(
+    sourceDecision: Decision,
+    targetDecisionRelationship: DecisionRelationship,
+  ): Promise<void>;
 }

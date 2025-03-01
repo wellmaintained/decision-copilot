@@ -1,6 +1,4 @@
 import { IsString, MinLength, validateSync } from 'class-validator'
-import { Type } from 'class-transformer'
-import { Decision } from '@/lib/domain/Decision'
 import { DomainValidationError } from '@/lib/domain/DomainValidationError'
 
 export interface ProjectProps {
@@ -8,7 +6,7 @@ export interface ProjectProps {
   name: string
   description: string
   teamId: string
-  decisions: Decision[]
+  organisationId: string
 }
 
 export class Project {
@@ -25,16 +23,15 @@ export class Project {
   @IsString()
   readonly teamId: string
 
-  // @ValidateNested({ each: true })
-  @Type(() => Decision)
-  readonly decisions: Decision[]
+  @IsString()
+  readonly organisationId: string
 
   private constructor(props: ProjectProps) {
     this.id = props.id
     this.name = props.name
     this.description = props.description
     this.teamId = props.teamId
-    this.decisions = props.decisions.map(d => Decision.create(d))
+    this.organisationId = props.organisationId
     this.validate()
   }
 
@@ -47,9 +44,5 @@ export class Project {
 
   static create(props: ProjectProps): Project {
     return new Project(props)
-  }
-
-  findDecision(decisionId: string): Decision | undefined {
-    return this.decisions.find(decision => decision.id === decisionId)
   }
 } 
