@@ -13,6 +13,21 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  async redirects() {
+    return [
+      {
+        source: '/:path*',
+        destination: 'https://decision-copilot.wellmaintained.org/:path*',
+        permanent: true,
+        has: [
+          {
+            type: 'host',
+            value: '(?!decision-copilot\\.wellmaintained\\.org)',
+          },
+        ],
+      },
+    ];
+  },
 };
 
 export default nextConfig;
