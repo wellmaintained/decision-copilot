@@ -2,7 +2,8 @@ import {
   DecisionsRepository,
   DecisionScope,
 } from "@/lib/domain/decisionsRepository";
-import { Decision, DecisionProps } from "@/lib/domain/Decision";
+import { Decision, DecisionProps, DecisionStakeholderRole, DecisionRelationship, DecisionRelationshipTools } from "@/lib/domain/Decision";
+import { SupportingMaterial } from '@/lib/domain/SupportingMaterial';
 import { db } from "@/lib/firebase";
 import {
   collection,
@@ -18,22 +19,21 @@ import {
   DocumentData,
   QueryDocumentSnapshot,
   FieldValue,
+  writeBatch,
 } from "firebase/firestore";
-import { DecisionRelationship } from "@/lib/domain/DecisionRelationship";
-import { FirestoreDecisionRelationshipRepository } from "@/lib/infrastructure/firestoreDecisionRelationshipRepository";
+import { DecisionRelationshipError } from "@/lib/domain/DecisionError";
 
 export class FirestoreDecisionsRepository implements DecisionsRepository {
-  private relationshipRepository: FirestoreDecisionRelationshipRepository;
-
-  constructor() {
-    this.relationshipRepository = new FirestoreDecisionRelationshipRepository();
-  }
 
   private getDecisionPath(scope: DecisionScope) {
     return `organisations/${scope.organisationId}/teams/${scope.teamId}/projects/${scope.projectId}/decisions`
   }
 
-  private decisionFromFirestore(doc: QueryDocumentSnapshot<DocumentData>, scope: DecisionScope): Decision {
+  private getDecisionCollectionPathFromDecision(decision: Decision) {
+    return `organisations/${decision.organisationId}/teams/${decision.teamId}/projects/${decision.projectId}/decisions`
+  }
+
+  private decisionFromFirestore(doc: QueryDocumentSnapshot<DocumentData>): Decision {
     const data = doc.data();
     const props: DecisionProps = {
       id: doc.id,
@@ -51,10 +51,10 @@ export class FirestoreDecisionsRepository implements DecisionsRepository {
       createdAt: (data.createdAt as unknown as Timestamp).toDate(),
       updatedAt: data.updatedAt ? (data.updatedAt as unknown as Timestamp).toDate() : undefined,
       publishDate: data.publishDate ? (data.publishDate as unknown as Timestamp).toDate() : undefined,
-      organisationId: scope.organisationId,
-      teamId: scope.teamId,
-      projectId: scope.projectId,
-      relationships: data.relationships || [],
+      organisationId: data.organisationId,
+      teamId: data.teamId,
+      projectId: data.projectId,
+      relationships: data.relationships || {},
     };
     return Decision.create(props);
   }
@@ -62,7 +62,7 @@ export class FirestoreDecisionsRepository implements DecisionsRepository {
   async getAll(scope: DecisionScope): Promise<Decision[]> {
     const q = collection(db, this.getDecisionPath(scope))
     const querySnapshot = await getDocs(q)
-    return querySnapshot.docs.map(doc => this.decisionFromFirestore(doc, scope))
+    return querySnapshot.docs.map(doc => this.decisionFromFirestore(doc))
   }
 
   async getById(id: string, scope: DecisionScope): Promise<Decision> {
@@ -73,37 +73,48 @@ export class FirestoreDecisionsRepository implements DecisionsRepository {
       throw new Error(`Decision with id ${id} not found`)
     }
 
-    return this.decisionFromFirestore(docSnap, scope)
+    return this.decisionFromFirestore(docSnap)
   }
 
   async create(initialData: Partial<Omit<DecisionProps, "id">>, scope: DecisionScope): Promise<Decision> {
     const docRef = doc(collection(db, this.getDecisionPath(scope)))
     
-    const createData: Record<string, FieldValue | Partial<unknown> | undefined> = {
-      title: initialData.title,
-      description: initialData.description,
-      cost: initialData.cost,
-      criteria: initialData.criteria,
-      options: initialData.options,
-      decision: initialData.decision,
-      decisionMethod: initialData.decisionMethod,
-      reversibility: initialData.reversibility,
-      stakeholders: initialData.stakeholders,
-      driverStakeholderId: initialData.driverStakeholderId,
-      supportingMaterials: initialData.supportingMaterials,
+    const createData: Record<string, string | string[] | null | FieldValue | Record<string, unknown> | DecisionStakeholderRole[] | SupportingMaterial[]> = {
+      title: initialData.title ?? '',
+      description: initialData.description ?? '',
+      cost: initialData.cost ?? 'low',
+      criteria: initialData.criteria ?? [],
+      options: initialData.options ?? [],
+      decision: initialData.decision ?? null,
+      decisionMethod: initialData.decisionMethod ?? null,
+      reversibility: initialData.reversibility ?? 'hat',
+      stakeholders: initialData.stakeholders ?? [],
+      driverStakeholderId: initialData.driverStakeholderId ?? '',
+      supportingMaterials: initialData.supportingMaterials ?? [],
       organisationId: scope.organisationId,
       teamId: scope.teamId,
       projectId: scope.projectId,
       createdAt: serverTimestamp(),
-      updatedAt: serverTimestamp()
+      updatedAt: serverTimestamp(),
     }
 
-    await setDoc(docRef, createData)
+    // Filter out any undefined values
+    const filteredCreateData = Object.fromEntries(
+      Object.entries(createData).filter(([, value]) => value !== undefined)
+    );
+
+    await setDoc(docRef, filteredCreateData)
 
     return this.getById(docRef.id, scope)
   }
 
-  async update(decision: Decision, scope: DecisionScope): Promise<void> {
+  async update(decision: Decision): Promise<void> {
+    const scope: DecisionScope = {
+      organisationId: decision.organisationId,
+      teamId: decision.teamId,
+      projectId: decision.projectId
+    };
+    
     const docRef = doc(db, this.getDecisionPath(scope), decision.id)
     
     const updateData: Record<string, FieldValue | Partial<unknown> | undefined> = {
@@ -138,112 +149,117 @@ export class FirestoreDecisionsRepository implements DecisionsRepository {
     onError: (error: Error) => void,
     scope: DecisionScope
   ): () => void {
-    const q = collection(db, this.getDecisionPath(scope))
-    let currentDecisions: Map<string, Decision> = new Map();
-    let relationshipsByDecisionId: Map<string, DecisionRelationship[]> = new Map();
+    const q = collection(db, this.getDecisionPath(scope));
     
-    // Helper to emit the current state
-    const emitCurrentState = () => {
-      const decisions = Array.from(currentDecisions.values()).map(decision => 
-        decision.with({ relationships: relationshipsByDecisionId.get(decision.id) || [] })
-      );
-      onData(decisions);
-    };
-
-    // Subscribe to all decisions
-    const decisionsUnsubscribe = onSnapshot(
+    return onSnapshot(
       q,
       (snapshot) => {
-        currentDecisions = new Map(
-          snapshot.docs.map(doc => {
-            const decision = this.decisionFromFirestore(doc, scope);
-            return [decision.id, decision];
-          })
-        );
-        emitCurrentState();
+        const decisions = snapshot.docs.map(doc => this.decisionFromFirestore(doc));
+        onData(decisions);
       },
       onError
     );
-
-    // Subscribe to all relationships for these decisions
-    const relationshipsUnsubscribe = this.relationshipRepository.subscribeToAllRelationships(
-      scope,
-      (relationships) => {
-        // Group relationships by decision ID
-        relationshipsByDecisionId = new Map();
-        for (const relationship of relationships) {
-          // Add to fromDecision's relationships
-          const fromRelationships = relationshipsByDecisionId.get(relationship.fromDecisionId) || [];
-          fromRelationships.push(relationship);
-          relationshipsByDecisionId.set(relationship.fromDecisionId, fromRelationships);
-
-          // Add to toDecision's relationships
-          const toRelationships = relationshipsByDecisionId.get(relationship.toDecisionId) || [];
-          toRelationships.push(relationship);
-          relationshipsByDecisionId.set(relationship.toDecisionId, toRelationships);
-        }
-        emitCurrentState();
-      },
-      onError
-    );
-
-    // Return a function that unsubscribes from both
-    return () => {
-      decisionsUnsubscribe();
-      relationshipsUnsubscribe();
-    };
   }
 
   subscribeToOne(
-    id: string,
-    onData: (decision: Decision) => void,
+    decision: Decision,
+    onData: (decision: Decision | null) => void,
     onError: (error: Error) => void,
-    scope: DecisionScope
   ): () => void {
-    const docRef = doc(db, this.getDecisionPath(scope), id)
-    let currentDecision: Decision | null = null;
-    let currentRelationships: DecisionRelationship[] = [];
-    
-    // Helper to emit the current state
-    const emitCurrentState = () => {
-      if (currentDecision) {
-        onData(currentDecision.with({ relationships: currentRelationships }));
-      }
+    const scope: DecisionScope = {
+      organisationId: decision.organisationId,
+      teamId: decision.teamId,
+      projectId: decision.projectId
     };
-
-    // Subscribe to the decision document
-    const decisionUnsubscribe = onSnapshot(
+    
+    const docRef = doc(db, this.getDecisionPath(scope), decision.id);
+    
+    return onSnapshot(
       docRef,
       (snapshot) => {
         if (snapshot.exists()) {
-          currentDecision = this.decisionFromFirestore(snapshot, scope);
-          emitCurrentState();
+          const decision = this.decisionFromFirestore(snapshot);
+          onData(decision);
+        } else {
+          onData(null);
         }
       },
       onError
     );
+  }
 
-    // Subscribe to relationship changes
-    const relationshipsUnsubscribe = this.relationshipRepository.subscribeToDecisionRelationships(
-      // Create a minimal Decision object just for the subscription
-      Decision.create({
-        id,
-        organisationId: scope.organisationId,
-        teamId: scope.teamId,
-        projectId: scope.projectId,
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      } as any), // Using 'as any' since we don't need all Decision props just for the relationship subscription
-      (relationships) => {
-        currentRelationships = relationships;
-        emitCurrentState();
-      },
-      onError
-    );
+  private async getDecisionFromDecisionRelationship(decisionRelationship: DecisionRelationship): Promise<Decision> {
+    const targetDecisionDoc = await getDoc(doc(db, decisionRelationship.targetDecision.path));
+    if (!targetDecisionDoc.exists()) {
+      throw new DecisionRelationshipError(`Decision relationship target decision ${decisionRelationship.targetDecision} not found`);
+    }
+    return this.decisionFromFirestore(targetDecisionDoc as QueryDocumentSnapshot<DocumentData>);
+  }
 
-    // Return a function that unsubscribes from both
-    return () => {
-      decisionUnsubscribe();
-      relationshipsUnsubscribe();
-    };
+  private updateDecisionRelationships(
+    batch: ReturnType<typeof writeBatch>,
+    decision: Decision,
+    relationships: Record<string, unknown> | undefined,
+  ): void {
+    const decisionRef = doc(db, this.getDecisionCollectionPathFromDecision(decision), decision.id);
+    batch.update(decisionRef, {
+      relationships: relationships || {},
+      updatedAt: serverTimestamp()
+    });
+  }
+
+  private async applyBidirectionalRelationshipChange(
+    sourceDecision: Decision,
+    targetDecisionRelationship: DecisionRelationship,
+    operation: 'add' | 'remove'
+  ): Promise<void> {
+    // Validate the relationship if we're adding it
+    if (operation === 'add') {
+      if (sourceDecision.id === targetDecisionRelationship.targetDecision.id) {
+        throw new DecisionRelationshipError('A decision cannot have a relationship with itself');
+      }
+
+      if (sourceDecision.organisationId !== DecisionRelationshipTools.getTargetDecisionOrganisationId(targetDecisionRelationship)) {
+        throw new DecisionRelationshipError('Decisions must belong to the same organisation');
+      }
+    }
+
+    // Get the target decision
+    const targetDecision = await this.getDecisionFromDecisionRelationship(targetDecisionRelationship);
+    
+    // Get the inverse relationship type
+    const inverseType = DecisionRelationshipTools.getInverseRelationshipType(targetDecisionRelationship.type);
+
+    // Create a batch write
+    const batch = writeBatch(db);
+
+    // Update source decision relationships
+    const updatedSourceDecision = operation === 'add' 
+      ? sourceDecision.setRelationship(targetDecisionRelationship.type, targetDecision)
+      : sourceDecision.unsetRelationship(targetDecisionRelationship.type, targetDecisionRelationship.targetDecision.id);
+    this.updateDecisionRelationships(batch, sourceDecision, updatedSourceDecision.relationships);
+
+    // Update target decision relationships
+    const updatedTargetDecision = operation === 'add'
+      ? targetDecision.setRelationship(inverseType, sourceDecision)
+      : targetDecision.unsetRelationship(inverseType, sourceDecision.id);
+    this.updateDecisionRelationships(batch, targetDecision, updatedTargetDecision.relationships);
+
+    // Commit the batch
+    await batch.commit();
+  }
+
+  async addRelationship(
+    sourceDecision: Decision,
+    targetDecisionRelationship: DecisionRelationship,
+  ): Promise<void> {
+    await this.applyBidirectionalRelationshipChange(sourceDecision, targetDecisionRelationship, 'add');
+  }
+
+  async removeRelationship(
+    sourceDecision: Decision,
+    targetDecisionRelationship: DecisionRelationship,
+  ): Promise<void> {
+    await this.applyBidirectionalRelationshipChange(sourceDecision, targetDecisionRelationship, 'remove');
   }
 }

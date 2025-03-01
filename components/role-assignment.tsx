@@ -16,7 +16,7 @@ interface RoleAssignmentProps {
 
 export function RoleAssignment({ decision }: RoleAssignmentProps) {
   const { getStakeholdersForDecision, loading: stakeholdersLoading } = useStakeholders()
-  const { updateStakeholders } = useDecision(decision.id)
+  const { updateStakeholders } = useDecision(decision.id, decision.organisationId, decision.teamId, decision.projectId)
   const [stakeholdersWithRoles, setStakeholdersWithRoles] = useState<StakeholderWithRole[]>([])
   const [loading, setLoading] = useState(true)
 

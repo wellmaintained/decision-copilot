@@ -140,7 +140,7 @@ export default function DecisionIdentityPage() {
     updateDecisionDriver,
     addStakeholder,
     removeStakeholder,
-  } = useDecision(decisionId);
+  } = useDecision(decisionId, organisationId, teamId, projectId);
 
   const {
     stakeholders,
@@ -335,6 +335,7 @@ export default function DecisionIdentityPage() {
             <DecisionRelationshipsList
               relationshipType="supersedes"
               fromDecision={decision}
+              title="Supersedes Decision(s)"
             />
           </div>
 
