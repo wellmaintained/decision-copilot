@@ -1,0 +1,18 @@
+---
+description: Technology stack
+globs: 
+alwaysApply: false
+---
+
+# Technology stack
+
+- Framework: Next.js 15.1 with React 19
+- Language: TypeScript
+- Styling: Tailwind CSS with shadcn/ui components
+- Databas*: Firebase Firestore
+- Authentication: Firebase Auth
+- State Management: React Hooks + Custom Hooks
+- Form Handling: React Hook Form
+- Data Visualization: Recharts
+- Testing: vitest
+- Dependency Management: pnpm
