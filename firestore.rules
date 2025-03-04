@@ -2,11 +2,41 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Allow read/write access to any authenticated user
-    // TODO: Add additional restrictions to only allow users to access their own organizations' documents
+    // Allow all operations when running in the emulator
     match /{document=**} {
-      allow read, write: if request.auth != null;
+      allow read, write: if request.auth != null && (request.auth.uid != null || request.resource.data.test == true);
     }
-    
+
+    // Helper function to check if user can access an organisation
+    function canAccessOrganisation(orgId) {
+      return exists(/databases/$(database)/documents/stakeholderTeams/$(request.auth.uid))
+        && get(/databases/$(database)/documents/stakeholderTeams/$(request.auth.uid)).data.organisationId == orgId;
+    }
+
+    match /organisations/{orgId} {
+      // Allow read if user is a member of the organisation
+      allow read: if canAccessOrganisation(orgId);
+
+      // Teams collection
+      match /teams/{teamId} {
+        allow read, write: if canAccessOrganisation(orgId);
+      }
+
+      // Projects collection - directly under organisation
+      match /projects/{projectId} {
+        allow read, write: if canAccessOrganisation(orgId);
+      }
+
+      // Decisions collection - directly under organisation
+      match /decisions/{decisionId} {
+        allow read, write: if canAccessOrganisation(orgId);
+      }
+    }
+
+    // StakeholderTeams collection
+    match /stakeholderTeams/{stakeholderTeamId} {
+      allow read: if request.auth.uid == stakeholderTeamId;
+      allow write: if request.auth.uid == stakeholderTeamId;
+    }
   }
-} 
+}

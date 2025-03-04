@@ -26,13 +26,7 @@ import { Check, ChevronDown } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useProjectDecisions } from '@/hooks/useProjectDecisions'
 import { Decision } from '@/lib/domain/Decision'
-
-interface SelectedDecisionDetails {
-  toDecisionId: string
-  toTeamId: string
-  toProjectId: string
-  organisationId: string
-}
+import { SelectedDecisionDetails } from '@/hooks/useDecisionRelationships'
 
 interface AddDecisionRelationshipDialogProps {
   onAdd: (details: SelectedDecisionDetails) => Promise<void>
@@ -72,12 +66,12 @@ export function AddDecisionRelationshipDialog({ onAdd, relationshipDescription, 
         return
       }
 
-      await onAdd({
+      const selectedDecisionDetails: SelectedDecisionDetails = {
         toDecisionId: selectedDecision.id,
-        toTeamId: selectedDecision.teamId,
-        toProjectId: selectedDecision.projectId,
         organisationId: selectedDecision.organisationId,
-      })
+      }
+
+      await onAdd(selectedDecisionDetails);
 
       resetForm()
       setOpen(false)

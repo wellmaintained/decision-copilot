@@ -36,7 +36,6 @@ export class FirestoreOrganisationsRepository implements OrganisationsRepository
         const projectDoc = await addDoc(collection(db, 'organisations', orgDoc.id, 'teams', teamDoc.id, 'projects'), {
           name: project.name,
           description: project.description,
-          teamId: teamDoc.id,
           organisationId: orgDoc.id
         })
 
@@ -44,7 +43,6 @@ export class FirestoreOrganisationsRepository implements OrganisationsRepository
           id: projectDoc.id,
           name: project.name,
           description: project.description,
-          teamId: teamDoc.id,
           organisationId: orgDoc.id
         })
       }))
@@ -89,7 +87,6 @@ export class FirestoreOrganisationsRepository implements OrganisationsRepository
           id: projectDoc.id,
           name: projectData.name,
           description: projectData.description,
-          teamId: teamDoc.id,
           organisationId: id
         })
       }))

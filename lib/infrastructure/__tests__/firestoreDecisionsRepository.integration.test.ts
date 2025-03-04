@@ -15,67 +15,85 @@ describe('FirestoreDecisionsRepository Integration Tests', () => {
     const randomChars = Math.random().toString(36).substring(5, 9);
     const emptyDecision = Decision.createEmptyDecision();
     const projectId = `test-${testName}-${randomChars}`;
+    const teamId = `team-${testName}-${randomChars}`;
+
     const project = await projectRepository.create(Project.create({
       id: projectId,
       name: `Test Project ${testName}`,
       description: `Temporary project for integration tests ${testName}`,
       organisationId: BASE_TEST_SCOPE.organisationId,
-      teamId: BASE_TEST_SCOPE.teamId,
     }));
+
     projectsToCleanUp.push(project);
+
     const decisionScope = {
       organisationId: project.organisationId,
-      teamId: project.teamId,
-      projectId: project.id
     }
+
     const decisionA = await repository.create(
       emptyDecision
-        .with({ title: 'Decision A' })
+        .with({
+          title: 'Decision A',
+          teamIds: [teamId],
+          projectIds: [project.id]
+        })
         .withoutId(),
       decisionScope
     );
+
     decisionsToCleanUp.push(decisionA);
+
     const decisionA1 = await repository.create(
       emptyDecision
-        .with({ title: 'Decision A1' })
+        .with({
+          title: 'Decision A1',
+          teamIds: [teamId],
+          projectIds: [project.id]
+        })
         .withoutId(),
       decisionScope
     );
+
     decisionsToCleanUp.push(decisionA1);
+
     const decisionB = await repository.create(
       emptyDecision
-        .with({ title: 'Decision B' })
+        .with({
+          title: 'Decision B',
+          teamIds: [teamId],
+          projectIds: [project.id]
+        })
         .withoutId(),
       decisionScope
     );
+
     decisionsToCleanUp.push(decisionB);
-    return [decisionA, decisionA1, decisionB]
+
+    return [decisionA, decisionA1, decisionB];
   }
-  
+
   beforeAll(async () => {
     await signInTestUser()
   })
-  
+
   afterAll(async () => {
     for (const decision of decisionsToCleanUp) {
       await repository.delete(decision.id, {
         organisationId: decision.organisationId,
-        teamId: decision.teamId,
-        projectId: decision.projectId
       });
     }
     for (const project of projectsToCleanUp) {
       await projectRepository.delete(project);
     }
   })
-  
+
   describe('subscribeToOne', () => {
     it('should receive updates when a decision title is modified', async () => {
       const onError = vi.fn();
       let updatesReceived = 0;
       const decisionsReceived: Map<number, Decision | null> = new Map();
       const [decisionA] = await createTestProjectAndDecisions('subscribeToOne');
-    
+
       // Create a promise that resolves when we get both the initial and updated decision
       const allUpdatesReceived = new Promise<void>((resolve) => {
         const checkIfAllUpdatesReceived = () => {
@@ -91,7 +109,7 @@ describe('FirestoreDecisionsRepository Integration Tests', () => {
           (decision) => {
             updatesReceived++;
             decisionsReceived.set(updatesReceived, decision);
-            
+
             // Wait until we've received the initial update before making any changes
             if (updatesReceived === 1) {
               // Make a change to the decision title to trigger an update
@@ -99,7 +117,7 @@ describe('FirestoreDecisionsRepository Integration Tests', () => {
                 decisionA.with({ title: decisionA.title + ' Updated' })
               );
             }
-            
+
             checkIfAllUpdatesReceived();
           },
           onError,
@@ -127,7 +145,7 @@ describe('FirestoreDecisionsRepository Integration Tests', () => {
       let hasRemovedRelationship = false;
       const decisionsReceived: Map<number, Decision | null> = new Map();
       const [decisionA, decisionB] = await createTestProjectAndDecisions('subscribeToOne-relationship');
-    
+
       // Create a promise that resolves when we get both the initial and updated decision
       const allUpdatesReceived = new Promise<void>((resolve) => {
         const checkIfAllUpdatesReceived = () => {
@@ -144,7 +162,7 @@ describe('FirestoreDecisionsRepository Integration Tests', () => {
             updatesReceived++;
             console.log(`[subscribeToOne] Received update ${updatesReceived}`);
             decisionsReceived.set(updatesReceived, decision);
-            
+
             // Wait until we've received the initial update before making any changes
             if (updatesReceived === 1) {
               console.log('[subscribeToOne] Adding relationship');
@@ -213,8 +231,6 @@ describe('FirestoreDecisionsRepository Integration Tests', () => {
       const [decisionA, _, decisionB] = await createTestProjectAndDecisions('subscribeToAll');
       const testProjectScope = {
         organisationId: decisionA.organisationId,
-        teamId: decisionA.teamId,
-        projectId: decisionA.projectId
       }
 
       const onError = vi.fn();
@@ -235,7 +251,7 @@ describe('FirestoreDecisionsRepository Integration Tests', () => {
           (decisions) => {
             updatesReceived++;
             decisionsReceived.set(updatesReceived, decisions);
-            
+
             // Wait until we've received the initial update before making any changes
             if (updatesReceived === 1) {
               // Make a change to the decision A
@@ -251,7 +267,7 @@ describe('FirestoreDecisionsRepository Integration Tests', () => {
                 decisionB.with({ title: decisionB.title + ' Updated' })
               );
             }
-            
+
             checkIfAllUpdatesReceived();
           },
           onError,
@@ -283,7 +299,7 @@ describe('FirestoreDecisionsRepository Integration Tests', () => {
       let hasRemovedRelationship = false;
       const decisionsReceived: Map<number, Decision[]> = new Map();
       const [decisionA, decisionB] = await createTestProjectAndDecisions('subscribeToAll-relationship');
-    
+
       // Create a promise that resolves when we get both the initial and updated decision
       const allUpdatesReceived = new Promise<void>((resolve) => {
         const checkIfAllUpdatesReceived = () => {
@@ -299,13 +315,13 @@ describe('FirestoreDecisionsRepository Integration Tests', () => {
             updatesReceived++;
             console.log(`[subscribeToAll] Received update ${updatesReceived}`);
             decisionsReceived.set(updatesReceived, decisions);
-            
+
             const currentDecisionA = decisions.find(d => d.id === decisionA.id);
             const currentDecisionB = decisions.find(d => d.id === decisionB.id);
-            
+
             console.log(`[subscribeToAll] Update ${updatesReceived} - Decision A blocked_by relationships: ${currentDecisionA?.getRelationshipsByType('blocked_by').length}`);
             console.log(`[subscribeToAll] Update ${updatesReceived} - Decision B blocks relationships: ${currentDecisionB?.getRelationshipsByType('blocks').length}`);
-            
+
             // Wait until we've received the initial update before making any changes
             if (updatesReceived === 1) {
               console.log('[subscribeToAll] Adding relationship');
@@ -321,7 +337,7 @@ describe('FirestoreDecisionsRepository Integration Tests', () => {
             }
 
             // Check if both relationships have been added
-            if (!hasAddedRelationship && 
+            if (!hasAddedRelationship &&
                 currentDecisionA?.getRelationshipsByType('blocked_by').length === 1 &&
                 currentDecisionB?.getRelationshipsByType('blocks').length === 1) {
               hasAddedRelationship = true;
@@ -349,8 +365,6 @@ describe('FirestoreDecisionsRepository Integration Tests', () => {
           onError,
           {
             organisationId: decisionA.organisationId,
-            teamId: decisionA.teamId,
-            projectId: decisionA.projectId
           }
         );
       });
@@ -395,8 +409,6 @@ describe('FirestoreDecisionsRepository Integration Tests', () => {
       const [decisionA, _, decisionB] = await createTestProjectAndDecisions('relationshipManagement');
       const testProjectScope = {
         organisationId: decisionA.organisationId,
-        teamId: decisionA.teamId,
-        projectId: decisionA.projectId
       }
 
       // Add a relationship

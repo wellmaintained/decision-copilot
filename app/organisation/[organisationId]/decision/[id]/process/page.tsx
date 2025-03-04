@@ -14,8 +14,6 @@ import { DecisionMethod } from "@/lib/domain/Decision"
 export default function DecisionProcess() {
   const params = useParams()
   const decisionId = params.id as string
-  const projectId = params.projectId as string
-  const teamId = params.teamId as string
   const organisationId = params.organisationId as string
 
   const { 
@@ -23,23 +21,20 @@ export default function DecisionProcess() {
     loading: decisionsLoading, 
     error: decisionsError, 
     updateDecisionMethod 
-  } = useDecision(decisionId, organisationId, teamId, projectId)
+  } = useDecision(decisionId, organisationId)
   const {
     loading: stakeholdersLoading,
   } = useStakeholders()
 
-  const [selectedMethod, setSelectedMethod] = useState<DecisionMethod>("consent")
+  const [selectedMethod, setSelectedMethod] = useState<DecisionMethod | null>(null)
 
   useEffect(() => {
     if (decision?.decisionMethod) {
       setSelectedMethod(decision.decisionMethod as DecisionMethod)
     }
-  }, [decision?.decisionMethod])
+  }, [decision])
 
-  if (
-    decisionsLoading ||
-    stakeholdersLoading
-  ) {
+  if (decisionsLoading || stakeholdersLoading) {
     return <div>Loading...</div>
   }
 
@@ -91,7 +86,7 @@ export default function DecisionProcess() {
 
       <div className="flex justify-end pt-4">
         <Button size="lg" asChild>
-          <Link href={`/organisation/${organisationId}/team/${teamId}/project/${projectId}/decision/${decisionId}/decide`}>
+          <Link href={`/organisation/${organisationId}/decision/${decisionId}/decide`}>
             Next
           </Link>
         </Button>

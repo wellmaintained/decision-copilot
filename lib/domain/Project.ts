@@ -5,7 +5,6 @@ export interface ProjectProps {
   id: string
   name: string
   description: string
-  teamId: string
   organisationId: string
 }
 
@@ -21,16 +20,12 @@ export class Project {
   readonly description: string
 
   @IsString()
-  readonly teamId: string
-
-  @IsString()
   readonly organisationId: string
 
   private constructor(props: ProjectProps) {
     this.id = props.id
     this.name = props.name
     this.description = props.description
-    this.teamId = props.teamId
     this.organisationId = props.organisationId
     this.validate()
   }

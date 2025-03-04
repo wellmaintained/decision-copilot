@@ -20,17 +20,19 @@ import {
   QueryDocumentSnapshot,
   FieldValue,
   writeBatch,
+  query,
+  where,
 } from "firebase/firestore";
 import { DecisionRelationshipError } from "@/lib/domain/DecisionError";
 
 export class FirestoreDecisionsRepository implements DecisionsRepository {
 
   private getDecisionPath(scope: DecisionScope) {
-    return `organisations/${scope.organisationId}/teams/${scope.teamId}/projects/${scope.projectId}/decisions`
+    return `organisations/${scope.organisationId}/decisions`
   }
 
   private getDecisionCollectionPathFromDecision(decision: Decision) {
-    return `organisations/${decision.organisationId}/teams/${decision.teamId}/projects/${decision.projectId}/decisions`
+    return `organisations/${decision.organisationId}/decisions`
   }
 
   private decisionFromFirestore(doc: QueryDocumentSnapshot<DocumentData>): Decision {
@@ -48,12 +50,12 @@ export class FirestoreDecisionsRepository implements DecisionsRepository {
       stakeholders: data.stakeholders || [],
       driverStakeholderId: data.driverStakeholderId || '',
       supportingMaterials: data.supportingMaterials || [],
-      createdAt: (data.createdAt as unknown as Timestamp).toDate(),
-      updatedAt: data.updatedAt ? (data.updatedAt as unknown as Timestamp).toDate() : undefined,
+      createdAt: data.createdAt ? (data.createdAt as unknown as Timestamp).toDate() : new Date(),
+      updatedAt: data.updatedAt ? (data.updatedAt as unknown as Timestamp).toDate() : new Date(),
       publishDate: data.publishDate ? (data.publishDate as unknown as Timestamp).toDate() : undefined,
       organisationId: data.organisationId,
-      teamId: data.teamId,
-      projectId: data.projectId,
+      teamIds: data.teamIds || [],
+      projectIds: data.projectIds || [],
       relationships: data.relationships || {},
     };
     return Decision.create(props);
@@ -63,6 +65,24 @@ export class FirestoreDecisionsRepository implements DecisionsRepository {
     const q = collection(db, this.getDecisionPath(scope))
     const querySnapshot = await getDocs(q)
     return querySnapshot.docs.map(doc => this.decisionFromFirestore(doc))
+  }
+
+  async getByTeam(teamId: string, scope: DecisionScope): Promise<Decision[]> {
+    const q = query(
+      collection(db, this.getDecisionPath(scope)),
+      where('teamIds', 'array-contains', teamId)
+    );
+    const querySnapshot = await getDocs(q);
+    return querySnapshot.docs.map(doc => this.decisionFromFirestore(doc));
+  }
+
+  async getByProject(projectId: string, scope: DecisionScope): Promise<Decision[]> {
+    const q = query(
+      collection(db, this.getDecisionPath(scope)),
+      where('projectIds', 'array-contains', projectId)
+    );
+    const querySnapshot = await getDocs(q);
+    return querySnapshot.docs.map(doc => this.decisionFromFirestore(doc));
   }
 
   async getById(id: string, scope: DecisionScope): Promise<Decision> {
@@ -92,8 +112,8 @@ export class FirestoreDecisionsRepository implements DecisionsRepository {
       driverStakeholderId: initialData.driverStakeholderId ?? '',
       supportingMaterials: initialData.supportingMaterials ?? [],
       organisationId: scope.organisationId,
-      teamId: scope.teamId,
-      projectId: scope.projectId,
+      teamIds: initialData.teamIds ?? [],
+      projectIds: initialData.projectIds ?? [],
       createdAt: serverTimestamp(),
       updatedAt: serverTimestamp(),
     }
@@ -111,8 +131,6 @@ export class FirestoreDecisionsRepository implements DecisionsRepository {
   async update(decision: Decision): Promise<void> {
     const scope: DecisionScope = {
       organisationId: decision.organisationId,
-      teamId: decision.teamId,
-      projectId: decision.projectId
     };
     
     const docRef = doc(db, this.getDecisionPath(scope), decision.id)
@@ -131,8 +149,8 @@ export class FirestoreDecisionsRepository implements DecisionsRepository {
       driverStakeholderId: decision.driverStakeholderId,
       supportingMaterials: decision.supportingMaterials,
       organisationId: decision.organisationId,
-      teamId: decision.teamId,
-      projectId: decision.projectId,
+      teamIds: decision.teamIds,
+      projectIds: decision.projectIds,
       updatedAt: serverTimestamp()
     }
     
@@ -168,8 +186,6 @@ export class FirestoreDecisionsRepository implements DecisionsRepository {
   ): () => void {
     const scope: DecisionScope = {
       organisationId: decision.organisationId,
-      teamId: decision.teamId,
-      projectId: decision.projectId
     };
     
     const docRef = doc(db, this.getDecisionPath(scope), decision.id);

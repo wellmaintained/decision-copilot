@@ -2,8 +2,6 @@ import { Decision, DecisionProps, DecisionRelationship } from "./Decision";
 
 export interface DecisionScope {
   organisationId: string;
-  teamId: string;
-  projectId: string;
 }
 
 export interface DecisionsRepository {
@@ -36,4 +34,8 @@ export interface DecisionsRepository {
     sourceDecision: Decision,
     targetDecisionRelationship: DecisionRelationship,
   ): Promise<void>;
+
+  // New methods for filtering by team and project
+  getByTeam(teamId: string, scope: DecisionScope): Promise<Decision[]>;
+  getByProject(projectId: string, scope: DecisionScope): Promise<Decision[]>;
 }
