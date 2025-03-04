@@ -1,60 +1,174 @@
 'use client'
 
-import { ProjectDecisionChart } from "@/components/project-decisions-chart"
-import { ParticipationChart } from "@/components/participation-chart"
-import { InProgressTable } from "@/components/in-progress-table"
 import React from 'react';
-import { useItems } from '@/hooks/useItems';
-import ItemForm from "@/components/item-form"
-import { useOrganisation } from '@/components/organisation-switcher'
+import { useOrganisation } from '@/components/organisation-switcher';
+import { useOrganisationDecisions } from '@/hooks/useOrganisationDecisions';
+import { Button } from "@/components/ui/button";
+import { Pencil, Trash2, FileText, Users, Clock } from 'lucide-react';
+import Link from 'next/link';
+import { useParams } from 'next/navigation';
+import { WorkflowProgress } from '@/components/ui/workflow-progress';
+import { Decision } from '@/lib/domain/Decision';
 
-export default function OrganisationDashboard() {
-  const { selectedOrganisation } = useOrganisation()
-  const { items, loading, error, updateItemName } = useItems();
+interface DecisionCardProps {
+  decision: Decision;
+  showEditButton?: boolean;
+  organisationId: string;
+}
 
-  if (loading) return <p>Loading...</p>;
-  if (error) return <p>Error: {error.message}</p>;
-  if (!items) return <p>No items found.</p>;
+export default function OrganisationDecisionsList() {
+  const params = useParams();
+  const organisationId = params.organisationId as string;
+  const { selectedOrganisation } = useOrganisation();
+  const { decisions, loading, error, deleteDecision } = useOrganisationDecisions(organisationId);
+
+  if (loading) return <div className="p-6">Loading decisions...</div>;
+  if (error) return <div className="p-6 text-red-500">Error loading decisions: {error.message}</div>;
   if (!selectedOrganisation) return <p>...</p>;
 
-  async function handleNameChange(itemId: string, newValue: string): Promise<void> {
+  const inProgressDecisions = decisions?.filter(d => d.status === 'in_progress') || [];
+  const blockedDecisions = decisions?.filter(d => d.status === 'blocked') || [];
+  const supersededDecisions = decisions?.filter(d => d.status === 'superseded') || [];
+  const publishedDecisions = decisions?.filter(d => d.status === 'published') || [];
+
+  const handleDelete = async (decisionId: string) => {
     try {
-      await updateItemName(itemId, newValue);
-    } catch (err) {
-      if (err instanceof Error) {
-        alert(err.message);
-      } else {
-        alert('An error occurred while updating the item');
-      }
-      throw err;
+      await deleteDecision(decisionId);
+      console.log('Decision deleted:', decisionId);
+    } catch (error) {
+      console.error('Error deleting decision:', error);
     }
-  }
+  };
+
+  const DecisionCard = ({ decision, showEditButton = true, organisationId }: DecisionCardProps) => {
+    return (
+      <div
+        key={decision.id}
+        className="flex items-start justify-between p-4 rounded-lg border bg-white"
+      >
+        <div>
+          <div className="flex items-center gap-2 mb-1">
+            <h3 className="font-medium text-gray-900">{decision.title}</h3>
+            <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-700">
+              {decision.cost}
+            </span>
+          </div>
+          {decision.decision && (
+            <p className="text-sm text-gray-600 mb-2">
+              Decision: {decision.decision}
+            </p>
+          )}
+          <div className="flex items-center gap-4 mt-2 text-sm text-gray-500">
+            <div className="flex items-center gap-1">
+              <WorkflowProgress currentStep={decision.currentStep} />
+            </div>
+            <div className="flex items-center gap-1">
+              <Users className="h-4 w-4" />
+              <span>{decision.stakeholders.length} stakeholders</span>
+            </div>
+            <div className="flex items-center gap-1">
+              <Clock className="h-4 w-4" />
+              <span>Updated {decision.updatedAt?.toLocaleDateString() || decision.createdAt.toLocaleDateString()}</span>
+            </div>
+          </div>
+        </div>
+        <div className="flex space-x-2">
+          {showEditButton ? (
+            <Button variant="ghost" size="icon" title="Edit decision">
+              <Link href={`/organisation/${organisationId}/decision/${decision.id}/identify`}>
+                <Pencil className="h-4 w-4" />
+              </Link>
+            </Button>
+          ) : (
+            <Button variant="ghost" size="icon" title="View decision">
+              <Link href={`/organisation/${organisationId}/decision/${decision.id}/view`}>
+                <FileText className="h-4 w-4" />
+              </Link>
+            </Button>
+          )}
+          <Button
+            variant="ghost"
+            size="icon"
+            title="Delete decision"
+            onClick={() => handleDelete(decision.id)}
+          >
+            <Trash2 className="h-4 w-4" />
+          </Button>
+        </div>
+      </div>
+    );
+  };
 
   return (
     <div className="container mx-auto py-6">
-      <h1 className="text-3xl font-bold mb-6"><span className="text-primary bg-gray-100 rounded-md px-2 py-1">{selectedOrganisation.name}</span>&apos;s Dashboard</h1>
-      <div className="grid gap-6">
+      <h1 className="text-3xl font-bold mb-6"><span className="text-primary bg-gray-100 rounded-md px-2 py-1">{selectedOrganisation.name}</span>&apos;s Decisions</h1>
+      <div className="space-y-8">
         <div>
-          <ul className="space-y-4">
-            {items.map((item) => (
-              <li key={item.id}>
-                <ItemForm
-                  itemId={item.id}
-                  initialName={item.name.value}
-                  onSubmit={handleNameChange}
-                />
-              </li>
+          <h2 className="text-lg font-medium mb-4">In Progress</h2>
+          <div className="space-y-4">
+            {inProgressDecisions.map((decision) => (
+              <DecisionCard
+                key={decision.id}
+                decision={decision}
+                showEditButton={true}
+                organisationId={organisationId}
+              />
             ))}
-          </ul>
+            {inProgressDecisions.length === 0 && (
+              <p className="text-gray-500">No in-progress decisions</p>
+            )}
+          </div>
         </div>
-        <InProgressTable />
-        {/* Charts row */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <ProjectDecisionChart />
-          <ParticipationChart />
-        </div>
+
+        {blockedDecisions.length > 0 && (
+          <div>
+            <h2 className="text-lg font-medium mb-4">Blocked</h2>
+            <div className="space-y-4">
+              {blockedDecisions.map((decision) => (
+                <DecisionCard
+                  key={decision.id}
+                  decision={decision}
+                  showEditButton={true}
+                  organisationId={organisationId}
+                />
+              ))}
+            </div>
+          </div>
+        )}
+
+        {publishedDecisions.length > 0 && (
+          <div>
+            <h2 className="text-lg font-medium mb-4">Published</h2>
+            <div className="space-y-4">
+              {publishedDecisions.map((decision) => (
+                <DecisionCard
+                  key={decision.id}
+                  decision={decision}
+                  showEditButton={false}
+                  organisationId={organisationId}
+                />
+              ))}
+            </div>
+          </div>
+        )}
+
+        {supersededDecisions.length > 0 && (
+          <div>
+            <h2 className="text-lg font-medium mb-4">Superseded</h2>
+            <div className="space-y-4">
+              {supersededDecisions.map((decision) => (
+                <DecisionCard
+                  key={decision.id}
+                  decision={decision}
+                  showEditButton={false}
+                  organisationId={organisationId}
+                />
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     </div>
-  )
+  );
 }
 

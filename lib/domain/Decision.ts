@@ -51,18 +51,6 @@ export class DecisionRelationshipTools {
     return orgIndex >= 0 ? pathParts[orgIndex + 1] : '';
   }
 
-  static getTargetDecisionTeamId(decisionRelationship: DecisionRelationship): string {
-    const pathParts = decisionRelationship.targetDecision.path.split('/');
-    const teamsIndex = pathParts.indexOf('teams');
-    return teamsIndex >= 0 ? pathParts[teamsIndex + 1] : '';
-  }
-
-  static getTargetDecisionProjectId(decisionRelationship: DecisionRelationship): string {
-    const pathParts = decisionRelationship.targetDecision.path.split('/');
-    const projectsIndex = pathParts.indexOf('projects');
-    return projectsIndex >= 0 ? pathParts[projectsIndex + 1] : '';
-  }
-
   static getInverseRelationshipType(type: DecisionRelationshipType): DecisionRelationshipType {
     const lookupInverse: Record<DecisionRelationshipType, DecisionRelationshipType> = {
       'supersedes': 'superseded_by',
@@ -96,8 +84,8 @@ export type DecisionProps = {
   driverStakeholderId: string;
   supportingMaterials?: SupportingMaterial[];
   organisationId: string;
-  teamId: string;
-  projectId: string;
+  teamIds: string[];
+  projectIds: string[];
   relationships?: DecisionRelationshipMap;
 };
 
@@ -156,11 +144,13 @@ export class Decision {
   @IsString()
   readonly organisationId: string;
 
-  @IsString()
-  readonly teamId: string;
+  @IsArray()
+  @IsString({ each: true })
+  readonly teamIds: string[];
 
-  @IsString()
-  readonly projectId: string;
+  @IsArray()
+  @IsString({ each: true })
+  readonly projectIds: string[];
 
   @IsOptional()
   readonly relationships?: DecisionRelationshipMap;
@@ -168,7 +158,7 @@ export class Decision {
   toDocumentReference(): DocumentReference {
     return {
       id: this.id,
-      path: `organisations/${this.organisationId}/teams/${this.teamId}/projects/${this.projectId}/decisions/${this.id}`
+      path: `organisations/${this.organisationId}/decisions/${this.id}`
     } as DocumentReference;
   }
 
@@ -313,11 +303,12 @@ export class Decision {
     this.publishDate = props.publishDate;
     this.updatedAt = props.updatedAt;
     this.driverStakeholderId = props.driverStakeholderId;
-    this.supportingMaterials = props.supportingMaterials ?? [];
+    this.supportingMaterials = props.supportingMaterials || [];
     this.organisationId = props.organisationId;
-    this.teamId = props.teamId;
-    this.projectId = props.projectId;
+    this.teamIds = props.teamIds || [];
+    this.projectIds = props.projectIds || [];
     this.relationships = props.relationships;
+    this.validate();
   }
 
   static create(props: DecisionProps): Decision {
@@ -327,7 +318,7 @@ export class Decision {
   static createEmptyDecision(defaultOverrides: Partial<DecisionProps> = {}): Decision {
     const now = new Date();
     return Decision.create({
-      id: '',
+      id: Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15),
       title: '',
       description: '',
       cost: 'low',
@@ -339,9 +330,8 @@ export class Decision {
       driverStakeholderId: '',
       supportingMaterials: [],
       organisationId: '',
-      teamId: '',
-      projectId: '',
-      relationships: {},
+      teamIds: [],
+      projectIds: [],
       ...defaultOverrides,
     });
   }
@@ -364,5 +354,9 @@ export class Decision {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { id, ...rest } = this;
     return rest;
+  }
+
+  private validate(): void {
+    // Implementation of validation logic
   }
 }
