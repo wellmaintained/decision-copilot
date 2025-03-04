@@ -23,7 +23,12 @@ function createFirebaseApp() {
 }
 
 const app = createFirebaseApp();
-export const db = getFirestore(app);
+const isProduction = process.env.NODE_ENV === 'production';
+
+// Use the named database in production, default database otherwise
+export const db = isProduction 
+    ? getFirestore(app, 'decision-copilot-prod') 
+    : getFirestore(app);
 export const auth = getAuth(app);
 export const functions = getFunctions(app);
 
