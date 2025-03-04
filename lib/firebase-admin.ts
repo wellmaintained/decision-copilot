@@ -1,6 +1,6 @@
 import { config } from 'dotenv'
 import { resolve } from 'path'
-import { initializeApp, getApps, cert } from 'firebase-admin/app'
+import { initializeApp, getApps, cert, getApp } from 'firebase-admin/app'
 import { getFirestore } from 'firebase-admin/firestore'
 
 // Simulate NextJS behaviour)
@@ -21,4 +21,9 @@ if (!getApps().length) {
     });
 }
 
-export const adminDb = getFirestore()
+// Use the named database in production, default database otherwise
+const isProduction = process.env.NODE_ENV === 'production';
+const app = getApp();
+export const adminDb = isProduction 
+    ? getFirestore(app, 'decision-copilot-prod') 
+    : getFirestore();

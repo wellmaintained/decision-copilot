@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -125,8 +125,6 @@ function StakeholderGroup({
 export default function DecisionIdentityPage() {
   const params = useParams();
   const decisionId = params.id as string;
-  const projectId = params.projectId as string;
-  const teamId = params.teamId as string;
   const organisationId = params.organisationId as string;
 
   const {
@@ -140,7 +138,7 @@ export default function DecisionIdentityPage() {
     updateDecisionDriver,
     addStakeholder,
     removeStakeholder,
-  } = useDecision(decisionId, organisationId, teamId, projectId);
+  } = useDecision(decisionId, organisationId);
 
   const {
     stakeholders,
@@ -149,8 +147,17 @@ export default function DecisionIdentityPage() {
   const { stakeholderTeams, loading: stakeholderTeamsLoading } =
     useStakeholderTeams();
   const { organisations, loading: organisationsLoading } = useOrganisations();
-  const [expandedTeams, setExpandedTeams] = useState<string[]>([teamId]); // Current team is expanded by default
+  
+  // Default to empty array for expanded teams until decision loads
+  const [expandedTeams, setExpandedTeams] = useState<string[]>([]);
   const [driverOpen, setDriverOpen] = useState(false);
+
+  // Update expanded teams when decision loads
+  useEffect(() => {
+    if (decision && decision.teamIds && decision.teamIds.length > 0) {
+      setExpandedTeams([decision.teamIds[0]]);
+    }
+  }, [decision]);
 
   const currentOrg = organisations?.find((org) => org.id === organisationId);
 
@@ -482,8 +489,11 @@ export default function DecisionIdentityPage() {
               {Object.entries(stakeholdersByTeam)
                 .sort(([id1], [id2]) => {
                   // Put the current team first
-                  if (id1 === teamId) return -1;
-                  if (id2 === teamId) return 1;
+                  if (decision && decision.teamIds && decision.teamIds.length > 0) {
+                    const firstTeamId = decision.teamIds[0];
+                    if (id1 === firstTeamId) return -1;
+                    if (id2 === firstTeamId) return 1;
+                  }
                   return 0;
                 })
                 .map(([teamId, { name, stakeholders }]) => (
@@ -504,7 +514,7 @@ export default function DecisionIdentityPage() {
 
       <div className="flex justify-end pt-4">
         <Button size="lg" asChild>
-          <Link href={`/organisation/${organisationId}/team/${teamId}/project/${projectId}/decision/${decisionId}/process`}>Next</Link>
+          <Link href={`/organisation/${organisationId}/decision/${decisionId}/process`}>Next</Link>
         </Button>
       </div>
     </>

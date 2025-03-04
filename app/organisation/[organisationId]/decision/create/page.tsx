@@ -1,13 +1,15 @@
 'use client'
 
 import { useEffect, useRef } from 'react'
-import { useRouter } from 'next/navigation'
-import { useProjectDecisions } from '@/hooks/useProjectDecisions'
+import { useRouter, useParams } from 'next/navigation'
+import { useOrganisationDecisions } from '@/hooks/useOrganisationDecisions'
 import { useAuth } from '@/hooks/useAuth'
 
 export default function DecisionPage() {
   const router = useRouter()
-  const { createDecision } = useProjectDecisions()
+  const params = useParams()
+  const organisationId = params.organisationId as string
+  const { createDecision } = useOrganisationDecisions(organisationId)
   const { user } = useAuth()
   const hasCreatedDecision = useRef(false)
 

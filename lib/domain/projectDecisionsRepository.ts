@@ -23,11 +23,10 @@ export interface ProjectDecisionsRepository {
   update(project: Project): Promise<Project>
 
   /**
-   * Retrieves a project by its ID within the scope of an organisation and team
+   * Retrieves a project by its ID within the scope of an organisation
    * @param organisationId The ID of the organisation the project belongs to
-   * @param teamId The ID of the team the project belongs to
    * @param projectId The ID of the project to retrieve
    * @returns The project if found, null otherwise
    */
-  getById(organisationId: string, teamId: string, projectId: string): Promise<Project | null>
+  getById(organisationId: string, projectId: string): Promise<Project | null>
 } 

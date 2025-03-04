@@ -2,7 +2,7 @@
 
 ## Overview
 
-The Decision is a core entity that represents a structured decision-making process within a project. Decisions follow a defined workflow and can involve multiple stakeholders with different roles. Decisions can be related to each other through blocking/enabling relationships and supersession relationships.
+The Decision is a core entity that represents a structured decision-making process within an organisation. Decisions follow a defined workflow and can involve multiple stakeholders with different roles. Decisions can be related to each other through blocking/enabling relationships and supersession relationships.
 
 ### Domain Model Relationships
 
@@ -10,9 +10,9 @@ The Decision is a core entity that represents a structured decision-making proce
 erDiagram
     Decision {
         string id "Firestore ID"
-        string organisationId "Location in org/team/project hierarchy"
-        string teamId "Location in org/team/project hierarchy"
-        string projectId "Location in org/team/project hierarchy"
+        string organisationId "Organisation the decision belongs to"
+        string[] teamIds "Teams associated with the decision"
+        string[] projectIds "Projects associated with the decision"
         string title
         string description
         string status
@@ -31,6 +31,8 @@ erDiagram
     Decision ||--o{ DecisionStakeholderRole : has
     DecisionStakeholderRole }o--|| Stakeholder : references
     Decision ||--o{ DecisionRelationship : "has"
+    Decision }o--o{ Team : "labeled with"
+    Decision }o--o{ Project : "labeled with"
 ```
 
 ## Domain Model
@@ -65,8 +67,8 @@ interface DecisionProps {
   driverStakeholderId: string;
   supportingMaterials?: SupportingMaterial[];
   organisationId: string;
-  teamId: string;
-  projectId: string;
+  teamIds: string[]; // Multiple teams can be associated with a decision
+  projectIds: string[]; // Multiple projects can be associated with a decision
   relationships?: DecisionRelationshipMap;
 }
 
@@ -96,55 +98,19 @@ class Decision {
 
   // Organization context
   readonly organisationId: string
-  readonly teamId: string
-  readonly projectId: string
+  readonly teamIds: string[] // Multiple teams
+  readonly projectIds: string[] // Multiple projects
 
   // Relationship properties
   readonly relationships?: DecisionRelationshipMap
 
   // Relationship methods
-  getRelationshipsByType(type: DecisionRelationshipType): DecisionRelationship[] {
-    if (!this.relationships) return [];
-    
-    return Object.entries(this.relationships)
-      .filter(([, relationship]) => relationship.type === type)
-      .map(([, relationship]) => relationship);
-  }
-
-  setRelationship(type: DecisionRelationshipType, targetDecision: Decision): Decision {
-    const key = this.getRelationshipKey(type, targetDecision.id);
-    const newRelationship = {
-      targetDecision: targetDecision.toDocumentReference(),
-      targetDecisionTitle: targetDecision.title,
-      type
-    } as DecisionRelationship;
-
-    return this.with({
-      relationships: {
-        ...this.relationships,
-        [key]: newRelationship
-      }
-    });
-  }
-
-  unsetRelationship(type: DecisionRelationshipType, targetDecisionId: string): Decision {
-    const key = this.getRelationshipKey(type, targetDecisionId);
- 
-    if (!this.relationships?.[key]) {
-      return this;
-    }
-
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { [key]: _, ...remainingRelationships } = this.relationships;
-    
-    return this.with({
-      relationships: remainingRelationships
-    });
-  }
-
-  isSuperseded(): boolean {
-    return this.status === 'superseded' && this.getRelationshipsByType('superseded_by').length > 0;
-  }
+  getRelationshipsByType(type: DecisionRelationshipType): DecisionRelationship[]
+  setRelationship(type: DecisionRelationshipType, targetDecision: Decision): Decision
+  unsetRelationship(type: DecisionRelationshipType, targetDecisionId: string): Decision
+  toDocumentReference(): DocumentReference
+  isSuperseded(): boolean
+  isBlocked(): boolean
 }
 ```
 
@@ -174,6 +140,12 @@ interface DecisionStakeholderRole {
   - Decider: Can make the final decision
   - Consulted: Can provide input (previously "advisor")
   - Informed: Can view the decision (previously "observer")
+
+### Team and Project Labels
+- Decisions can be associated with multiple teams and projects
+- These associations are stored as arrays of IDs
+- This flat structure allows for cross-team and cross-project decisions
+- Labels can be added or removed without changing the decision's location
 
 ### Cost and Reversibility
 - Decisions are classified by their cost impact: low, medium, high
@@ -215,13 +187,13 @@ interface DecisionStakeholderRole {
 ```typescript
 interface DecisionScope {
   organisationId: string
-  teamId: string
-  projectId: string
 }
 
 interface DecisionsRepository {
   getAll(scope: DecisionScope): Promise<Decision[]>
   getById(id: string, scope: DecisionScope): Promise<Decision | null>
+  getByTeam(teamId: string, scope: DecisionScope): Promise<Decision[]>
+  getByProject(projectId: string, scope: DecisionScope): Promise<Decision[]>
   create(initialData: Partial<Omit<DecisionProps, "id">>, scope: DecisionScope): Promise<Decision>
   update(decision: Decision): Promise<void>
   delete(id: string, scope: DecisionScope): Promise<void>
@@ -246,12 +218,8 @@ interface DecisionsRepository {
 ```sh
 organisations/
   {organisationId}/
-    teams/
-      {teamId}/
-        projects/
-          {projectId}/
-            decisions/
-              {decisionId}
+    decisions/
+      {decisionId}
 ```
 
 ### Decision Document Structure
@@ -259,8 +227,8 @@ organisations/
 interface FirestoreDecisionDocument {
   // ... existing fields ...
   organisationId: string;
-  teamId: string;
-  projectId: string;
+  teamIds: string[]; // Array of team IDs
+  projectIds: string[]; // Array of project IDs
   relationships: {
     [key: string]: {
       targetDecision: DocumentReference;
@@ -281,18 +249,6 @@ export class DecisionRelationshipTools {
     return orgIndex >= 0 ? pathParts[orgIndex + 1] : '';
   }
 
-  static getTargetDecisionTeamId(decisionRelationship: DecisionRelationship): string {
-    const pathParts = decisionRelationship.targetDecision.path.split('/');
-    const teamsIndex = pathParts.indexOf('teams');
-    return teamsIndex >= 0 ? pathParts[teamsIndex + 1] : '';
-  }
-
-  static getTargetDecisionProjectId(decisionRelationship: DecisionRelationship): string {
-    const pathParts = decisionRelationship.targetDecision.path.split('/');
-    const projectsIndex = pathParts.indexOf('projects');
-    return projectsIndex >= 0 ? pathParts[projectsIndex + 1] : '';
-  }
-
   static getInverseRelationshipType(type: DecisionRelationshipType): DecisionRelationshipType {
     const lookupInverse: Record<DecisionRelationshipType, DecisionRelationshipType> = {
       'supersedes': 'superseded_by',
@@ -311,18 +267,15 @@ export class DecisionRelationshipTools {
 // Firestore security rules
 match /organisations/{orgId} {
   // Helper function to check if user can access a decision
-  function canAccessDecision(decisionId) {
-    let decision = get(/databases/$(database)/documents/organisations/$(orgId)/teams/*/projects/*/decisions/$(decisionId));
-    return decision != null && 
-           exists(/databases/$(database)/documents/stakeholderTeams/{stakeholderTeamId}
-             where stakeholderTeamId == request.auth.uid 
-             && organisationId == orgId
-             && teamId == decision.data.teamId);
+  function canAccessDecision() {
+    return exists(/databases/$(database)/documents/stakeholderTeams/{stakeholderTeamId}
+      where stakeholderTeamId == request.auth.uid 
+      && organisationId == orgId);
   }
 
-  match /teams/{teamId}/projects/{projectId}/decisions/{decisionId} {
-    allow read: if canAccessDecision(decisionId);
-    allow create, update: if canAccessDecision(decisionId);
+  match /decisions/{decisionId} {
+    allow read: if canAccessDecision();
+    allow create, update: if canAccessDecision();
     // Additional rules for relationships...
   }
 }
@@ -330,19 +283,35 @@ match /organisations/{orgId} {
 
 ## Usage Examples
 
-### Creating a Cross-Project Blocking Relationship
+### Creating a Decision with Multiple Teams and Projects
+```typescript
+const decision = await decisionsRepo.create({
+  title: 'Adopt TypeScript',
+  description: 'We should adopt TypeScript for all new projects',
+  cost: 'low',
+  reversibility: 'haircut',
+  teamIds: ['team-engineering', 'team-product'],
+  projectIds: ['project-website', 'project-api'],
+  driverStakeholderId: 'user123',
+  stakeholders: [
+    { stakeholder_id: 'user123', role: 'decider' },
+    { stakeholder_id: 'user456', role: 'consulted' }
+  ],
+  criteria: ['Developer productivity', 'Code quality'],
+  options: ['TypeScript', 'JavaScript', 'Flow'],
+  createdAt: new Date()
+}, { organisationId: 'org1' });
+```
+
+### Creating a Cross-Team Blocking Relationship
 ```typescript
 // Get the decisions
 const decisionA = await decisionsRepo.getById(decisionAId, {
-  organisationId,
-  teamId: team1Id,
-  projectId: project1Id
+  organisationId
 });
 
 const decisionB = await decisionsRepo.getById(decisionBId, {
-  organisationId,
-  teamId: team2Id,
-  projectId: project2Id
+  organisationId
 });
 
 // Use the repository method that adds the relationship to both sides
@@ -354,29 +323,36 @@ const blockingRelationship = {
 await decisionsRepo.addRelationship(decisionB, blockingRelationship);
 ```
 
-### Checking if a Decision is Blocked
+### Filtering Decisions by Team or Project
 ```typescript
-const decision = await decisionsRepo.getById(decisionId, scope);
-const isBlocked = decision.isBlocked();
+// Get all decisions for a specific team
+const teamDecisions = await decisionsRepo.getByTeam('team-engineering', {
+  organisationId: 'org1'
+});
+
+// Get all decisions for a specific project
+const projectDecisions = await decisionsRepo.getByProject('project-website', {
+  organisationId: 'org1'
+});
 ```
 
 ## Business Rules
 
-1. Decisions belong to exactly one project
-2. Each decision must have exactly one driver stakeholder
-3. The driver stakeholder cannot be removed from the decision
-4. Stakeholders can only be added once with a specific role
-5. Published decisions cannot be modified
-6. Decision workflow steps must be followed in order
-7. A decision cannot be blocked by itself (direct circular dependency)
-8. Blocking relationships cannot form circular chains
-9. A decision can only be superseded by one other decision
-10. A decision marked as superseded cannot be modified
-11. Supersession relationships cannot form circular chains
-12. A decision cannot proceed until all blocking decisions are completed
-13. Decisions can be related to other decisions within the same organisation, regardless of team or project
-14. Users must have access to both decisions to create a relationship between them
-15. Users can view relationships if they have access to either the source or target decision
+1. Decisions belong to exactly one organisation
+2. Decisions can be associated with multiple teams and projects
+3. Each decision must have exactly one driver stakeholder
+4. The driver stakeholder cannot be removed from the decision
+5. Stakeholders can only be added once with a specific role
+6. Published decisions cannot be modified
+7. Decision workflow steps must be followed in order
+8. A decision cannot be blocked by itself (direct circular dependency)
+9. Blocking relationships cannot form circular chains
+10. A decision can only be superseded by one other decision
+11. A decision marked as superseded cannot be modified
+12. Supersession relationships cannot form circular chains
+13. A decision cannot proceed until all blocking decisions are completed
+14. Decisions can be related to other decisions within the same organisation
+15. Users must have access to the organisation to create or view decisions
 16. Relationships are bidirectional - creating a relationship of type A from decision X to decision Y automatically creates the inverse relationship from Y to X
 
 ## Error Handling

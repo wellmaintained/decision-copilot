@@ -31,11 +31,9 @@ function StakeholderGroup({ title, stakeholders }: { title: string, stakeholders
 export default function DecisionView() {
   const params = useParams()
   const decisionId = params.id as string
-  const projectId = params.projectId as string
-  const teamId = params.teamId as string
   const organisationId = params.organisationId as string
 
-  const { decision, loading, error } = useDecision(decisionId, organisationId, teamId, projectId)
+  const { decision, loading, error } = useDecision(decisionId, organisationId)
   const { stakeholders } = useStakeholders()
 
   if (loading) {
@@ -149,12 +147,20 @@ export default function DecisionView() {
           <div className="bottom-0 right-0 bg-sky-100 p-4 flex items-center justify-between z-50">
             <p className="text-slate-700">This decision has been published and can no longer be edited</p>
             <Button variant="default" className="bg-blue-600 hover:bg-blue-700">
-              <Link href={`/organisation/${organisationId}/team/${teamId}/project/${projectId}/decision/${decisionId}/identify`}>
+              <Link href={`/organisation/${organisationId}/decision/${decisionId}/identify`}>
                 Un-publish
               </Link>
             </Button>
           </div>
         )}
+
+        <div className="flex justify-between items-center mb-8">
+          <Button variant="outline" asChild>
+            <Link href={`/organisation/${organisationId}`}>
+              Back to Decisions
+            </Link>
+          </Button>
+        </div>
       </div>
     </>
   )

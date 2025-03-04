@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react";
-import { useParams } from "next/navigation";
 import { Decision } from "@/lib/domain/Decision";
 import { FirestoreDecisionsRepository } from "@/lib/infrastructure/firestoreDecisionsRepository";
 import { DecisionScope } from "@/lib/domain/decisionsRepository";
@@ -8,10 +7,7 @@ import { FirestoreStakeholdersRepository } from "@/lib/infrastructure/firestoreS
 
 const decisionsRepository = new FirestoreDecisionsRepository();
 
-export function useProjectDecisions() {
-  const params = useParams();
-  const organisationId = params.organisationId as string;
-
+export function useOrganisationDecisions(organisationId: string) {
   const [decisions, setDecisions] = useState<Decision[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
@@ -20,6 +16,11 @@ export function useProjectDecisions() {
   const scope: DecisionScope = { organisationId };
 
   useEffect(() => {
+    if (!organisationId) {
+      setLoading(false);
+      return () => {};
+    }
+
     const unsubscribe = decisionsRepository.subscribeToAll(
       (decisions) => {
         setDecisions(decisions);

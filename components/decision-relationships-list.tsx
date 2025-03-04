@@ -2,7 +2,8 @@ import { Decision, DecisionRelationshipType } from '@/lib/domain/Decision'
 import { Button } from '@/components/ui/button'
 import { AddDecisionRelationshipDialog } from '@/components/add-decision-relationship-dialog'
 import { useDecisionRelationships, SelectedDecisionDetails } from '@/hooks/useDecisionRelationships'
-import { Plus } from 'lucide-react'
+import { Plus, X } from 'lucide-react'
+import Link from 'next/link'
 
 interface DecisionRelationshipItemProps {
   targetDecision: Decision;
@@ -12,16 +13,23 @@ interface DecisionRelationshipItemProps {
 
 function DecisionRelationshipItem({ targetDecision, type, onRemove }: DecisionRelationshipItemProps) {
   return (
-    <div className="flex items-center justify-between p-2 border rounded-lg mb-2">
+    <div className="flex items-center justify-between p-2 bg-muted rounded-md group">
       <div>
-        <p className="font-medium">{targetDecision.title}</p>
+        <Link
+          href={`/organisation/${targetDecision.organisationId}/decision/${targetDecision.id}/identify`}
+          className="font-medium hover:underline"
+        >
+          {targetDecision.title}
+        </Link>
       </div>
       <Button
         variant="ghost"
         size="sm"
         onClick={() => onRemove(type, targetDecision)}
+        className="opacity-0 group-hover:opacity-100 transition-opacity"
+        title="Remove relationship"
       >
-        Remove
+        <X className="h-4 w-4" />
       </Button>
     </div>
   );
@@ -55,8 +63,8 @@ export function DecisionRelationshipsList({
         stakeholders: [],
         driverStakeholderId: '',
         organisationId: fromDecision.organisationId,
-        teamId: fromDecision.teamId,
-        projectId: fromDecision.projectId,
+        teamIds: [],
+        projectIds: [],
         supportingMaterials: []
       }),
       type: relationship.type
@@ -100,7 +108,7 @@ export function DecisionRelationshipsList({
           </Button>
         </AddDecisionRelationshipDialog>
       </div>
-      <div>
+      <div className="space-y-2">
         {hasRelationships ? (
           relationships.map((relationship) => (
             <DecisionRelationshipItem
@@ -116,4 +124,4 @@ export function DecisionRelationshipsList({
       </div>
     </div>
   );
-} 
+}

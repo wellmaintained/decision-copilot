@@ -8,9 +8,10 @@ const TEST_PASSWORD = 'password123'
 
 export const BASE_TEST_SCOPE: DecisionScope = {
   organisationId: '9HY1YTkOdqxOTFOMZe8r', // Org 1
-  teamId: 'f0JwCXSslD9qDXSPMvWS', // Org 1 / Everyone
-  projectId: 'integration-test-project-id' // IntegrationTestProject
-} 
+}
+
+export const TEST_TEAM_ID = 'f0JwCXSslD9qDXSPMvWS' // Org 1 / Everyone
+export const TEST_PROJECT_ID = 'integration-test-project-id' // IntegrationTestProject
 
 export async function signInTestUser() {
   try {
