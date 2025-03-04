@@ -1,6 +1,6 @@
 #!/usr/bin/env ts-node
 
-import { initializeApp, cert, App } from 'firebase-admin/app';
+import { initializeApp, cert, App, ServiceAccount } from 'firebase-admin/app';
 import { getFirestore, Firestore, FieldValue, DocumentData } from 'firebase-admin/firestore';
 import { Command } from 'commander';
 import * as dotenv from 'dotenv';
@@ -31,24 +31,51 @@ function initializeFirebase(options: MigrationOptions): { app: App; db: Firestor
     console.log(chalk.yellow(`Connected to Firestore emulator at ${process.env.FIRESTORE_EMULATOR_HOST}`));
   } else {
     // Connect to production or other environment
-    if (!options.serviceAccountPath) {
-      throw new Error('Service account path is required for non-emulator environments');
+    // Make sure we're not using the emulator for production
+    delete process.env.FIRESTORE_EMULATOR_HOST;
+    
+    let serviceAccount: ServiceAccount;
+    
+    // Check if we have the environment variable
+    if (process.env.FIREBASE_SERVICE_ACCOUNT_JSON) {
+      try {
+        serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_JSON) as ServiceAccount;
+        console.log(chalk.green('Using service account from FIREBASE_SERVICE_ACCOUNT_JSON environment variable'));
+      } catch (error) {
+        console.error(chalk.red('Error parsing FIREBASE_SERVICE_ACCOUNT_JSON environment variable:'), error);
+        throw new Error('Invalid FIREBASE_SERVICE_ACCOUNT_JSON environment variable');
+      }
+    } 
+    // Fall back to service account file if specified
+    else if (options.serviceAccountPath) {
+      const serviceAccountPath = path.resolve(process.cwd(), options.serviceAccountPath);
+      if (!fs.existsSync(serviceAccountPath)) {
+        throw new Error(`Service account file not found at ${serviceAccountPath}`);
+      }
+      
+      serviceAccount = JSON.parse(fs.readFileSync(serviceAccountPath, 'utf8')) as ServiceAccount;
+      console.log(chalk.green(`Using service account from file: ${serviceAccountPath}`));
+    } else {
+      throw new Error('No service account provided. Set FIREBASE_SERVICE_ACCOUNT_JSON environment variable or provide --service-account-path');
     }
     
-    const serviceAccountPath = path.resolve(process.cwd(), options.serviceAccountPath);
-    if (!fs.existsSync(serviceAccountPath)) {
-      throw new Error(`Service account file not found at ${serviceAccountPath}`);
-    }
-    
-    // Use dynamic import instead of require
-    const serviceAccount = JSON.parse(fs.readFileSync(serviceAccountPath, 'utf8'));
     app = initializeApp({
       credential: cert(serviceAccount),
     });
     console.log(chalk.green(`Connected to Firestore in ${options.environment} environment`));
   }
   
-  const db = getFirestore(app);
+  // Use the named database for production environment
+  let db: Firestore;
+  if (options.environment === 'production') {
+    const databaseId = 'decision-copilot-prod';
+    console.log(chalk.blue(`Using database: ${databaseId}`));
+    db = getFirestore(app, databaseId);
+  } else {
+    console.log(chalk.blue(`Using database: (default)`));
+    db = getFirestore(app);
+  }
+  
   return { app, db };
 }
 
@@ -58,6 +85,7 @@ async function extractProjects(db: Firestore, options: MigrationOptions): Promis
   
   try {
     // Get all organisations
+    console.log(chalk.blue('Attempting to fetch organisations collection...'));
     const orgsSnapshot = await db.collection('organisations').get();
     console.log(chalk.blue(`Found ${orgsSnapshot.docs.length} organisations`));
     
@@ -123,74 +151,70 @@ async function extractProjects(db: Firestore, options: MigrationOptions): Promis
       console.log(chalk.yellow('This was a dry run. No actual changes were made to the database.'));
       console.log(chalk.yellow('Run without --dry-run to apply the changes.'));
     }
-  } catch (error) {
+  } catch (error: unknown) {
     console.error(chalk.red('Error during project migration:'), error);
-    throw error;
-  }
-}
-// Migrate teams from old hierarchical structure to new flat structure
-async function extractTeams(db: Firestore, options: MigrationOptions): Promise<void> {
-  console.log(chalk.blue('Starting extraction of teams from hierarchical structure...'));
-  
-  try {
-    // Get all organisations
-    const orgsSnapshot = await db.collection('organisations').get();
-    console.log(chalk.blue(`Found ${orgsSnapshot.docs.length} organisations`));
     
-    for (const orgDoc of orgsSnapshot.docs) {
-      const orgId = orgDoc.id;
-      console.log(chalk.blue(`Processing organisation: ${orgId}`));
+    // Enhanced error reporting for permission issues
+    const err = error as { code?: number; details?: string };
+    if (err.code === 7 && err.details && err.details.includes('Missing or insufficient permissions')) {
+      console.error(chalk.red('Permission denied error detected. This could be because:'));
+      console.error(chalk.red('1. The service account does not have the required permissions'));
+      console.error(chalk.red('2. The service account cannot access the specified database'));
+      console.error(chalk.red('3. The database path is incorrect or does not exist'));
+      console.error(chalk.red('\nService account being used:'));
       
-      // Get all teams for this organisation
-      const teamsSnapshot = await db.collection(`organisations/${orgId}/teams`).get();
-      console.log(chalk.blue(`Found ${teamsSnapshot.docs.length} teams in organisation ${orgId}`));
-      
-      for (const teamDoc of teamsSnapshot.docs) {
-        const teamId = teamDoc.id;
-        const teamName = teamDoc.data().name || 'Unknown Team';
-        console.log(chalk.blue(`Processing team: ${teamName} (${teamId})`));
-
-        // Check if this team already exists in the new location
-        const existingTeamDoc = await db.doc(`organisations/${orgId}/teams/${teamId}`).get();
+      try {
+        // Use a more specific type that includes both camelCase and snake_case variants
+        let serviceAccountInfo: {
+          client_email?: string;
+          clientEmail?: string;
+          project_id?: string;
+          projectId?: string;
+          [key: string]: string | undefined;
+        } | null = null;
         
-        if (existingTeamDoc.exists) {
-          console.log(chalk.yellow(`Team ${teamId} (${teamName}) already exists in the new location, skipping`));
-          continue;
-        }
+        // Try to get service account from environment variable first
+        if (process.env.FIREBASE_SERVICE_ACCOUNT_JSON) {
+          serviceAccountInfo = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_JSON);
+          console.error(chalk.red('Using service account from environment variable:'));
           
-        // Prepare the project data for the new location
-        const newTeamData: DocumentData = {
-        ...existingTeamDoc.data(),
-        organisationId: orgId,
-        };
+          // Debug the structure
+          if (options.verbose) {
+            console.error(chalk.red('Service account keys:'), Object.keys(serviceAccountInfo || {}));
+          }
+        } 
+        // Fall back to file if specified
+        else if (options.serviceAccountPath) {
+          const serviceAccountPath = path.resolve(process.cwd(), options.serviceAccountPath || '');
+          serviceAccountInfo = JSON.parse(fs.readFileSync(serviceAccountPath, 'utf8'));
+          console.error(chalk.red(`Using service account from file: ${serviceAccountPath}`));
           
-        // Remove projectId if it exists
-        if (newTeamData.projectId !== undefined) {
-        delete newTeamData.projectId;
+          // Debug the structure
+          if (options.verbose) {
+            console.error(chalk.red('Service account keys:'), Object.keys(serviceAccountInfo || {}));
+          }
         }
         
-        // Log the migration
-        console.log(chalk.cyan(`Extracting team ${teamId} (${teamName}) from hierarchical structure:`));
-        console.log(chalk.cyan(`  - Old path: organisations/${orgId}/teams/${teamId}`));
-        console.log(chalk.cyan(`  - New path: organisations/${orgId}/teams/${teamId}`));
-        
-        // Create the document in the new location if not in dry run mode
-        if (!options.dryRun) {
-            await db.doc(`organisations/${orgId}/teams/${teamId}`).set(newTeamData);
-            console.log(chalk.green(`  ✓ created team ${teamId} (${teamName}) in new location`));
+        if (serviceAccountInfo) {
+          // Use the correct property names based on the actual structure
+          const email = serviceAccountInfo.client_email || serviceAccountInfo.clientEmail || 'unknown';
+          const projectId = serviceAccountInfo.project_id || serviceAccountInfo.projectId || 'unknown';
+          
+          console.error(chalk.red(`- Email: ${email}`));
+          console.error(chalk.red(`- Project ID: ${projectId}`));
         } else {
-            console.log(chalk.yellow(`  ⚠ Dry run - no changes made to team ${teamId} (${teamName})`));
+          console.error(chalk.red('No service account information available'));
         }
+      } catch (error) {
+        console.error(chalk.red('Could not read service account details:'), error);
       }
+      
+      console.error(chalk.red('\nRecommended actions:'));
+      console.error(chalk.red('- Verify the service account has the "Cloud Firestore Admin" role'));
+      console.error(chalk.red('- Check if the service account has access to the database'));
+      console.error(chalk.red('- Ensure the database exists and is correctly specified'));
     }
     
-    console.log(chalk.green('Team migration completed successfully!'));
-    if (options.dryRun) {
-      console.log(chalk.yellow('This was a dry run. No actual changes were made to the database.'));
-      console.log(chalk.yellow('Run without --dry-run to apply the changes.'));
-    }
-  } catch (error) {
-    console.error(chalk.red('Error during team migration:'), error);
     throw error;
   }
 }
@@ -432,18 +456,18 @@ async function main() {
     .version('1.0.0')
     .option('-e, --environment <env>', 'Target environment (emulator, production, etc.)', 'emulator')
     .option('-d, --dry-run', 'Run without making actual changes', false)
-    .option('-s, --service-account <path>', 'Path to service account JSON file (required for non-emulator environments)')
+    .option('-s, --service-account-path <path>', 'Path to service account JSON file (optional if FIREBASE_SERVICE_ACCOUNT_JSON env var is set)')
     .option('--emulator-host <host>', 'Firestore emulator host', 'localhost')
     .option('--emulator-port <port>', 'Firestore emulator port', '8080')
     .option('-v, --verbose', 'Enable verbose logging', false)
     .parse(process.argv);
   
   const options = program.opts() as MigrationOptions;
-  
+
   try {
     // Validate options
-    if (options.environment !== 'emulator' && !options.serviceAccountPath) {
-      console.error(chalk.red('Error: Service account path is required for non-emulator environments'));
+    if (options.environment !== 'emulator' && !options.serviceAccountPath && !process.env.FIREBASE_SERVICE_ACCOUNT_JSON) {
+      console.error(chalk.red('Error: Service account must be provided either via --service-account-path or FIREBASE_SERVICE_ACCOUNT_JSON environment variable'));
       program.help();
       process.exit(1);
     }
@@ -454,8 +478,10 @@ async function main() {
     if (options.environment === 'emulator') {
       console.log(chalk.blue(`  Emulator host: ${options.emulatorHost}`));
       console.log(chalk.blue(`  Emulator port: ${options.emulatorPort}`));
-    } else {
+    } else if (options.serviceAccountPath) {
       console.log(chalk.blue(`  Service account: ${options.serviceAccountPath}`));
+    } else {
+      console.log(chalk.blue('  Service account: Using FIREBASE_SERVICE_ACCOUNT_JSON environment variable'));
     }
     
     // Initialize Firebase
