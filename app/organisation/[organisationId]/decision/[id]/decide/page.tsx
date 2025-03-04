@@ -13,8 +13,6 @@ import { DecisionRelationshipsList } from '@/components/decision-relationships-l
 export default function DecidePage() {
   const params = useParams()
   const decisionId = params.id as string
-  const projectId = params.projectId as string
-  const teamId = params.teamId as string
   const organisationId = params.organisationId as string
 
   const {
@@ -26,7 +24,7 @@ export default function DecidePage() {
     updateDecisionContent,
     addSupportingMaterial,
     removeSupportingMaterial,
-  } = useDecision(decisionId, organisationId, teamId, projectId)
+  } = useDecision(decisionId, organisationId)
 
   if (decisionsLoading) {
     return <div>Loading...</div>
@@ -119,7 +117,7 @@ export default function DecidePage() {
 
       <div className="flex justify-end pt-4">
         <Button size="lg" asChild>
-          <Link href={`/organisation/${organisationId}/team/${teamId}/project/${projectId}/decision/${decisionId}/view`}>
+          <Link href={`/organisation/${organisationId}/decision/${decisionId}/view`}>
             Publish
           </Link>
         </Button>

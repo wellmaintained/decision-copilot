@@ -6,11 +6,47 @@ The Organisation is a top-level entity that represents a security boundary in th
 
 ### Domain Model Relationships
 
+#### Stakeholder relationships
 ```mermaid
 erDiagram
     Organisation ||--o{ Team : contains
-    Team ||--o{ Project : contains
-    Project ||--o{ Decision : contains
+    Stakeholder }|--o{ StakeholderTeam : "belongs to"
+    StakeholderTeam }o--|| Team : "references"
+    
+    Organisation {
+        string id "Firestore ID"
+        string name
+    }
+    
+    Team {
+        string id "Firestore ID"
+        string name
+        string organisationId
+    }
+    
+    StakeholderTeam {
+        string id "Firestore ID"
+        string stakeholderId
+        string teamId
+        string organisationId
+    }
+    
+    Stakeholder {
+        string displayName
+        string email
+        string photoURL
+    }
+```
+
+#### Decision relationships
+```mermaid
+erDiagram
+    Organisation ||--o{ Team : contains
+    Organisation ||--o{ Project : contains
+    Organisation ||--o{ Decision : contains
+    Decision }o--o{ Team : "labeled with"
+    Decision }o--o{ Project : "labeled with"
+    Decision }o--o{ Stakeholder : "has stakeholders"
     Stakeholder }|--o{ StakeholderTeam : "belongs to"
     StakeholderTeam }o--|| Team : "references"
     
@@ -29,50 +65,22 @@ erDiagram
         string id "Firestore ID"
         string name
         string description
-        string teamId
         string organisationId
     }
-    
+
     Decision {
         string id "Firestore ID"
         string title
         string description
         string status
-        string projectId
+        string organisationId
+        array teamIds
+        array projectIds
+        array stakeholders
+        string driverStakeholderId
         date publishedAt
     }
-    
-    StakeholderTeam {
-        string id "Firestore ID"
-        string stakeholderId
-        string teamId
-        string organisationId
-    }
-    
-    Stakeholder {
-        string displayName
-        string email
-        string photoURL
-    }
-```
 
-```mermaid
-erDiagram
-    Organisation ||--o{ Team : contains
-    Stakeholder }|--o{ StakeholderTeam : "belongs to"
-    StakeholderTeam }o--|| Team : "references"
-    
-    Organisation {
-        string id "Firestore ID"
-        string name
-    }
-    
-    Team {
-        string id "Firestore ID"
-        string name
-        string organisationId
-    }
-    
     StakeholderTeam {
         string id "Firestore ID"
         string stakeholderId
@@ -130,8 +138,79 @@ class Organisation {
 ### Teams
 - Teams are embedded within organisations
 - A team belongs to exactly one organisation
-- Teams contain projects and their associated decisions
 - Teams are the primary unit of access control
+
+### Projects
+- Projects belong directly to an organisation
+- Projects are used as labels for decisions
+- A project can be associated with multiple decisions
+
+### Decisions
+- Decisions belong directly to an organisation
+- Decisions can be associated with multiple teams and projects via labels
+- This flat structure reduces friction when creating decisions
+- Cross-team decisions are easily represented
+
+### Decision Model with Labels
+
+```typescript
+interface DecisionProps {
+  id: string;
+  title: string;
+  description: string;
+  status: DecisionStatus;
+  organisationId: string;
+  teamIds: string[]; // References to teams
+  projectIds: string[]; // References to projects
+  publishedAt?: Date;
+}
+
+class Decision {
+  @IsString()
+  readonly id: string;
+
+  @IsString()
+  @MinLength(3)
+  readonly title: string;
+
+  @IsString()
+  readonly description: string;
+
+  @IsEnum(DecisionStatus)
+  readonly status: DecisionStatus;
+
+  @IsString()
+  readonly organisationId: string;
+
+  @IsArray()
+  @IsString({ each: true })
+  readonly teamIds: string[];
+
+  @IsArray()
+  @IsString({ each: true })
+  readonly projectIds: string[];
+
+  @IsOptional()
+  @IsDate()
+  readonly publishedAt?: Date;
+
+  private constructor(props: DecisionProps) {
+    this.id = props.id;
+    this.title = props.title;
+    this.description = props.description;
+    this.status = props.status;
+    this.organisationId = props.organisationId;
+    this.teamIds = props.teamIds || [];
+    this.projectIds = props.projectIds || [];
+    this.publishedAt = props.publishedAt;
+    this.validate();
+  }
+
+  static create(props: DecisionProps): Decision {
+    return new Decision(props);
+  }
+}
+```
 
 ### Stakeholder Membership
 ```typescript
@@ -163,10 +242,12 @@ interface OrganisationsRepository {
 ```sh
 organisations/
   {organisationId}/
+    decisions/
+      {decisionId}
     teams/
-      {teamId}/
-        projects/
-          {projectId}
+      {teamId}
+    projects/
+      {projectId}
 
 stakeholderTeams/
   {stakeholderTeamId}
@@ -230,6 +311,19 @@ if (team) {
 }
 ```
 
+### Creating a Decision with Multiple Teams and Projects
+```typescript
+const decision = Decision.create({
+  id: 'decision-1',
+  title: 'Adopt TypeScript',
+  description: 'We should adopt TypeScript for all new projects',
+  status: DecisionStatus.DRAFT,
+  organisationId: 'org-1',
+  teamIds: ['team-engineering', 'team-product'],
+  projectIds: ['project-website', 'project-api']
+})
+```
+
 ### Repository Operations
 ```typescript
 // Get organisations for a stakeholder
@@ -247,6 +341,9 @@ const newOrg = await organisationsRepo.create({
 - Organisation name must be at least 3 characters
 - Teams must be valid Team domain objects
 - Teams array can be empty but must be present
+- Decision title must be at least 3 characters
+- Decision must have a valid organisation ID
+- Team and project IDs must reference existing entities
 
 ## Business Rules
 
@@ -256,6 +353,8 @@ const newOrg = await organisationsRepo.create({
 4. Organisation names must be unique (enforced at repository level)
 5. Organisations can have multiple teams
 6. Organisations can be deleted only if they have no teams
+7. Decisions can be associated with multiple teams and projects
+8. All members of an organisation can access all decisions in that organisation
 
 ## Error Handling
 
@@ -272,3 +371,19 @@ if (!org.teams.length) {
   throw new OrganisationError('Cannot delete organisation with existing teams')
 }
 ```
+
+## Benefits of Label-Based Approach
+
+1. **Reduced Creation Friction**:
+   - Users can create decisions without choosing a single team/project location
+   - They can easily associate a decision with multiple teams/projects
+   - Teams/projects can be added later as the decision evolves
+
+2. **Improved Cross-Team Collaboration**:
+   - Decisions that span multiple teams are properly represented
+   - Avoids artificially forcing decisions into single-team silos
+   - Better represents the reality of cross-functional decision-making
+
+3. **Flexible Organization**:
+   - Users can view decisions by team, by project, or across the organization
+   - Supports both team-based and project-based workflows

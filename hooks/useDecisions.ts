@@ -12,7 +12,7 @@ import { DecisionScope } from "@/lib/domain/decisionsRepository";
 
 const decisionsRepository = new FirestoreDecisionsRepository();
 
-export function useDecision(decisionId: string, organisationId: string, teamId: string, projectId: string) {
+export function useDecision(decisionId: string, organisationId: string) {
   const [decision, setDecision] = useState<Decision | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
@@ -22,7 +22,7 @@ export function useDecision(decisionId: string, organisationId: string, teamId: 
     const fetchDecision = async () => {
       try {
         // First get the decision by ID to ensure we have a valid Decision object
-        const scope: DecisionScope = { organisationId, teamId, projectId };
+        const scope: DecisionScope = { organisationId };
         const fetchedDecision = await decisionsRepository.getById(decisionId, scope);
         // Then subscribe to updates
         unsubscribe = decisionsRepository.subscribeToOne(
@@ -50,7 +50,7 @@ export function useDecision(decisionId: string, organisationId: string, teamId: 
         unsubscribe();
       }
     };
-  }, [decisionId, organisationId, projectId, teamId]);
+  }, [decisionId, organisationId]);
 
   const updateDecisionTitle = async (title: string) => {
     try {

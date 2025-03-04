@@ -3,8 +3,6 @@ import { FirestoreDecisionsRepository } from '@/lib/infrastructure/firestoreDeci
 
 export interface SelectedDecisionDetails {
   toDecisionId: string;
-  toTeamId: string;
-  toProjectId: string;
   organisationId: string;
 }
 
@@ -25,8 +23,8 @@ export function useDecisionRelationships(sourceDecision: Decision) {
         stakeholders: [],
         driverStakeholderId: '',
         organisationId: targetDetails.organisationId,
-        teamId: targetDetails.toTeamId,
-        projectId: targetDetails.toProjectId,
+        teamIds: [],
+        projectIds: [],
         supportingMaterials: []
       });
 

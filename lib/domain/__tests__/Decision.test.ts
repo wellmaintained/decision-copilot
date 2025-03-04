@@ -16,18 +16,18 @@ describe('Decision Domain Model', () => {
     stakeholders: [],
     driverStakeholderId: 'driver-1',
     organisationId: 'org-1',
-    teamId: 'team-1',
-    projectId: 'project-1',
+    teamIds: ['team-1'],
+    projectIds: ['project-1'],
     supportingMaterials: [],
     relationships: {}
   }
 
   describe('Project Ownership', () => {
-    it('should always have organisationId, teamId, and projectId', () => {
+    it('should always have organisationId, teamIds, and projectIds', () => {
       const decision = Decision.create(defaultProps)
       expect(decision.organisationId).toBe('org-1')
-      expect(decision.teamId).toBe('team-1')
-      expect(decision.projectId).toBe('project-1')
+      expect(decision.teamIds).toContain('team-1')
+      expect(decision.projectIds).toContain('project-1')
     })
   })
 
@@ -173,10 +173,10 @@ describe('Decision Domain Model', () => {
       expect(relationships.map(r => r.targetDecision.id).sort()).toEqual(['decision-a', 'decision-b'].sort());
     })
 
-    it('should extract organisation, team and project Ids from relationship target path', () => {
+    it('should extract organisation ID from relationship target path', () => {
       const mockDocRef = {
         id: 'decision-x',
-        path: 'organisations/org-123/teams/team-456/projects/proj-789/decisions/decision-x'
+        path: 'organisations/org-123/decisions/decision-x'
       } as DocumentReference;
 
       const relationship = {
@@ -186,8 +186,6 @@ describe('Decision Domain Model', () => {
       } as DecisionRelationship;
 
       expect(DecisionRelationshipTools.getTargetDecisionOrganisationId(relationship)).toBe('org-123');
-      expect(DecisionRelationshipTools.getTargetDecisionTeamId(relationship)).toBe('team-456');
-      expect(DecisionRelationshipTools.getTargetDecisionProjectId(relationship)).toBe('proj-789');
     });
 
     it('should handle missing segments in relationship target path', () => {
@@ -203,8 +201,6 @@ describe('Decision Domain Model', () => {
       } as DecisionRelationship;
 
       expect(DecisionRelationshipTools.getTargetDecisionOrganisationId(relationship)).toBe('');
-      expect(DecisionRelationshipTools.getTargetDecisionTeamId(relationship)).toBe('');
-      expect(DecisionRelationshipTools.getTargetDecisionProjectId(relationship)).toBe('');
     });
   })
 }) 
