@@ -19,8 +19,11 @@ jobs:
           cache: 'pnpm'
       - run: pnpm install --frozen-lockfile
       - run: pnpm build
-      - uses: firebase/firebase-tools@v13
+      - uses: FirebaseExtended/action-hosting-deploy@v0
         with:
-          args: app:deploy --only hosting --project decision-copilot --preview-only
+          repoToken: ${{ secrets.GITHUB_TOKEN }}
+          firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_DECISION_COPILOT }}
+          projectId: decision-copilot
+          channelId: app-preview-${{ github.event.pull_request.number }}
         env:
-          FIREBASE_TOKEN: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_DECISION_COPILOT }}
+          FIREBASE_CLI_EXPERIMENTS: webframeworks
