@@ -1,4 +1,4 @@
-name: Deploy to Firebase Hosting on merge
+name: Deploy to Firebase App Hosting on merge
 on:
   push:
     branches:
@@ -16,12 +16,9 @@ jobs:
           node-version: 18
           cache: 'pnpm'
       - run: pnpm install --frozen-lockfile
-      - uses: FirebaseExtended/action-hosting-deploy@v0
+      - run: pnpm build
+      - uses: firebase/firebase-tools@v13
         with:
-          repoToken: ${{ secrets.GITHUB_TOKEN }}
-          firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_DECISION_COPILOT }}
-          channelId: live
-          projectId: decision-copilot
-          firebaseToolsVersion: 13.29.2
+          args: app:deploy --only hosting --project decision-copilot
         env:
-          FIREBASE_CLI_EXPERIMENTS: webframeworks
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_DECISION_COPILOT }}
