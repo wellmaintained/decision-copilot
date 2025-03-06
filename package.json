@@ -17,7 +17,9 @@
     "test:watch": "vitest --watch",
     "test:unit": "vitest run --exclude '**/*.integration.test.ts'",
     "test:unit:watch": "vitest --watch --exclude '**/*.integration.test.ts'",
-    "migrate": "tsx scripts/migrate.ts"
+    "migrate": "tsx scripts/migrate.ts",
+    "firebase:apphosting:deploy:staging": "firebase apphosting:rollouts:create staging --project decision-copilot",
+    "firebase:apphosting:deploy:prod": "firebase apphosting:rollouts:create prod --project decision-copilot"
   },
   "dependencies": {
     "@google-cloud/functions-framework": "^3.4.5",
