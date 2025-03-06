@@ -19,8 +19,11 @@ jobs:
           cache: 'pnpm'
       - run: pnpm install --frozen-lockfile
       - run: pnpm build
+      - name: Setup Firebase
+        run: npm install -g firebase-tools@latest
+        
       - name: Deploy to Firebase App Hosting preview
         run: |
-          npx firebase-tools@latest apphosting:rollouts:create staging --git-branch ${{ github.head_ref }} --project decision-copilot --token "${{ secrets.FIREBASE_TOKEN }}"
+          firebase apphosting:rollouts:create staging --git-branch ${{ github.head_ref }} --project decision-copilot
         env:
-          FIREBASE_CLI_PREVIEWS: apphosting
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
