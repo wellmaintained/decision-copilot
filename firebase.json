@@ -1,18 +1,4 @@
 {
-  "hosting": {
-    "source": ".",
-    "site": "decision-copilot", 
-    "ignore": [
-      "firebase.json",
-      "**/.*",
-      "**/node_modules/**",
-      "lib/infrastructure/firebase/functions/**"
-    ],
-    "frameworksBackend": {
-      "region": "europe-west1"
-    },
-    "cleanUrls": true
-  },
   "functions": [
     {
       "source": "lib/infrastructure/firebase/functions",
