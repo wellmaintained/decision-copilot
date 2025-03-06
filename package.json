@@ -67,7 +67,7 @@
     "commander": "^12.1.0",
     "concurrently": "^8.2.2",
     "dotenv": "^16.4.7",
-    "esbuild": "^0.19.12",
+    "esbuild": "^0.25.0",
     "eslint": "^9.21.0",
     "eslint-config-next": "15.1.5",
     "firebase-tools": "^13.31.2",
