@@ -23,6 +23,6 @@ jobs:
         run: |
           echo '${{ secrets.FIREBASE_SERVICE_ACCOUNT_DECISION_COPILOT }}' > /tmp/service-account.json
           export GOOGLE_APPLICATION_CREDENTIALS=/tmp/service-account.json
-          npx firebase-tools@latest deploy --only apphosting --env staging --project decision-copilot --preview-channel pr-${{ github.event.pull_request.number }}
+          npx firebase-tools@latest apphosting:rollouts:create staging --git-branch ${{ github.head_ref }} --project decision-copilot
         env:
           FIREBASE_CLI_PREVIEWS: apphosting
