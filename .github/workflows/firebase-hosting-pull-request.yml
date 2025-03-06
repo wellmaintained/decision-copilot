@@ -21,8 +21,6 @@ jobs:
       - run: pnpm build
       - name: Deploy to Firebase App Hosting preview
         run: |
-          echo '${{ secrets.FIREBASE_SERVICE_ACCOUNT_DECISION_COPILOT }}' > /tmp/service-account.json
-          export GOOGLE_APPLICATION_CREDENTIALS=/tmp/service-account.json
-          npx firebase-tools@latest apphosting:rollouts:create staging --git-branch ${{ github.head_ref }} --project decision-copilot
+          npx firebase-tools@latest apphosting:rollouts:create staging --git-branch ${{ github.head_ref }} --project decision-copilot --token "${{ secrets.FIREBASE_TOKEN }}"
         env:
           FIREBASE_CLI_PREVIEWS: apphosting
