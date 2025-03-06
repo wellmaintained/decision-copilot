@@ -1,4 +1,4 @@
-name: Deploy to Firebase App Hosting on PR
+name: Deploy to Firebase App Hosting on PR (Preview)
 on: pull_request
 permissions:
   checks: write
