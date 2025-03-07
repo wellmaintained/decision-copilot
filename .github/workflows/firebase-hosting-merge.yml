@@ -56,7 +56,7 @@ jobs:
         
       - name: Deploy to Firebase App Hosting production
         run: |
-          firebase apphosting:rollouts:create prod --git-branch main --project decision-copilot
+          pnpm firebase:apphosting:deploy:prod --git-branch main
 
       # - name: If failure; launch tmate session to debug
       #   if: ${{ failure() }}
