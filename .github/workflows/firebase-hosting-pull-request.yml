@@ -28,6 +28,36 @@ jobs:
           credentials_json: '${{ secrets.FIREBASE_SERVICE_ACCOUNT_DECISION_COPILOT }}'
       - name: Setup tmate session
         uses: mxschmitt/action-tmate@v3
+      - name: Patch firebase-tools/lib/commands/apphosting-rollouts-create.js to autoAuth for App Hosting
+        run: |
+          # Create patch file
+          cat > firebase-tools.patch << 'EOF'
+          --- node_modules/firebase-tools/lib/commands/apphosting-rollouts-create.js
+          +++ node_modules/firebase-tools/lib/commands/apphosting-rollouts-create.new.js
+          @@ -5,12 +5,14 @@
+           const apphosting = require("../gcp/apphosting");
+           const command_1 = require("../command");
+           const projectUtils_1 = require("../projectUtils");
+          +const requireAuth_1 = require("../requireAuth");
+           const error_1 = require("../error");
+           const rollout_1 = require("../apphosting/rollout");
+           exports.command = new command_1.Command("apphosting:rollouts:create <backendId>")
+               .description("create a rollout using a build for an App Hosting backend")
+               .option("-l, --location <location>", "specify the region of the backend", "-")
+               .option("-b, --git-branch <gitBranch>", "repository branch to deploy (mutually exclusive with -g)")
+               .option("-g, --git-commit <gitCommit>", "git commit to deploy (mutually exclusive with -b)")
+               .withForce("Skip confirmation before creating rollout")
+          +    .before(requireAuth_1.requireAuth)
+               .before(apphosting.ensureApiEnabled)
+               .action(async (backendId, options) => {
+          EOF
+
+          # Apply the patch
+          patch node_modules/firebase-tools/lib/commands/apphosting-rollouts-create.js < firebase-tools.patch
+
+          # Verify patch was applied successfully
+          grep -q "requireAuth_1" node_modules/firebase-tools/lib/commands/apphosting-rollouts-create.js && echo "Patch applied successfully!" || echo "Patch failed!"
+
       - name: Deploy to Firebase App Hosting preview
         run: |
           pnpm firebase:apphosting:deploy:staging --git-branch ${{ github.head_ref }}
