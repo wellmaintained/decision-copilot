@@ -1,4 +1,4 @@
-name: Deploy to Firebase App Hosting on merge
+name: "Deploy to decision-copilot.wellmaintained.org App Hosting on merge"
 on:
   push:
     branches:
@@ -13,15 +13,51 @@ jobs:
           version: 9
       - uses: actions/setup-node@v4
         with:
-          node-version: 18
-          cache: 'pnpm'
-      - run: pnpm install --frozen-lockfile
-      - run: pnpm build
-      - name: Setup Firebase
-        run: npm install -g firebase-tools@latest
+          node-version: 20
+          cache: pnpm
+      - name: Install dependencies using pnpm
+        run: pnpm install --frozen-lockfile
+      - name: Build and run unit tests
+        run: pnpm build && pnpm test:unit
+      - name: "Authenticate to GCP Project: decision-copilot"
+        uses: google-github-actions/auth@v2
+        with:
+          project_id: decision-copilot
+          credentials_json: '${{ secrets.FIREBASE_SERVICE_ACCOUNT_DECISION_COPILOT }}'
+      - name: Patch firebase-tools/lib/commands/apphosting-rollouts-create.js to autoAuth for App Hosting
+        run: |
+          # Create patch file
+          cat > firebase-tools.patch << 'EOF'
+          --- node_modules/firebase-tools/lib/commands/apphosting-rollouts-create.js
+          +++ node_modules/firebase-tools/lib/commands/apphosting-rollouts-create.new.js
+          @@ -5,12 +5,14 @@
+           const apphosting = require("../gcp/apphosting");
+           const command_1 = require("../command");
+           const projectUtils_1 = require("../projectUtils");
+          +const requireAuth_1 = require("../requireAuth");
+           const error_1 = require("../error");
+           const rollout_1 = require("../apphosting/rollout");
+           exports.command = new command_1.Command("apphosting:rollouts:create <backendId>")
+               .description("create a rollout using a build for an App Hosting backend")
+               .option("-l, --location <location>", "specify the region of the backend", "-")
+               .option("-b, --git-branch <gitBranch>", "repository branch to deploy (mutually exclusive with -g)")
+               .option("-g, --git-commit <gitCommit>", "git commit to deploy (mutually exclusive with -b)")
+               .withForce("Skip confirmation before creating rollout")
+          +    .before(requireAuth_1.requireAuth)
+               .before(apphosting.ensureApiEnabled)
+               .action(async (backendId, options) => {
+          EOF
+
+          # Apply the patch
+          patch node_modules/firebase-tools/lib/commands/apphosting-rollouts-create.js < firebase-tools.patch
+
+          # Verify patch was applied successfully
+          grep -q "requireAuth_1" node_modules/firebase-tools/lib/commands/apphosting-rollouts-create.js && echo "Patch applied successfully!" || echo "Patch failed!"
         
       - name: Deploy to Firebase App Hosting production
         run: |
           firebase apphosting:rollouts:create prod --git-branch main --project decision-copilot
-        env:
-          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
+
+      - name: If failure; launch tmate session to debug
+        if: ${{ failure() }}
+        uses: mxschmitt/action-tmate@v3
