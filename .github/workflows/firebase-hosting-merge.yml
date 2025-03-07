@@ -58,6 +58,6 @@ jobs:
         run: |
           firebase apphosting:rollouts:create prod --git-branch main --project decision-copilot
 
-      - name: If failure; launch tmate session to debug
-        if: ${{ failure() }}
-        uses: mxschmitt/action-tmate@v3
+      # - name: If failure; launch tmate session to debug
+      #   if: ${{ failure() }}
+      #   uses: mxschmitt/action-tmate@v3

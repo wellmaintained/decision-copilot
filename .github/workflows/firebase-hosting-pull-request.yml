@@ -60,6 +60,6 @@ jobs:
         run: |
           pnpm firebase:apphosting:deploy:staging --git-branch ${{ github.head_ref }}
 
-      - name: If failure; launch tmate session to debug
-        if: ${{ failure() }}
-        uses: mxschmitt/action-tmate@v3
+      # - name: If failure; launch tmate session to debug
+      #   if: ${{ failure() }}
+      #   uses: mxschmitt/action-tmate@v3
