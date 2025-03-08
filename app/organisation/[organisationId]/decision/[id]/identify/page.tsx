@@ -423,7 +423,7 @@ export default function DecisionIdentityPage() {
 
   // Group stakeholders by team
   const stakeholdersByTeam = useMemo(() => {
-    if (!currentOrg) return {};
+    if (!stakeholders.length || !currentOrg) return {};
     return currentOrg.teams.reduce(
       (acc, team) => {
         const teamStakeholderIds = stakeholderTeams
@@ -455,23 +455,11 @@ export default function DecisionIdentityPage() {
     ).sort((a, b) => a.displayName.localeCompare(b.displayName));
   }, [stakeholdersByTeam]);
 
-  if (
-    decisionsLoading ||
-    stakeholdersLoading ||
-    stakeholderTeamsLoading ||
-    organisationsLoading
-  ) {
-    return <div>Loading...</div>;
-  }
-
   if (decisionsError) {
     return <div>Error: {decisionsError?.message}</div>;
   }
 
-  if (!decision || !currentOrg) {
-    return <div>Decision or organisation not found</div>;
-  }
-
+  // Render the page, with placeholders for sections that require specific data
   return (
     <>
       <div className="space-y-3">
@@ -494,11 +482,15 @@ export default function DecisionIdentityPage() {
               Driver
             </Label>
             <div className="flex-1">
-              <DriverSelector
-                driverStakeholderId={decision.driverStakeholderId}
-                stakeholders={uniqueOrgStakeholders}
-                updateDriverStakeholder={handleDriverChange}
-              />
+              {decisionsLoading || stakeholdersLoading ? (
+                <div className="h-10 bg-muted rounded-md animate-pulse" />
+              ) : (
+                <DriverSelector
+                  driverStakeholderId={decision?.driverStakeholderId}
+                  stakeholders={uniqueOrgStakeholders}
+                  updateDriverStakeholder={handleDriverChange}
+                />
+              )}
             </div>
           </div>
 
@@ -509,29 +501,41 @@ export default function DecisionIdentityPage() {
             >
               Title
             </Label>
-            <Input
-              id="title"
-              placeholder="What decision needs to be made?"
-              defaultValue={decision.title}
-              onBlur={(e) => updateDecisionTitle(e.target.value)}
-              className="flex-1"
-            />
+            {decisionsLoading ? (
+              <div className="flex-1 h-10 bg-muted rounded-md animate-pulse" />
+            ) : (
+              <Input
+                id="title"
+                placeholder="What decision needs to be made?"
+                defaultValue={decision?.title}
+                onBlur={(e) => updateDecisionTitle(e.target.value)}
+                className="flex-1"
+              />
+            )}
           </div>
 
           <div className="space-y-6">
-            <DecisionRelationshipsList
-              relationshipType="supersedes"
-              fromDecision={decision}
-              title="Supersedes Decision(s)"
-            />
+            {decisionsLoading ? (
+              <div className="h-20 bg-muted rounded-md animate-pulse" />
+            ) : decision ? (
+              <DecisionRelationshipsList
+                relationshipType="supersedes"
+                fromDecision={decision}
+                title="Supersedes Decision(s)"
+              />
+            ) : null}
           </div>
 
           <div className="space-y-3">
             <Label className="text-base text-muted-foreground">Details</Label>
-            <RichTextEditor
-              defaultValue={decision.description}
-              onBlur={handleDescriptionChange}
-            />
+            {decisionsLoading ? (
+              <div className="h-48 bg-muted rounded-md animate-pulse" />
+            ) : (
+              <RichTextEditor
+                defaultValue={decision?.description}
+                onBlur={handleDescriptionChange}
+              />
+            )}
           </div>
 
           <div className="space-y-3">
@@ -542,10 +546,14 @@ export default function DecisionIdentityPage() {
                 implement?
               </span>
             </div>
-            <CostRadioGroup
-              defaultValue={decision.cost}
-              onValueChange={handleCostChange}
-            />
+            {decisionsLoading ? (
+              <div className="h-8 bg-muted rounded-md animate-pulse" />
+            ) : (
+              <CostRadioGroup
+                defaultValue={decision?.cost}
+                onValueChange={handleCostChange}
+              />
+            )}
           </div>
 
           <div className="space-y-3">
@@ -557,10 +565,14 @@ export default function DecisionIdentityPage() {
                 - like choosing a
               </span>
             </div>
-            <ReversibilityRadioGroup
-              defaultValue={decision.reversibility}
-              onValueChange={handleReversibilityChange}
-            />
+            {decisionsLoading ? (
+              <div className="h-8 bg-muted rounded-md animate-pulse" />
+            ) : (
+              <ReversibilityRadioGroup
+                defaultValue={decision?.reversibility}
+                onValueChange={handleReversibilityChange}
+              />
+            )}
           </div>
 
           <div className="space-y-5">
@@ -572,36 +584,44 @@ export default function DecisionIdentityPage() {
                 - who has an interest in - or is impacted by - this decision?
               </span>
             </div>
-            <div className="space-y-4">
-              {Object.entries(stakeholdersByTeam)
-                .sort(([id1], [id2]) => {
-                  // Put the current team first
-                  if (
-                    decision &&
-                    decision.teamIds &&
-                    decision.teamIds.length > 0
-                  ) {
-                    const firstTeamId = decision.teamIds[0];
-                    if (id1 === firstTeamId) return -1;
-                    if (id2 === firstTeamId) return 1;
-                  }
-                  return 0;
-                })
-                .map(([teamId, { name, stakeholders }]) => {
-                  const isExpanded = expandedTeams.includes(teamId);
-                  return (
-                    <StakeholderGroup
-                      key={teamId}
-                      teamName={name}
-                      stakeholders={stakeholders}
-                      isExpanded={isExpanded}
-                      onToggle={() => toggleTeam(teamId)}
-                      selectedStakeholderIds={decision.decisionStakeholderIds}
-                      onStakeholderChange={handleStakeholderChange}
-                    />
-                  );
-                })}
-            </div>
+            {stakeholdersLoading || stakeholderTeamsLoading || organisationsLoading || !currentOrg ? (
+              <div className="space-y-4">
+                {[1, 2, 3].map((i) => (
+                  <div key={i} className="h-16 bg-muted rounded-lg animate-pulse" />
+                ))}
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {Object.entries(stakeholdersByTeam)
+                  .sort(([id1], [id2]) => {
+                    // Put the current team first
+                    if (
+                      decision &&
+                      decision.teamIds &&
+                      decision.teamIds.length > 0
+                    ) {
+                      const firstTeamId = decision.teamIds[0];
+                      if (id1 === firstTeamId) return -1;
+                      if (id2 === firstTeamId) return 1;
+                    }
+                    return 0;
+                  })
+                  .map(([teamId, { name, stakeholders }]) => {
+                    const isExpanded = expandedTeams.includes(teamId);
+                    return (
+                      <StakeholderGroup
+                        key={teamId}
+                        teamName={name}
+                        stakeholders={stakeholders}
+                        isExpanded={isExpanded}
+                        onToggle={() => toggleTeam(teamId)}
+                        selectedStakeholderIds={decision?.decisionStakeholderIds || []}
+                        onStakeholderChange={handleStakeholderChange}
+                      />
+                    );
+                  })}
+              </div>
+            )}
           </div>
         </div>
       </Card>
