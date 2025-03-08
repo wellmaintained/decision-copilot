@@ -20,7 +20,6 @@ env:
       - BUILD
       - RUNTIME
 
-
   # Specify which Firestore database to use
   - variable: FIREBASE_FIRESTORE_DATABASE_ID
     value: decision-copilot-prod
@@ -28,11 +27,10 @@ env:
       - BUILD
       - RUNTIME
 
-  # Enable React Profiler
-  - variable: NEXT_PUBLIC_ENABLE_PROFILER
-    value: "true"
+  # Override the default `pnpm build` command run during the build process
+  - variable: GOOGLE_NODE_RUN_SCRIPTS
+    value: build:profile
     availability:
       - BUILD
-      - RUNTIME
 
   # DO NOT set NODE_ENV here - let it default to 'production' for builds
