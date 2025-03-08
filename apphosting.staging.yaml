@@ -21,7 +21,7 @@ env:
       - RUNTIME
 
   # Specify which Firestore database to use
-  - variable: FIREBASE_FIRESTORE_DATABASE_ID
+  - variable: NEXT_PUBLIC_FIREBASE_FIRESTORE_DATABASE_ID
     value: decision-copilot-prod
     availability:
       - BUILD
