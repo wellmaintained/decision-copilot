@@ -24,7 +24,7 @@ function createFirebaseApp() {
 
 const app = createFirebaseApp();
 
-const firestoreDatabaseId = process.env.FIREBASE_FIRESTORE_DATABASE_ID || '(default)';
+const firestoreDatabaseId = process.env.NEXT_PUBLIC_FIREBASE_FIRESTORE_DATABASE_ID || '(default)';
 export const db = (firestoreDatabaseId === '(default)')
     ? getFirestore(app)
     : getFirestore(app, firestoreDatabaseId);
