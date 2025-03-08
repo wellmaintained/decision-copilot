@@ -71,6 +71,153 @@ const StakeholderAvatar = memo(function StakeholderAvatar({
   );
 });
 
+interface CostRadioGroupProps {
+  defaultValue: string | undefined;
+  onValueChange: (value: string) => void;
+}
+
+const CostRadioGroup = memo(function CostRadioGroup({
+  defaultValue,
+  onValueChange
+}: CostRadioGroupProps) {
+  return (
+    <RadioGroup
+      defaultValue={defaultValue}
+      className="flex gap-4"
+      onValueChange={onValueChange}
+    >
+      <div className="flex items-center space-x-2">
+        <RadioGroupItem
+          value="low"
+          id="cost-low"
+          className="h-5 w-5"
+        />
+        <Label htmlFor="cost-low">Low</Label>
+      </div>
+      <div className="flex items-center space-x-2">
+        <RadioGroupItem
+          value="medium"
+          id="cost-medium"
+          className="h-5 w-5"
+        />
+        <Label htmlFor="cost-medium">Medium</Label>
+      </div>
+      <div className="flex items-center space-x-2">
+        <RadioGroupItem
+          value="high"
+          id="cost-high"
+          className="h-5 w-5"
+        />
+        <Label htmlFor="cost-high">High</Label>
+      </div>
+    </RadioGroup>
+  );
+});
+
+interface ReversibilityRadioGroupProps {
+  defaultValue: string | undefined;
+  onValueChange: (value: string) => void;
+}
+
+const ReversibilityRadioGroup = memo(function ReversibilityRadioGroup({
+  defaultValue,
+  onValueChange
+}: ReversibilityRadioGroupProps) {
+  return (
+    <RadioGroup
+      defaultValue={defaultValue}
+      className="flex gap-4"
+      onValueChange={onValueChange}
+    >
+      <div className="flex items-center space-x-2">
+        <RadioGroupItem
+          value="hat"
+          id="rev-hat"
+          className="h-5 w-5"
+        />
+        <Label htmlFor="rev-hat">Hat</Label>
+      </div>
+      <div className="flex items-center space-x-2">
+        <RadioGroupItem
+          value="haircut"
+          id="rev-haircut"
+          className="h-5 w-5"
+        />
+        <Label htmlFor="rev-haircut">Haircut</Label>
+      </div>
+      <div className="flex items-center space-x-2">
+        <RadioGroupItem
+          value="tattoo"
+          id="rev-tattoo"
+          className="h-5 w-5"
+        />
+        <Label htmlFor="rev-tattoo">Tattoo</Label>
+      </div>
+    </RadioGroup>
+  );
+});
+
+interface RichTextEditorProps {
+  defaultValue: string | undefined;
+  onBlur: (value: string) => void;
+}
+
+const RichTextEditor = memo(function RichTextEditor({
+  defaultValue,
+  onBlur
+}: RichTextEditorProps) {
+  return (
+    <div className="border rounded-md">
+      <div className="flex items-center gap-1 p-2 border-b">
+        <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+          <Bold className="h-4 w-4" />
+        </Button>
+        <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+          <Italic className="h-4 w-4" />
+        </Button>
+        <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+          <Heading className="h-4 w-4" />
+        </Button>
+        <div className="w-px h-4 bg-border mx-2" />
+        <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+          <Quote className="h-4 w-4" />
+        </Button>
+        <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+          <List className="h-4 w-4" />
+        </Button>
+        <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+          <ListOrdered className="h-4 w-4" />
+        </Button>
+        <div className="w-px h-4 bg-border mx-2" />
+        <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+          <LinkIcon className="h-4 w-4" />
+        </Button>
+        <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+          <ImageIcon className="h-4 w-4" />
+        </Button>
+        <div className="w-px h-4 bg-border mx-2" />
+        <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+          <Eye className="h-4 w-4" />
+        </Button>
+        <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+          <Book className="h-4 w-4" />
+        </Button>
+        <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+          <Maximize className="h-4 w-4" />
+        </Button>
+        <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+          <HelpCircle className="h-4 w-4" />
+        </Button>
+      </div>
+      <textarea
+        className="w-full p-4 min-h-[200px] bg-background resize-none focus:outline-none"
+        defaultValue={defaultValue}
+        onBlur={(e) => onBlur(e.target.value)}
+      />
+    </div>
+  );
+});
+
 interface StakeholderGroupProps {
   teamName: string;
   stakeholders: Stakeholder[];
@@ -134,6 +281,78 @@ const StakeholderGroup = memo(function StakeholderGroup({
   );
 });
 
+interface DriverSelectorProps {
+  driverStakeholderId: string | undefined;
+  stakeholders: Stakeholder[];
+  updateDriverStakeholder: (id: string) => void;
+}
+
+const DriverSelector = memo(function DriverSelector({
+  driverStakeholderId,
+  stakeholders,
+  updateDriverStakeholder
+}: DriverSelectorProps) {
+  const [driverOpen, setDriverOpen] = useState(false);
+  return (
+    <Popover open={driverOpen} onOpenChange={setDriverOpen}>
+      <PopoverTrigger asChild>
+        <Button
+          variant="outline"
+          role="combobox"
+          aria-expanded={driverOpen}
+          className="justify-between"
+        >
+          {driverStakeholderId ? (
+            (() => {
+              const driverStakeholder = stakeholders.find(
+                (s) => s.id === driverStakeholderId,
+              );
+              return (
+                <>
+                  <div className="flex items-center gap-2">
+                    {driverStakeholder && (
+                      <StakeholderAvatar stakeholder={driverStakeholder} size="sm" />
+                    )}
+                    {driverStakeholder?.displayName}
+                  </div>
+                  <ChevronDown className="h-4 w-4 shrink-0 opacity-50" />
+                </>
+              );
+            })()
+          ) : (
+            <>
+              <span>Select driver...</span>
+              <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+            </>
+          )}
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="w-full p-0">
+        <Command>
+          <CommandInput placeholder="Search stakeholders..." />
+          <CommandEmpty>No stakeholder found.</CommandEmpty>
+          <CommandGroup>
+            {stakeholders.map((stakeholder) => (
+              <CommandItem
+                key={stakeholder.id}
+                onSelect={() => {
+                  updateDriverStakeholder(stakeholder.id);
+                  setDriverOpen(false);
+                }}
+              >
+                <div className="mr-2">
+                  <StakeholderAvatar stakeholder={stakeholder} size="sm" />
+                </div>
+                {stakeholder.displayName}
+              </CommandItem>
+            ))}
+          </CommandGroup>
+        </Command>
+      </PopoverContent>
+    </Popover>
+  );
+});
+
 export default function DecisionIdentityPage() {
   const params = useParams();
   const decisionId = params.id as string;
@@ -159,7 +378,6 @@ export default function DecisionIdentityPage() {
 
   // Default to empty array for expanded teams until decision loads
   const [expandedTeams, setExpandedTeams] = useState<string[]>([]);
-  const [driverOpen, setDriverOpen] = useState(false);
 
   // Update expanded teams when decision loads
   useEffect(() => {
@@ -185,6 +403,23 @@ export default function DecisionIdentityPage() {
         : [...prev, teamId],
     );
   }, []);
+
+  // Add these new callbacks for radio group handlers
+  const handleCostChange = useCallback((value: string) => {
+    updateDecisionCost(value as Cost);
+  }, [updateDecisionCost]);
+
+  const handleReversibilityChange = useCallback((value: string) => {
+    updateDecisionReversibility(value as Reversibility);
+  }, [updateDecisionReversibility]);
+
+  const handleDescriptionChange = useCallback((value: string) => {
+    updateDecisionDescription(value);
+  }, [updateDecisionDescription]);
+
+  const handleDriverChange = useCallback((driverStakeholderId: string) => {
+    updateDecisionDriver(driverStakeholderId);
+  }, [updateDecisionDriver]);
 
   // Group stakeholders by team
   const stakeholdersByTeam = useMemo(() => {
@@ -259,62 +494,11 @@ export default function DecisionIdentityPage() {
               Driver
             </Label>
             <div className="flex-1">
-              <Popover open={driverOpen} onOpenChange={setDriverOpen}>
-                <PopoverTrigger asChild>
-                  <Button
-                    variant="outline"
-                    role="combobox"
-                    aria-expanded={driverOpen}
-                    className="justify-between"
-                  >
-                    {decision.driverStakeholderId ? (
-                      (() => {
-                        const driverStakeholder = uniqueOrgStakeholders.find(
-                          (s) => s.id === decision.driverStakeholderId,
-                        );
-                        return (
-                          <>
-                            <div className="flex items-center gap-2">
-                              {driverStakeholder && (
-                                <StakeholderAvatar stakeholder={driverStakeholder} size="sm" />
-                              )}
-                              {driverStakeholder?.displayName}
-                            </div>
-                            <ChevronDown className="h-4 w-4 shrink-0 opacity-50" />
-                          </>
-                        );
-                      })()
-                    ) : (
-                      <>
-                        <span>Select driver...</span>
-                        <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                      </>
-                    )}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-full p-0">
-                  <Command>
-                    <CommandInput placeholder="Search stakeholders..." />
-                    <CommandEmpty>No stakeholder found.</CommandEmpty>
-                    <CommandGroup>
-                      {uniqueOrgStakeholders.map((stakeholder) => (
-                        <CommandItem
-                          key={stakeholder.id}
-                          onSelect={() => {
-                            updateDecisionDriver(stakeholder.id);
-                            setDriverOpen(false);
-                          }}
-                        >
-                          <div className="mr-2">
-                            <StakeholderAvatar stakeholder={stakeholder} size="sm" />
-                          </div>
-                          {stakeholder.displayName}
-                        </CommandItem>
-                      ))}
-                    </CommandGroup>
-                  </Command>
-                </PopoverContent>
-              </Popover>
+              <DriverSelector
+                driverStakeholderId={decision.driverStakeholderId}
+                stakeholders={uniqueOrgStakeholders}
+                updateDriverStakeholder={handleDriverChange}
+              />
             </div>
           </div>
 
@@ -344,54 +528,10 @@ export default function DecisionIdentityPage() {
 
           <div className="space-y-3">
             <Label className="text-base text-muted-foreground">Details</Label>
-            <div className="border rounded-md">
-              <div className="flex items-center gap-1 p-2 border-b">
-                <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                  <Bold className="h-4 w-4" />
-                </Button>
-                <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                  <Italic className="h-4 w-4" />
-                </Button>
-                <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                  <Heading className="h-4 w-4" />
-                </Button>
-                <div className="w-px h-4 bg-border mx-2" />
-                <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                  <Quote className="h-4 w-4" />
-                </Button>
-                <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                  <List className="h-4 w-4" />
-                </Button>
-                <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                  <ListOrdered className="h-4 w-4" />
-                </Button>
-                <div className="w-px h-4 bg-border mx-2" />
-                <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                  <LinkIcon className="h-4 w-4" />
-                </Button>
-                <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                  <ImageIcon className="h-4 w-4" />
-                </Button>
-                <div className="w-px h-4 bg-border mx-2" />
-                <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                  <Eye className="h-4 w-4" />
-                </Button>
-                <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                  <Book className="h-4 w-4" />
-                </Button>
-                <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                  <Maximize className="h-4 w-4" />
-                </Button>
-                <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                  <HelpCircle className="h-4 w-4" />
-                </Button>
-              </div>
-              <textarea
-                className="w-full p-4 min-h-[200px] bg-background resize-none focus:outline-none"
-                defaultValue={decision.description}
-                onBlur={(e) => updateDecisionDescription(e.target.value)}
-              />
-            </div>
+            <RichTextEditor
+              defaultValue={decision.description}
+              onBlur={handleDescriptionChange}
+            />
           </div>
 
           <div className="space-y-3">
@@ -402,36 +542,10 @@ export default function DecisionIdentityPage() {
                 implement?
               </span>
             </div>
-            <RadioGroup
+            <CostRadioGroup
               defaultValue={decision.cost}
-              className="flex gap-4"
-              onValueChange={(value) => updateDecisionCost(value as Cost)}
-            >
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem
-                  value="low"
-                  id="cost-low"
-                  className="h-5 w-5"
-                />
-                <Label htmlFor="cost-low">Low</Label>
-              </div>
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem
-                  value="medium"
-                  id="cost-medium"
-                  className="h-5 w-5"
-                />
-                <Label htmlFor="cost-medium">Medium</Label>
-              </div>
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem
-                  value="high"
-                  id="cost-high"
-                  className="h-5 w-5"
-                />
-                <Label htmlFor="cost-high">High</Label>
-              </div>
-            </RadioGroup>
+              onValueChange={handleCostChange}
+            />
           </div>
 
           <div className="space-y-3">
@@ -443,38 +557,10 @@ export default function DecisionIdentityPage() {
                 - like choosing a
               </span>
             </div>
-            <RadioGroup
+            <ReversibilityRadioGroup
               defaultValue={decision.reversibility}
-              className="flex gap-4"
-              onValueChange={(value) =>
-                updateDecisionReversibility(value as Reversibility)
-              }
-            >
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem
-                  value="hat"
-                  id="rev-hat"
-                  className="h-5 w-5"
-                />
-                <Label htmlFor="rev-hat">Hat</Label>
-              </div>
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem
-                  value="haircut"
-                  id="rev-haircut"
-                  className="h-5 w-5"
-                />
-                <Label htmlFor="rev-haircut">Haircut</Label>
-              </div>
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem
-                  value="tattoo"
-                  id="rev-tattoo"
-                  className="h-5 w-5"
-                />
-                <Label htmlFor="rev-tattoo">Tattoo</Label>
-              </div>
-            </RadioGroup>
+              onValueChange={handleReversibilityChange}
+            />
           </div>
 
           <div className="space-y-5">
