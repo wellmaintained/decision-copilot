@@ -27,11 +27,4 @@ env:
       - BUILD
       - RUNTIME
 
-  # Disable React Profiler
-  - variable: NEXT_PUBLIC_ENABLE_PROFILER
-    value: "false"
-    availability:
-      - BUILD
-      - RUNTIME
-
   # DO NOT set NODE_ENV here - let it default to 'production' for builds
