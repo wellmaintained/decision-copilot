@@ -13,8 +13,6 @@ const nextConfig: NextConfig = {
       },
     ],
   },
-  // Enable React profiling in production build when NEXT_PUBLIC_ENABLE_PROFILER is true
-  reactProductionProfiling: process.env.NEXT_PUBLIC_ENABLE_PROFILER === 'true',
   async redirects() {
     return [
       {

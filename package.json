@@ -8,7 +8,7 @@
     "dev:emulators:with-data": "firebase emulators:start --import=.data/emulators/firebase-data --only auth,firestore",
     "emulators:export": "firebase emulators:export .data/emulators/firebase-data",
     "check:emulators": "wait-on -l tcp:4400 -t 5000 && echo 'Emulator Hub is available!'",
-    "build": "next build",
+    "build": "node -e \"process.env.NEXT_PUBLIC_ENABLE_PROFILER === 'true' ? console.log('--profile') : console.log('')\" | xargs next build",
     "start": "next start",
     "lint": "next lint",
     "firebase": "firebase",
