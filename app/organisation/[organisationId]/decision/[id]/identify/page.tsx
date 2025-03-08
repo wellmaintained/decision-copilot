@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, memo, useMemo, useCallback } from "react";
 import { Card } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -46,6 +46,31 @@ import {
 } from "@/components/ui/popover";
 import { DecisionRelationshipsList } from "@/components/decision-relationships-list";
 
+interface StakeholderAvatarProps {
+  stakeholder: Stakeholder;
+  size?: "sm" | "default";
+}
+
+const StakeholderAvatar = memo(function StakeholderAvatar({
+  stakeholder,
+  size = "default"
+}: StakeholderAvatarProps) {
+  const sizeClass = size === "sm" ? "h-6 w-6" : "";
+  return (
+    <Avatar className={sizeClass}>
+      <AvatarImage src={stakeholder.photoURL} />
+      <AvatarFallback>
+        {stakeholder.displayName
+          ? stakeholder.displayName
+              .split(" ")
+              .map((n) => n[0])
+              .join("")
+          : "?"}
+      </AvatarFallback>
+    </Avatar>
+  );
+});
+
 interface StakeholderGroupProps {
   teamName: string;
   stakeholders: Stakeholder[];
@@ -55,7 +80,7 @@ interface StakeholderGroupProps {
   onStakeholderChange: (stakeholderId: string, checked: boolean) => void;
 }
 
-function StakeholderGroup({
+const StakeholderGroup = memo(function StakeholderGroup({
   teamName,
   stakeholders,
   isExpanded,
@@ -92,17 +117,7 @@ function StakeholderGroup({
                   }
                 />
                 <div className="flex items-center gap-2">
-                  <Avatar>
-                    <AvatarImage src={stakeholder.photoURL} />
-                    <AvatarFallback>
-                      {stakeholder.displayName
-                        ? stakeholder.displayName
-                            .split(" ")
-                            .map((n) => n[0])
-                            .join("")
-                        : "?"}
-                    </AvatarFallback>
-                  </Avatar>
+                  <StakeholderAvatar stakeholder={stakeholder} />
                   <Label
                     htmlFor={`stakeholder-${stakeholder.id}`}
                     className="text-sm font-normal"
@@ -117,7 +132,7 @@ function StakeholderGroup({
       )}
     </div>
   );
-}
+});
 
 export default function DecisionIdentityPage() {
   const params = useParams();
@@ -155,6 +170,56 @@ export default function DecisionIdentityPage() {
 
   const currentOrg = organisations?.find((org) => org.id === organisationId);
 
+  const handleStakeholderChange = useCallback((stakeholderId: string, checked: boolean) => {
+    if (checked) {
+      addStakeholder(stakeholderId);
+    } else {
+      removeStakeholder(stakeholderId);
+    }
+  }, [addStakeholder, removeStakeholder]);
+
+  const toggleTeam = useCallback((teamId: string) => {
+    setExpandedTeams((prev) =>
+      prev.includes(teamId)
+        ? prev.filter((id) => id !== teamId)
+        : [...prev, teamId],
+    );
+  }, []);
+
+  // Group stakeholders by team
+  const stakeholdersByTeam = useMemo(() => {
+    if (!currentOrg) return {};
+    return currentOrg.teams.reduce(
+      (acc, team) => {
+        const teamStakeholderIds = stakeholderTeams
+          .filter((st) => st.teamId === team.id)
+          .map((st) => st.stakeholderId);
+        const teamStakeholders = stakeholders.filter((s) =>
+          teamStakeholderIds.includes(s.id),
+        );
+        if (teamStakeholders.length > 0) {
+          acc[team.id] = {
+            name: team.name,
+            stakeholders: teamStakeholders,
+          };
+        }
+        return acc;
+      },
+      {} as Record<string, { name: string; stakeholders: typeof stakeholders }>,
+    );
+  }, [currentOrg, stakeholderTeams, stakeholders]);
+
+  // Get unique stakeholders for the organization
+  const uniqueOrgStakeholders = useMemo(() => {
+    return Array.from(
+      new Map(
+        Object.values(stakeholdersByTeam)
+          .flatMap(({ stakeholders }) => stakeholders)
+          .map((stakeholder) => [stakeholder.id, stakeholder]),
+      ).values(),
+    ).sort((a, b) => a.displayName.localeCompare(b.displayName));
+  }, [stakeholdersByTeam]);
+
   if (
     decisionsLoading ||
     stakeholdersLoading ||
@@ -171,54 +236,6 @@ export default function DecisionIdentityPage() {
   if (!decision || !currentOrg) {
     return <div>Decision or organisation not found</div>;
   }
-
-  const handleStakeholderChange = (stakeholderId: string, checked: boolean) => {
-    if (checked) {
-      addStakeholder(stakeholderId);
-    } else {
-      removeStakeholder(stakeholderId);
-    }
-  };
-
-  const toggleTeam = (teamId: string) => {
-    setExpandedTeams((prev) =>
-      prev.includes(teamId)
-        ? prev.filter((id) => id !== teamId)
-        : [...prev, teamId],
-    );
-  };
-
-  // Group stakeholders by team
-  const stakeholdersByTeam = currentOrg.teams.reduce(
-    (acc, team) => {
-      const teamStakeholderIds = stakeholderTeams
-        .filter((st) => st.teamId === team.id)
-        .map((st) => st.stakeholderId);
-
-      const teamStakeholders = stakeholders.filter((s) =>
-        teamStakeholderIds.includes(s.id),
-      );
-
-      if (teamStakeholders.length > 0) {
-        acc[team.id] = {
-          name: team.name,
-          stakeholders: teamStakeholders,
-        };
-      }
-
-      return acc;
-    },
-    {} as Record<string, { name: string; stakeholders: typeof stakeholders }>,
-  );
-
-  // Get unique stakeholders for the organization
-  const uniqueOrgStakeholders = Array.from(
-    new Map(
-      Object.values(stakeholdersByTeam)
-        .flatMap(({ stakeholders }) => stakeholders)
-        .map((stakeholder) => [stakeholder.id, stakeholder]),
-    ).values(),
-  ).sort((a, b) => a.displayName.localeCompare(b.displayName));
 
   return (
     <>
@@ -258,17 +275,9 @@ export default function DecisionIdentityPage() {
                         return (
                           <>
                             <div className="flex items-center gap-2">
-                              <Avatar className="h-6 w-6">
-                                <AvatarImage
-                                  src={driverStakeholder?.photoURL}
-                                />
-                                <AvatarFallback>
-                                  {driverStakeholder?.displayName
-                                    ?.split(" ")
-                                    .map((n) => n[0])
-                                    .join("") || "?"}
-                                </AvatarFallback>
-                              </Avatar>
+                              {driverStakeholder && (
+                                <StakeholderAvatar stakeholder={driverStakeholder} size="sm" />
+                              )}
                               {driverStakeholder?.displayName}
                             </div>
                             <ChevronDown className="h-4 w-4 shrink-0 opacity-50" />
@@ -296,17 +305,9 @@ export default function DecisionIdentityPage() {
                             setDriverOpen(false);
                           }}
                         >
-                          <Avatar className="h-6 w-6 mr-2">
-                            <AvatarImage src={stakeholder.photoURL} />
-                            <AvatarFallback>
-                              {stakeholder.displayName
-                                ? stakeholder.displayName
-                                    .split(" ")
-                                    .map((n) => n[0])
-                                    .join("")
-                                : "?"}
-                            </AvatarFallback>
-                          </Avatar>
+                          <div className="mr-2">
+                            <StakeholderAvatar stakeholder={stakeholder} size="sm" />
+                          </div>
                           {stakeholder.displayName}
                         </CommandItem>
                       ))}
@@ -500,17 +501,20 @@ export default function DecisionIdentityPage() {
                   }
                   return 0;
                 })
-                .map(([teamId, { name, stakeholders }]) => (
-                  <StakeholderGroup
-                    key={teamId}
-                    teamName={name}
-                    stakeholders={stakeholders}
-                    isExpanded={expandedTeams.includes(teamId)}
-                    onToggle={() => toggleTeam(teamId)}
-                    selectedStakeholderIds={decision.decisionStakeholderIds}
-                    onStakeholderChange={handleStakeholderChange}
-                  />
-                ))}
+                .map(([teamId, { name, stakeholders }]) => {
+                  const isExpanded = expandedTeams.includes(teamId);
+                  return (
+                    <StakeholderGroup
+                      key={teamId}
+                      teamName={name}
+                      stakeholders={stakeholders}
+                      isExpanded={isExpanded}
+                      onToggle={() => toggleTeam(teamId)}
+                      selectedStakeholderIds={decision.decisionStakeholderIds}
+                      onStakeholderChange={handleStakeholderChange}
+                    />
+                  );
+                })}
             </div>
           </div>
         </div>
