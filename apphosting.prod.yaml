@@ -20,3 +20,18 @@ env:
       - BUILD
       - RUNTIME
 
+  # Specify which Firestore database to use
+  - variable: FIREBASE_FIRESTORE_DATABASE_ID
+    value: decision-copilot-prod
+    availability:
+      - BUILD
+      - RUNTIME
+
+  # Disable React Profiler
+  - variable: NEXT_PUBLIC_ENABLE_PROFILER
+    value: "false"
+    availability:
+      - BUILD
+      - RUNTIME
+
+  # DO NOT set NODE_ENV here - let it default to 'production' for builds

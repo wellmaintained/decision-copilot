@@ -1,4 +1,4 @@
-#####################################
+#  ####################################
 # Overrides for staging environment #
 #####################################
 # Settings for Backend (on Cloud Run).
@@ -20,9 +20,19 @@ env:
       - BUILD
       - RUNTIME
 
-  # Add NODE_ENV as development to enable React DevTools/Profiler
-  - variable: NODE_ENV
-    value: development
+
+  # Specify which Firestore database to use
+  - variable: FIREBASE_FIRESTORE_DATABASE_ID
+    value: decision-copilot-prod
     availability:
       - BUILD
       - RUNTIME
+
+  # Enable React Profiler
+  - variable: NEXT_PUBLIC_ENABLE_PROFILER
+    value: "true"
+    availability:
+      - BUILD
+      - RUNTIME
+
+  # DO NOT set NODE_ENV here - let it default to 'production' for builds
