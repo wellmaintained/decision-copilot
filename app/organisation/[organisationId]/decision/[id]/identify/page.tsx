@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, memo, useMemo, useCallback } from "react";
 import { Card } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -29,10 +29,7 @@ import { useDecision } from "@/hooks/useDecisions";
 import { useStakeholders } from "@/hooks/useStakeholders";
 import { useStakeholderTeams } from "@/hooks/useStakeholderTeams";
 import { useOrganisations } from "@/hooks/useOrganisations";
-import {
-  Cost,
-  Reversibility,
-} from "@/lib/domain/Decision";
+import { Cost, Reversibility } from "@/lib/domain/Decision";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Stakeholder } from "@/lib/domain/Stakeholder";
 import {
@@ -47,7 +44,179 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { DecisionRelationshipsList } from '@/components/decision-relationships-list'
+import { DecisionRelationshipsList } from "@/components/decision-relationships-list";
+
+interface StakeholderAvatarProps {
+  stakeholder: Stakeholder;
+  size?: "sm" | "default";
+}
+
+const StakeholderAvatar = memo(function StakeholderAvatar({
+  stakeholder,
+  size = "default"
+}: StakeholderAvatarProps) {
+  const sizeClass = size === "sm" ? "h-6 w-6" : "";
+  return (
+    <Avatar className={sizeClass}>
+      <AvatarImage src={stakeholder.photoURL} />
+      <AvatarFallback>
+        {stakeholder.displayName
+          ? stakeholder.displayName
+              .split(" ")
+              .map((n) => n[0])
+              .join("")
+          : "?"}
+      </AvatarFallback>
+    </Avatar>
+  );
+});
+
+interface CostRadioGroupProps {
+  defaultValue: string | undefined;
+  onValueChange: (value: string) => void;
+}
+
+const CostRadioGroup = memo(function CostRadioGroup({
+  defaultValue,
+  onValueChange
+}: CostRadioGroupProps) {
+  return (
+    <RadioGroup
+      defaultValue={defaultValue}
+      className="flex gap-4"
+      onValueChange={onValueChange}
+    >
+      <div className="flex items-center space-x-2">
+        <RadioGroupItem
+          value="low"
+          id="cost-low"
+          className="h-5 w-5"
+        />
+        <Label htmlFor="cost-low">Low</Label>
+      </div>
+      <div className="flex items-center space-x-2">
+        <RadioGroupItem
+          value="medium"
+          id="cost-medium"
+          className="h-5 w-5"
+        />
+        <Label htmlFor="cost-medium">Medium</Label>
+      </div>
+      <div className="flex items-center space-x-2">
+        <RadioGroupItem
+          value="high"
+          id="cost-high"
+          className="h-5 w-5"
+        />
+        <Label htmlFor="cost-high">High</Label>
+      </div>
+    </RadioGroup>
+  );
+});
+
+interface ReversibilityRadioGroupProps {
+  defaultValue: string | undefined;
+  onValueChange: (value: string) => void;
+}
+
+const ReversibilityRadioGroup = memo(function ReversibilityRadioGroup({
+  defaultValue,
+  onValueChange
+}: ReversibilityRadioGroupProps) {
+  return (
+    <RadioGroup
+      defaultValue={defaultValue}
+      className="flex gap-4"
+      onValueChange={onValueChange}
+    >
+      <div className="flex items-center space-x-2">
+        <RadioGroupItem
+          value="hat"
+          id="rev-hat"
+          className="h-5 w-5"
+        />
+        <Label htmlFor="rev-hat">Hat</Label>
+      </div>
+      <div className="flex items-center space-x-2">
+        <RadioGroupItem
+          value="haircut"
+          id="rev-haircut"
+          className="h-5 w-5"
+        />
+        <Label htmlFor="rev-haircut">Haircut</Label>
+      </div>
+      <div className="flex items-center space-x-2">
+        <RadioGroupItem
+          value="tattoo"
+          id="rev-tattoo"
+          className="h-5 w-5"
+        />
+        <Label htmlFor="rev-tattoo">Tattoo</Label>
+      </div>
+    </RadioGroup>
+  );
+});
+
+interface RichTextEditorProps {
+  defaultValue: string | undefined;
+  onBlur: (value: string) => void;
+}
+
+const RichTextEditor = memo(function RichTextEditor({
+  defaultValue,
+  onBlur
+}: RichTextEditorProps) {
+  return (
+    <div className="border rounded-md">
+      <div className="flex items-center gap-1 p-2 border-b">
+        <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+          <Bold className="h-4 w-4" />
+        </Button>
+        <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+          <Italic className="h-4 w-4" />
+        </Button>
+        <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+          <Heading className="h-4 w-4" />
+        </Button>
+        <div className="w-px h-4 bg-border mx-2" />
+        <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+          <Quote className="h-4 w-4" />
+        </Button>
+        <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+          <List className="h-4 w-4" />
+        </Button>
+        <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+          <ListOrdered className="h-4 w-4" />
+        </Button>
+        <div className="w-px h-4 bg-border mx-2" />
+        <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+          <LinkIcon className="h-4 w-4" />
+        </Button>
+        <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+          <ImageIcon className="h-4 w-4" />
+        </Button>
+        <div className="w-px h-4 bg-border mx-2" />
+        <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+          <Eye className="h-4 w-4" />
+        </Button>
+        <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+          <Book className="h-4 w-4" />
+        </Button>
+        <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+          <Maximize className="h-4 w-4" />
+        </Button>
+        <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+          <HelpCircle className="h-4 w-4" />
+        </Button>
+      </div>
+      <textarea
+        className="w-full p-4 min-h-[200px] bg-background resize-none focus:outline-none"
+        defaultValue={defaultValue}
+        onBlur={(e) => onBlur(e.target.value)}
+      />
+    </div>
+  );
+});
 
 interface StakeholderGroupProps {
   teamName: string;
@@ -58,7 +227,7 @@ interface StakeholderGroupProps {
   onStakeholderChange: (stakeholderId: string, checked: boolean) => void;
 }
 
-function StakeholderGroup({
+const StakeholderGroup = memo(function StakeholderGroup({
   teamName,
   stakeholders,
   isExpanded,
@@ -95,17 +264,7 @@ function StakeholderGroup({
                   }
                 />
                 <div className="flex items-center gap-2">
-                  <Avatar>
-                    <AvatarImage src={stakeholder.photoURL} />
-                    <AvatarFallback>
-                      {stakeholder.displayName
-                        ? stakeholder.displayName
-                            .split(" ")
-                            .map((n) => n[0])
-                            .join("")
-                        : "?"}
-                    </AvatarFallback>
-                  </Avatar>
+                  <StakeholderAvatar stakeholder={stakeholder} />
                   <Label
                     htmlFor={`stakeholder-${stakeholder.id}`}
                     className="text-sm font-normal"
@@ -120,7 +279,79 @@ function StakeholderGroup({
       )}
     </div>
   );
+});
+
+interface DriverSelectorProps {
+  driverStakeholderId: string | undefined;
+  stakeholders: Stakeholder[];
+  updateDriverStakeholder: (id: string) => void;
 }
+
+const DriverSelector = memo(function DriverSelector({
+  driverStakeholderId,
+  stakeholders,
+  updateDriverStakeholder
+}: DriverSelectorProps) {
+  const [driverOpen, setDriverOpen] = useState(false);
+  return (
+    <Popover open={driverOpen} onOpenChange={setDriverOpen}>
+      <PopoverTrigger asChild>
+        <Button
+          variant="outline"
+          role="combobox"
+          aria-expanded={driverOpen}
+          className="justify-between"
+        >
+          {driverStakeholderId ? (
+            (() => {
+              const driverStakeholder = stakeholders.find(
+                (s) => s.id === driverStakeholderId,
+              );
+              return (
+                <>
+                  <div className="flex items-center gap-2">
+                    {driverStakeholder && (
+                      <StakeholderAvatar stakeholder={driverStakeholder} size="sm" />
+                    )}
+                    {driverStakeholder?.displayName}
+                  </div>
+                  <ChevronDown className="h-4 w-4 shrink-0 opacity-50" />
+                </>
+              );
+            })()
+          ) : (
+            <>
+              <span>Select driver...</span>
+              <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+            </>
+          )}
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="w-full p-0">
+        <Command>
+          <CommandInput placeholder="Search stakeholders..." />
+          <CommandEmpty>No stakeholder found.</CommandEmpty>
+          <CommandGroup>
+            {stakeholders.map((stakeholder) => (
+              <CommandItem
+                key={stakeholder.id}
+                onSelect={() => {
+                  updateDriverStakeholder(stakeholder.id);
+                  setDriverOpen(false);
+                }}
+              >
+                <div className="mr-2">
+                  <StakeholderAvatar stakeholder={stakeholder} size="sm" />
+                </div>
+                {stakeholder.displayName}
+              </CommandItem>
+            ))}
+          </CommandGroup>
+        </Command>
+      </PopoverContent>
+    </Popover>
+  );
+});
 
 export default function DecisionIdentityPage() {
   const params = useParams();
@@ -140,17 +371,13 @@ export default function DecisionIdentityPage() {
     removeStakeholder,
   } = useDecision(decisionId, organisationId);
 
-  const {
-    stakeholders,
-    loading: stakeholdersLoading,
-  } = useStakeholders();
+  const { stakeholders, loading: stakeholdersLoading } = useStakeholders();
   const { stakeholderTeams, loading: stakeholderTeamsLoading } =
     useStakeholderTeams();
   const { organisations, loading: organisationsLoading } = useOrganisations();
-  
+
   // Default to empty array for expanded teams until decision loads
   const [expandedTeams, setExpandedTeams] = useState<string[]>([]);
-  const [driverOpen, setDriverOpen] = useState(false);
 
   // Update expanded teams when decision loads
   useEffect(() => {
@@ -161,71 +388,78 @@ export default function DecisionIdentityPage() {
 
   const currentOrg = organisations?.find((org) => org.id === organisationId);
 
-  if (
-    decisionsLoading ||
-    stakeholdersLoading ||
-    stakeholderTeamsLoading ||
-    organisationsLoading
-  ) {
-    return <div>Loading...</div>
-  }
-
-  if (decisionsError) {
-    return <div>Error: {(decisionsError)?.message}</div>
-  }
-
-  if (!decision || !currentOrg) {
-    return <div>Decision or organisation not found</div>;
-  }
-
-  const handleStakeholderChange = (stakeholderId: string, checked: boolean) => {
+  const handleStakeholderChange = useCallback((stakeholderId: string, checked: boolean) => {
     if (checked) {
       addStakeholder(stakeholderId);
     } else {
       removeStakeholder(stakeholderId);
     }
-  };
+  }, [addStakeholder, removeStakeholder]);
 
-  const toggleTeam = (teamId: string) => {
+  const toggleTeam = useCallback((teamId: string) => {
     setExpandedTeams((prev) =>
       prev.includes(teamId)
         ? prev.filter((id) => id !== teamId)
         : [...prev, teamId],
     );
-  };
+  }, []);
+
+  // Add these new callbacks for radio group handlers
+  const handleCostChange = useCallback((value: string) => {
+    updateDecisionCost(value as Cost);
+  }, [updateDecisionCost]);
+
+  const handleReversibilityChange = useCallback((value: string) => {
+    updateDecisionReversibility(value as Reversibility);
+  }, [updateDecisionReversibility]);
+
+  const handleDescriptionChange = useCallback((value: string) => {
+    updateDecisionDescription(value);
+  }, [updateDecisionDescription]);
+
+  const handleDriverChange = useCallback((driverStakeholderId: string) => {
+    updateDecisionDriver(driverStakeholderId);
+  }, [updateDecisionDriver]);
 
   // Group stakeholders by team
-  const stakeholdersByTeam = currentOrg.teams.reduce(
-    (acc, team) => {
-      const teamStakeholderIds = stakeholderTeams
-        .filter((st) => st.teamId === team.id)
-        .map((st) => st.stakeholderId);
-
-      const teamStakeholders = stakeholders.filter((s) =>
-        teamStakeholderIds.includes(s.id),
-      );
-
-      if (teamStakeholders.length > 0) {
-        acc[team.id] = {
-          name: team.name,
-          stakeholders: teamStakeholders,
-        };
-      }
-
-      return acc;
-    },
-    {} as Record<string, { name: string; stakeholders: typeof stakeholders }>,
-  );
+  const stakeholdersByTeam = useMemo(() => {
+    if (!stakeholders.length || !currentOrg) return {};
+    return currentOrg.teams.reduce(
+      (acc, team) => {
+        const teamStakeholderIds = stakeholderTeams
+          .filter((st) => st.teamId === team.id)
+          .map((st) => st.stakeholderId);
+        const teamStakeholders = stakeholders.filter((s) =>
+          teamStakeholderIds.includes(s.id),
+        );
+        if (teamStakeholders.length > 0) {
+          acc[team.id] = {
+            name: team.name,
+            stakeholders: teamStakeholders,
+          };
+        }
+        return acc;
+      },
+      {} as Record<string, { name: string; stakeholders: typeof stakeholders }>,
+    );
+  }, [currentOrg, stakeholderTeams, stakeholders]);
 
   // Get unique stakeholders for the organization
-  const uniqueOrgStakeholders = Array.from(
-    new Map(
-      Object.values(stakeholdersByTeam)
-        .flatMap(({ stakeholders }) => stakeholders)
-        .map((stakeholder) => [stakeholder.id, stakeholder]),
-    ).values(),
-  ).sort((a, b) => a.displayName.localeCompare(b.displayName));
+  const uniqueOrgStakeholders = useMemo(() => {
+    return Array.from(
+      new Map(
+        Object.values(stakeholdersByTeam)
+          .flatMap(({ stakeholders }) => stakeholders)
+          .map((stakeholder) => [stakeholder.id, stakeholder]),
+      ).values(),
+    ).sort((a, b) => a.displayName.localeCompare(b.displayName));
+  }, [stakeholdersByTeam]);
 
+  if (decisionsError) {
+    return <div>Error: {decisionsError?.message}</div>;
+  }
+
+  // Render the page, with placeholders for sections that require specific data
   return (
     <>
       <div className="space-y-3">
@@ -233,7 +467,8 @@ export default function DecisionIdentityPage() {
           Identify the Decision
         </h1>
         <p className="text-lg text-muted-foreground">
-          Capture information about the decision being made and who is involved
+          Capture information about the decision being made and who is
+          involved
         </p>
       </div>
 
@@ -247,78 +482,15 @@ export default function DecisionIdentityPage() {
               Driver
             </Label>
             <div className="flex-1">
-              <Popover open={driverOpen} onOpenChange={setDriverOpen}>
-                <PopoverTrigger asChild>
-                  <Button
-                    variant="outline"
-                    role="combobox"
-                    aria-expanded={driverOpen}
-                    className="justify-between"
-                  >
-                    {decision.driverStakeholderId ? (
-                      (() => {
-                        const driverStakeholder = uniqueOrgStakeholders.find(
-                          (s) => s.id === decision.driverStakeholderId,
-                        );
-                        return (
-                          <>
-                            <div className="flex items-center gap-2">
-                              <Avatar className="h-6 w-6">
-                                <AvatarImage
-                                  src={driverStakeholder?.photoURL}
-                                />
-                                <AvatarFallback>
-                                  {driverStakeholder?.displayName
-                                    ?.split(" ")
-                                    .map((n) => n[0])
-                                    .join("") || "?"}
-                                </AvatarFallback>
-                              </Avatar>
-                              {driverStakeholder?.displayName}
-                            </div>
-                            <ChevronDown className="h-4 w-4 shrink-0 opacity-50" />
-                          </>
-                        );
-                      })()
-                    ) : (
-                      <>
-                        <span>Select driver...</span>
-                        <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                      </>
-                    )}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-full p-0">
-                  <Command>
-                    <CommandInput placeholder="Search stakeholders..." />
-                    <CommandEmpty>No stakeholder found.</CommandEmpty>
-                    <CommandGroup>
-                      {uniqueOrgStakeholders.map((stakeholder) => (
-                        <CommandItem
-                          key={stakeholder.id}
-                          onSelect={() => {
-                            updateDecisionDriver(stakeholder.id);
-                            setDriverOpen(false);
-                          }}
-                        >
-                          <Avatar className="h-6 w-6 mr-2">
-                            <AvatarImage src={stakeholder.photoURL} />
-                            <AvatarFallback>
-                              {stakeholder.displayName
-                                ? stakeholder.displayName
-                                    .split(" ")
-                                    .map((n) => n[0])
-                                    .join("")
-                                : "?"}
-                            </AvatarFallback>
-                          </Avatar>
-                          {stakeholder.displayName}
-                        </CommandItem>
-                      ))}
-                    </CommandGroup>
-                  </Command>
-                </PopoverContent>
-              </Popover>
+              {decisionsLoading || stakeholdersLoading ? (
+                <div className="h-10 bg-muted rounded-md animate-pulse" />
+              ) : (
+                <DriverSelector
+                  driverStakeholderId={decision?.driverStakeholderId}
+                  stakeholders={uniqueOrgStakeholders}
+                  updateDriverStakeholder={handleDriverChange}
+                />
+              )}
             </div>
           </div>
 
@@ -329,112 +501,59 @@ export default function DecisionIdentityPage() {
             >
               Title
             </Label>
-            <Input
-              id="title"
-              placeholder="What decision needs to be made?"
-              defaultValue={decision.title}
-              onBlur={(e) => updateDecisionTitle(e.target.value)}
-              className="flex-1"
-            />
+            {decisionsLoading ? (
+              <div className="flex-1 h-10 bg-muted rounded-md animate-pulse" />
+            ) : (
+              <Input
+                id="title"
+                placeholder="What decision needs to be made?"
+                defaultValue={decision?.title}
+                onBlur={(e) => updateDecisionTitle(e.target.value)}
+                className="flex-1"
+              />
+            )}
           </div>
 
           <div className="space-y-6">
-            <DecisionRelationshipsList
-              relationshipType="supersedes"
-              fromDecision={decision}
-              title="Supersedes Decision(s)"
-            />
+            {decisionsLoading ? (
+              <div className="h-20 bg-muted rounded-md animate-pulse" />
+            ) : decision ? (
+              <DecisionRelationshipsList
+                relationshipType="supersedes"
+                fromDecision={decision}
+                title="Supersedes Decision(s)"
+              />
+            ) : null}
           </div>
 
           <div className="space-y-3">
             <Label className="text-base text-muted-foreground">Details</Label>
-            <div className="border rounded-md">
-              <div className="flex items-center gap-1 p-2 border-b">
-                <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                  <Bold className="h-4 w-4" />
-                </Button>
-                <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                  <Italic className="h-4 w-4" />
-                </Button>
-                <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                  <Heading className="h-4 w-4" />
-                </Button>
-                <div className="w-px h-4 bg-border mx-2" />
-                <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                  <Quote className="h-4 w-4" />
-                </Button>
-                <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                  <List className="h-4 w-4" />
-                </Button>
-                <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                  <ListOrdered className="h-4 w-4" />
-                </Button>
-                <div className="w-px h-4 bg-border mx-2" />
-                <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                  <LinkIcon className="h-4 w-4" />
-                </Button>
-                <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                  <ImageIcon className="h-4 w-4" />
-                </Button>
-                <div className="w-px h-4 bg-border mx-2" />
-                <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                  <Eye className="h-4 w-4" />
-                </Button>
-                <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                  <Book className="h-4 w-4" />
-                </Button>
-                <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                  <Maximize className="h-4 w-4" />
-                </Button>
-                <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                  <HelpCircle className="h-4 w-4" />
-                </Button>
-              </div>
-              <textarea
-                className="w-full p-4 min-h-[200px] bg-background resize-none focus:outline-none"
-                defaultValue={decision.description}
-                onBlur={(e) =>
-                  updateDecisionDescription(e.target.value)
-                }
+            {decisionsLoading ? (
+              <div className="h-48 bg-muted rounded-md animate-pulse" />
+            ) : (
+              <RichTextEditor
+                defaultValue={decision?.description}
+                onBlur={handleDescriptionChange}
               />
-            </div>
+            )}
           </div>
 
           <div className="space-y-3">
             <div className="flex items-center gap-2">
               <Label className="text-base text-muted-foreground">Cost</Label>
               <span className="text-sm text-muted-foreground">
-                - how much will it cost (in effort, time or money) to implement?
+                - how much will it cost (in effort, time or money) to
+                implement?
               </span>
             </div>
-            <RadioGroup
-              defaultValue={decision.cost}
-              className="flex gap-4"
-              onValueChange={(value) =>
-                updateDecisionCost(value as Cost)
-              }
-            >
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem value="low" id="cost-low" className="h-5 w-5" />
-                <Label htmlFor="cost-low">Low</Label>
-              </div>
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem
-                  value="medium"
-                  id="cost-medium"
-                  className="h-5 w-5"
-                />
-                <Label htmlFor="cost-medium">Medium</Label>
-              </div>
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem
-                  value="high"
-                  id="cost-high"
-                  className="h-5 w-5"
-                />
-                <Label htmlFor="cost-high">High</Label>
-              </div>
-            </RadioGroup>
+            {decisionsLoading ? (
+              <div className="h-8 bg-muted rounded-md animate-pulse" />
+            ) : (
+              <CostRadioGroup
+                defaultValue={decision?.cost}
+                onValueChange={handleCostChange}
+              />
+            )}
           </div>
 
           <div className="space-y-3">
@@ -446,34 +565,14 @@ export default function DecisionIdentityPage() {
                 - like choosing a
               </span>
             </div>
-            <RadioGroup
-              defaultValue={decision.reversibility}
-              className="flex gap-4"
-              onValueChange={(value) =>
-                updateDecisionReversibility(value as Reversibility)
-              }
-            >
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem value="hat" id="rev-hat" className="h-5 w-5" />
-                <Label htmlFor="rev-hat">Hat</Label>
-              </div>
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem
-                  value="haircut"
-                  id="rev-haircut"
-                  className="h-5 w-5"
-                />
-                <Label htmlFor="rev-haircut">Haircut</Label>
-              </div>
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem
-                  value="tattoo"
-                  id="rev-tattoo"
-                  className="h-5 w-5"
-                />
-                <Label htmlFor="rev-tattoo">Tattoo</Label>
-              </div>
-            </RadioGroup>
+            {decisionsLoading ? (
+              <div className="h-8 bg-muted rounded-md animate-pulse" />
+            ) : (
+              <ReversibilityRadioGroup
+                defaultValue={decision?.reversibility}
+                onValueChange={handleReversibilityChange}
+              />
+            )}
           </div>
 
           <div className="space-y-5">
@@ -485,36 +584,55 @@ export default function DecisionIdentityPage() {
                 - who has an interest in - or is impacted by - this decision?
               </span>
             </div>
-            <div className="space-y-4">
-              {Object.entries(stakeholdersByTeam)
-                .sort(([id1], [id2]) => {
-                  // Put the current team first
-                  if (decision && decision.teamIds && decision.teamIds.length > 0) {
-                    const firstTeamId = decision.teamIds[0];
-                    if (id1 === firstTeamId) return -1;
-                    if (id2 === firstTeamId) return 1;
-                  }
-                  return 0;
-                })
-                .map(([teamId, { name, stakeholders }]) => (
-                  <StakeholderGroup
-                    key={teamId}
-                    teamName={name}
-                    stakeholders={stakeholders}
-                    isExpanded={expandedTeams.includes(teamId)}
-                    onToggle={() => toggleTeam(teamId)}
-                    selectedStakeholderIds={decision.decisionStakeholderIds}
-                    onStakeholderChange={handleStakeholderChange}
-                  />
+            {stakeholdersLoading || stakeholderTeamsLoading || organisationsLoading || !currentOrg ? (
+              <div className="space-y-4">
+                {[1, 2, 3].map((i) => (
+                  <div key={i} className="h-16 bg-muted rounded-lg animate-pulse" />
                 ))}
-            </div>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {Object.entries(stakeholdersByTeam)
+                  .sort(([id1], [id2]) => {
+                    // Put the current team first
+                    if (
+                      decision &&
+                      decision.teamIds &&
+                      decision.teamIds.length > 0
+                    ) {
+                      const firstTeamId = decision.teamIds[0];
+                      if (id1 === firstTeamId) return -1;
+                      if (id2 === firstTeamId) return 1;
+                    }
+                    return 0;
+                  })
+                  .map(([teamId, { name, stakeholders }]) => {
+                    const isExpanded = expandedTeams.includes(teamId);
+                    return (
+                      <StakeholderGroup
+                        key={teamId}
+                        teamName={name}
+                        stakeholders={stakeholders}
+                        isExpanded={isExpanded}
+                        onToggle={() => toggleTeam(teamId)}
+                        selectedStakeholderIds={decision?.decisionStakeholderIds || []}
+                        onStakeholderChange={handleStakeholderChange}
+                      />
+                    );
+                  })}
+              </div>
+            )}
           </div>
         </div>
       </Card>
 
       <div className="flex justify-end pt-4">
         <Button size="lg" asChild>
-          <Link href={`/organisation/${organisationId}/decision/${decisionId}/process`}>Next</Link>
+          <Link
+            href={`/organisation/${organisationId}/decision/${decisionId}/process`}
+          >
+            Next
+          </Link>
         </Button>
       </div>
     </>

@@ -1,4 +1,4 @@
-#####################################
+#  ####################################
 # Overrides for staging environment #
 #####################################
 # Settings for Backend (on Cloud Run).
@@ -19,3 +19,18 @@ env:
     availability:
       - BUILD
       - RUNTIME
+
+  # Specify which Firestore database to use
+  - variable: NEXT_PUBLIC_FIREBASE_FIRESTORE_DATABASE_ID
+    value: decision-copilot-prod
+    availability:
+      - BUILD
+      - RUNTIME
+
+  # Override the default `pnpm build` command run during the build process
+  - variable: GOOGLE_NODE_RUN_SCRIPTS
+    value: build:profile
+    availability:
+      - BUILD
+
+  # DO NOT set NODE_ENV here - let it default to 'production' for builds
