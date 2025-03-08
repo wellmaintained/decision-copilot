@@ -19,3 +19,10 @@ env:
     availability:
       - BUILD
       - RUNTIME
+
+  # Add NODE_ENV as development to enable React DevTools/Profiler
+  - variable: NODE_ENV
+    value: development
+    availability:
+      - BUILD
+      - RUNTIME
