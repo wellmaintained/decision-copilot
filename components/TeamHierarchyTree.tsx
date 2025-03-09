@@ -6,13 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
 import { Label } from '@/components/ui/label'
-
-// Mock Select components until the real ones are available
-const Select = ({ value, onValueChange, children }: { value: string, onValueChange: (value: string) => void, children: React.ReactNode }) => <div>{children}</div>
-const SelectContent = ({ children }: { children: React.ReactNode }) => <div>{children}</div>
-const SelectItem = ({ value, children }: { value: string, children: React.ReactNode }) => <div onClick={() => {}}>{children}</div>
-const SelectTrigger = ({ id, children }: { id: string, children: React.ReactNode }) => <div>{children}</div>
-const SelectValue = ({ placeholder }: { placeholder: string }) => <div>{placeholder}</div>
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 
 interface TeamHierarchyTreeProps {
   organisationId: string
