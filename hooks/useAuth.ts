@@ -6,8 +6,8 @@ import { FirestoreStakeholdersRepository } from '@/lib/infrastructure/firestoreS
 
 // List of admin emails
 const ADMIN_EMAILS = [
-  'admin@example.com',
-  'david@wellmaintained.dev',
+  'mrdavidlaing@gmail.com',
+  'david@mechanical-orchard.com',
   // Add more admin emails as needed
 ];
 
