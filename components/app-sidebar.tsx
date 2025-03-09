@@ -43,8 +43,8 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
   const isCollapsed = state === "collapsed";
 
   // Check if user is admin (either from hook or fallback)
-  const isAdmin = 'isAdmin' in auth 
-    ? auth.isAdmin 
+  const isAdmin = 'isAdmin' in auth
+    ? auth.isAdmin
     : user?.email ? ADMIN_EMAILS.includes(user.email) : false;
 
   // Create user data object from authenticated user
@@ -85,7 +85,7 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
                 </SidebarMenuButton>
               </SidebarMenuItem>
             </SidebarMenu>
-            
+
             {/* Admin section - only visible to admins */}
             {isAdmin && (
               <SidebarMenu>

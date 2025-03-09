@@ -8,23 +8,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useOrganisation } from '@/components/organisation-switcher'
 
-// List of admin emails for fallback if useAuth doesn't provide isAdmin
-const ADMIN_EMAILS = [
-  'admin@example.com',
-  'david@wellmaintained.dev',
-  // Add more admin emails as needed
-];
-
 export default function AdminPage() {
-  const auth = useAuth()
-  const { user, loading: authLoading } = auth
+  const { user, loading: authLoading, isAdmin } = useAuth()
   const { selectedOrganisation } = useOrganisation()
   const [organisationId, setOrganisationId] = useState<string | null>(null)
-
-  // Check if user is admin (either from hook or fallback)
-  const isAdmin = 'isAdmin' in auth 
-    ? auth.isAdmin 
-    : user?.email ? ADMIN_EMAILS.includes(user.email) : false
 
   useEffect(() => {
     if (selectedOrganisation) {
