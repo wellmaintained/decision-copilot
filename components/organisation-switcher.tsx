@@ -46,8 +46,13 @@ export function OrganisationProvider({ children }: { children: React.ReactNode }
 
   const handleOrganisationSelect = React.useCallback((org: Organisation) => {
     setSelectedOrganisation(org)
-    router.push(`/organisation/${org.id}`)
-  }, [router])
+
+    // Don't redirect if we're on the admin page
+    const isAdminPage = pathname?.startsWith('/admin')
+    if (!isAdminPage) {
+      router.push(`/organisation/${org.id}`)
+    }
+  }, [router, pathname])
 
   const value = React.useMemo(() => ({
     selectedOrganisation,
