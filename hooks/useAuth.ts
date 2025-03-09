@@ -4,12 +4,20 @@ import { User, onAuthStateChanged } from 'firebase/auth';
 import { auth } from '../lib/firebase';
 import { FirestoreStakeholdersRepository } from '@/lib/infrastructure/firestoreStakeholdersRepository';
 
+// List of admin emails
+const ADMIN_EMAILS = [
+  'mrdavidlaing@gmail.com',
+  'david@mechanical-orchard.com',
+  // Add more admin emails as needed
+];
+
 /**
  * Single Responsibility: keeps track of the current Firebase Auth user
  */
 export function useAuth() {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
@@ -17,6 +25,12 @@ export function useAuth() {
 
       if (firebaseUser) {
         await stakeholderRepository.updateStakeholderForUser(firebaseUser);
+        
+        // Check if the user is an admin
+        const isUserAdmin = firebaseUser.email ? ADMIN_EMAILS.includes(firebaseUser.email) : false;
+        setIsAdmin(isUserAdmin);
+      } else {
+        setIsAdmin(false);
       }
 
       setUser(firebaseUser);
@@ -26,5 +40,5 @@ export function useAuth() {
     return () => unsubscribe();
   }, []);
 
-  return { user, loading };
+  return { user, loading, isAdmin };
 }

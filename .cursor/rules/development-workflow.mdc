@@ -13,6 +13,7 @@ Before starting work:
    - Create a feature branch from main using a descriptive name
    - Confirm branch creation and status
    - Switch to the feature branch
+3. Do NOT commit any code.  Prompt me when you think its time to commit; along with a proposed commit message.
 
 ### 2. Understanding the requirements
 Before starting work:
@@ -28,17 +29,17 @@ For each feature/change:
       - When possible, start with tests that exercise the user facing API/interface
       - Then move to lower level tests
    - Write specific, focused test cases
-   - Show test file contents before creation
-   - Ensure tests fail appropriately
+   - Run pnpm test:unit to ensure the new tests fail appropriately
+   - If these pass ask me to manually run the integration tests if needed
 
 2. **Minimal Implementation (Green)**
    - Write just enough code to pass tests
    - Include type signatures for all functions
-   - Show implementation file contents before creation
-   - Verify all tests pass
+   - Run pnpm test to verify all tests pass
 
 3. **Refactor**
    - Identify refactoring opportunities
-   - Maintain passing tests
    - Extract functions for reusability
    - Improve naming and documentation
+   - Run pnpm test:unit after each refactor to verify that tests pass
+   - If these pass ask me to manually run the integration tests if needed
