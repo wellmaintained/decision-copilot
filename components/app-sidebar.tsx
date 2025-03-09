@@ -93,10 +93,10 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
                 </SidebarMenu>
                 <SidebarMenu>
                   <SidebarMenuItem>
-                    <SidebarMenuButton tooltip="Team Hierarchy" asChild>
+                    <SidebarMenuButton tooltip="Teams" asChild>
                       <Link href="/admin?tab=team-hierarchy" className={`flex items-center gap-2 px-3 py-2 rounded-md hover:bg-sidebar-accent transition-colors ${isCollapsed ? 'justify-center' : 'w-full'}`}>
                         <Users className="h-4 w-4" />
-                        {!isCollapsed && <span>Team Hierarchy</span>}
+                        {!isCollapsed && <span>Teams</span>}
                       </Link>
                     </SidebarMenuButton>
                   </SidebarMenuItem>

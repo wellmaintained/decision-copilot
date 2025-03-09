@@ -55,7 +55,7 @@ export default function AdminPage() {
       
       <Tabs defaultValue={activeTab} value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="mb-4">
-          <TabsTrigger value="team-hierarchy">Team Hierarchy</TabsTrigger>
+          <TabsTrigger value="team-hierarchy">Teams</TabsTrigger>
           <TabsTrigger value="users">Users</TabsTrigger>
           <TabsTrigger value="settings">Settings</TabsTrigger>
         </TabsList>
@@ -63,7 +63,7 @@ export default function AdminPage() {
         <TabsContent value="team-hierarchy">
           <Card>
             <CardHeader>
-              <CardTitle>Team Hierarchy Management</CardTitle>
+              <CardTitle>Team Management</CardTitle>
               <CardDescription>
                 Manage the team structure for your organization
               </CardDescription>

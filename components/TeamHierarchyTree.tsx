@@ -200,7 +200,7 @@ export function TeamHierarchyTree({ organisationId }: TeamHierarchyTreeProps) {
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center mb-4">
-        <h2 className="text-xl font-bold">Team Hierarchy</h2>
+        <h2 className="text-xl font-bold">Teams</h2>
         <Button onClick={() => setIsAddDialogOpen(true)}>
           <Plus size={16} className="mr-2" />
           Add Team
