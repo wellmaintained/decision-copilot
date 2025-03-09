@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { TeamHierarchyTree } from '@/components/TeamHierarchyTree'
 import { useAuth } from '@/hooks/useAuth'
-import { redirect } from 'next/navigation'
+import { redirect, useSearchParams } from 'next/navigation'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useOrganisation } from '@/components/organisation-switcher'
@@ -12,12 +12,22 @@ export default function AdminPage() {
   const { user, loading: authLoading, isAdmin } = useAuth()
   const { selectedOrganisation } = useOrganisation()
   const [organisationId, setOrganisationId] = useState<string | null>(null)
+  const searchParams = useSearchParams()
+  const tabParam = searchParams.get('tab')
+  const [activeTab, setActiveTab] = useState<string>('team-hierarchy')
 
   useEffect(() => {
     if (selectedOrganisation) {
       setOrganisationId(selectedOrganisation.id)
     }
   }, [selectedOrganisation])
+
+  // Set the active tab based on the URL parameter
+  useEffect(() => {
+    if (tabParam) {
+      setActiveTab(tabParam)
+    }
+  }, [tabParam])
 
   if (authLoading) {
     return <div className="flex items-center justify-center min-h-screen">Loading...</div>
@@ -43,7 +53,7 @@ export default function AdminPage() {
     <div className="container mx-auto py-6">
       <h1 className="text-3xl font-bold mb-6">Admin Dashboard</h1>
       
-      <Tabs defaultValue="team-hierarchy" className="w-full">
+      <Tabs defaultValue={activeTab} value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="mb-4">
           <TabsTrigger value="team-hierarchy">Team Hierarchy</TabsTrigger>
           <TabsTrigger value="users">Users</TabsTrigger>
