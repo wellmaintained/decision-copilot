@@ -26,26 +26,13 @@ import {
 } from "@/components/ui/sidebar"
 import { useAuth } from "@/hooks/useAuth"
 
-// List of admin emails for fallback if useAuth doesn't provide isAdmin
-const ADMIN_EMAILS = [
-  'admin@example.com',
-  'david@wellmaintained.dev',
-  // Add more admin emails as needed
-];
-
 export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
-  const auth = useAuth();
-  const { user } = auth;
+  const { user, isAdmin } = useAuth();
   const { selectedOrganisation } = useOrganisation();
   const params = useParams();
   const organisationId = params.organisationId as string;
   const { state } = useSidebar();
   const isCollapsed = state === "collapsed";
-
-  // Check if user is admin (either from hook or fallback)
-  const isAdmin = 'isAdmin' in auth
-    ? auth.isAdmin
-    : user?.email ? ADMIN_EMAILS.includes(user.email) : false;
 
   // Create user data object from authenticated user
   const userData = user ? {
