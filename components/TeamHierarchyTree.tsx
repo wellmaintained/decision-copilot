@@ -12,6 +12,9 @@ interface TeamHierarchyTreeProps {
   organisationId: string
 }
 
+// Special value to represent "no parent" (root team)
+const ROOT_TEAM_VALUE = "root_team_special_value"
+
 export function TeamHierarchyTree({ organisationId }: TeamHierarchyTreeProps) {
   const { hierarchy, loading, error, addTeam, updateTeam, moveTeam, removeTeam } = useTeamHierarchy(organisationId)
   const [expandedTeams, setExpandedTeams] = useState<string[]>([])
@@ -22,6 +25,11 @@ export function TeamHierarchyTree({ organisationId }: TeamHierarchyTreeProps) {
   const [newTeamParentId, setNewTeamParentId] = useState<string | null>(null)
   const [selectedTeam, setSelectedTeam] = useState<Omit<TeamHierarchyNode, 'children'> | null>(null)
   const [moveToParentId, setMoveToParentId] = useState<string | null>(null)
+
+  // Helper function to convert from UI select value to actual parentId
+  const getParentId = (selectValue: string): string | null => {
+    return selectValue === ROOT_TEAM_VALUE ? null : selectValue
+  }
 
   if (loading) {
     return <div className="flex items-center justify-center p-4">Loading team hierarchy...</div>
@@ -234,14 +242,14 @@ export function TeamHierarchyTree({ organisationId }: TeamHierarchyTreeProps) {
             <div className="space-y-2">
               <Label htmlFor="parent-team">Parent Team (optional)</Label>
               <Select
-                value={newTeamParentId || ''}
-                onValueChange={(value: string) => setNewTeamParentId(value || null)}
+                value={newTeamParentId ? newTeamParentId : ROOT_TEAM_VALUE}
+                onValueChange={(value: string) => setNewTeamParentId(getParentId(value))}
               >
                 <SelectTrigger id="parent-team">
                   <SelectValue placeholder="Select a parent team" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">No Parent (Root Team)</SelectItem>
+                  <SelectItem value={ROOT_TEAM_VALUE}>No Parent (Root Team)</SelectItem>
                   {getAllTeams().map((team) => (
                     <SelectItem key={team.id} value={team.id}>
                       {team.name}
@@ -311,14 +319,14 @@ export function TeamHierarchyTree({ organisationId }: TeamHierarchyTreeProps) {
               <div className="space-y-2">
                 <Label htmlFor="move-parent-team">New Parent Team</Label>
                 <Select
-                  value={moveToParentId || ''}
-                  onValueChange={(value: string) => setMoveToParentId(value || null)}
+                  value={moveToParentId ? moveToParentId : ROOT_TEAM_VALUE}
+                  onValueChange={(value: string) => setMoveToParentId(getParentId(value))}
                 >
                   <SelectTrigger id="move-parent-team">
                     <SelectValue placeholder="Select a new parent team" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">No Parent (Root Team)</SelectItem>
+                    <SelectItem value={ROOT_TEAM_VALUE}>No Parent (Root Team)</SelectItem>
                     {getAllTeams()
                       .filter(team => team.id !== selectedTeam.id)
                       .map((team) => (
