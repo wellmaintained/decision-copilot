@@ -1,7 +1,8 @@
-import { useState, useEffect } from 'react'
-import { doc, onSnapshot, setDoc } from 'firebase/firestore'
+import { useState, useEffect, useMemo } from 'react'
+import { doc, onSnapshot } from 'firebase/firestore'
 import { db } from '@/lib/firebase'
-import { TeamHierarchy, TeamHierarchyNode, TeamHierarchyProps } from '@/lib/domain/TeamHierarchy'
+import { TeamHierarchy, TeamHierarchyNode } from '@/lib/domain/TeamHierarchy'
+import { FirestoreTeamHierarchyRepository } from '@/lib/infrastructure/firestoreTeamHierarchyRepository'
 
 interface UseTeamHierarchyResult {
   hierarchy: TeamHierarchy | null
@@ -23,6 +24,8 @@ export function useTeamHierarchy(organisationId: string): UseTeamHierarchyResult
   const [loading, setLoading] = useState<boolean>(true)
   const [error, setError] = useState<Error | null>(null)
 
+  const repository = useMemo(() => new FirestoreTeamHierarchyRepository(), [])
+
   useEffect(() => {
     if (!organisationId) {
       setLoading(false)
@@ -36,11 +39,17 @@ export function useTeamHierarchy(organisationId: string): UseTeamHierarchyResult
     
     const unsubscribe = onSnapshot(
       hierarchyRef,
-      (snapshot) => {
+      async (snapshot) => {
         try {
           if (snapshot.exists()) {
-            const data = snapshot.data() as TeamHierarchyProps
-            setHierarchy(TeamHierarchy.create(data))
+            // Use the repository to handle the conversion from hierarchical to flat structure
+            const hierarchyFromRepo = await repository.getByOrganisationId(organisationId)
+            if (hierarchyFromRepo) {
+              setHierarchy(hierarchyFromRepo)
+            } else {
+              // Create an empty hierarchy if it doesn't exist
+              setHierarchy(TeamHierarchy.create({ teams: {} }))
+            }
           } else {
             // Create an empty hierarchy if it doesn't exist
             setHierarchy(TeamHierarchy.create({ teams: {} }))
@@ -60,18 +69,7 @@ export function useTeamHierarchy(organisationId: string): UseTeamHierarchyResult
     )
 
     return () => unsubscribe()
-  }, [organisationId])
-
-  const saveHierarchy = async (updatedHierarchy: TeamHierarchy): Promise<void> => {
-    try {
-      const hierarchyRef = doc(db, 'organisations', organisationId, 'teamHierarchies', 'hierarchy')
-      await setDoc(hierarchyRef, { teams: updatedHierarchy.teams })
-    } catch (err) {
-      console.error('Error saving team hierarchy:', err)
-      setError(err instanceof Error ? err : new Error(String(err)))
-      throw err
-    }
-  }
+  }, [organisationId, repository])
 
   const addTeam = async (team: Omit<TeamHierarchyNode, 'children'>): Promise<void> => {
     if (!hierarchy) {
@@ -79,7 +77,7 @@ export function useTeamHierarchy(organisationId: string): UseTeamHierarchyResult
     }
     
     const updatedHierarchy = hierarchy.addTeam(team)
-    await saveHierarchy(updatedHierarchy)
+    await repository.save(organisationId, updatedHierarchy)
   }
 
   const updateTeam = async (team: Omit<TeamHierarchyNode, 'children'>): Promise<void> => {
@@ -88,7 +86,7 @@ export function useTeamHierarchy(organisationId: string): UseTeamHierarchyResult
     }
     
     const updatedHierarchy = hierarchy.updateTeam(team)
-    await saveHierarchy(updatedHierarchy)
+    await repository.save(organisationId, updatedHierarchy)
   }
 
   const moveTeam = async (teamId: string, newParentId: string | null): Promise<void> => {
@@ -97,7 +95,7 @@ export function useTeamHierarchy(organisationId: string): UseTeamHierarchyResult
     }
     
     const updatedHierarchy = hierarchy.moveTeam(teamId, newParentId)
-    await saveHierarchy(updatedHierarchy)
+    await repository.save(organisationId, updatedHierarchy)
   }
 
   const removeTeam = async (teamId: string): Promise<void> => {
@@ -106,7 +104,7 @@ export function useTeamHierarchy(organisationId: string): UseTeamHierarchyResult
     }
     
     const updatedHierarchy = hierarchy.removeTeam(teamId)
-    await saveHierarchy(updatedHierarchy)
+    await repository.save(organisationId, updatedHierarchy)
   }
 
   return {

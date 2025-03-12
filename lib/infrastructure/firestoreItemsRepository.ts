@@ -3,7 +3,7 @@ import { ItemsRepository } from '@/lib/domain/itemsRepository';
 import { Item } from '@/lib/domain/Item';
 import { Name } from '@/lib/domain/Name';
 
-import { db } from '../firebase'; // your Firebase init
+import { db } from '../firebase'; // your Firebase ini
 import {
   collection,
   query,
@@ -55,7 +55,7 @@ export class FirestoreItemsRepository implements ItemsRepository {
   }
 
   async updateItem(id: string, newName: string): Promise<void> {
-    // Validate using Name value object
+    // Validate using Name value objec
     const name = Name.create(newName);
 
     // If no error thrown, proceed to update Firestore
@@ -64,7 +64,7 @@ export class FirestoreItemsRepository implements ItemsRepository {
   }
 
   async createItem(name: string): Promise<void> {
-    // Validate using Name value object
+    // Validate using Name value objec
     const nameObj = Name.create(name);
 
     // If no error thrown, proceed to create in Firestore

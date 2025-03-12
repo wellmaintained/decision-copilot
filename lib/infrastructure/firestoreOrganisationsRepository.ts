@@ -14,7 +14,7 @@ export class FirestoreOrganisationsRepository implements OrganisationsRepository
   }
 
   async create(props: Omit<OrganisationProps, 'id'>): Promise<Organisation> {
-    // Create the main organisation document
+    // Create the main organisation documen
     const orgDoc = await addDoc(collection(db, 'organisations'), {
       name: props.name,
       createdAt: new Date()
@@ -110,7 +110,7 @@ export class FirestoreOrganisationsRepository implements OrganisationsRepository
   async getForStakeholder(stakeholderEmail: string): Promise<Organisation[]> {
     // First lookup the stakeholder by email
     const stakeholder = await this.stakeholdersRepository.getByEmail(stakeholderEmail)
-    
+
     if (!stakeholder) {
       throw new Error('Stakeholder with email <<' + stakeholderEmail + '>> not found')
     }
@@ -121,7 +121,7 @@ export class FirestoreOrganisationsRepository implements OrganisationsRepository
       where('stakeholderId', '==', stakeholder.id)
     )
     const stakeholderTeamsSnap = await getDocs(stakeholderTeamsQuery)
-    
+
     // Get unique organisation IDs
     const organisationIds = new Set(
       stakeholderTeamsSnap.docs.map(doc => doc.data().organisationId)
@@ -176,8 +176,8 @@ export class FirestoreOrganisationsRepository implements OrganisationsRepository
       await deleteDoc(teamDoc.ref)
     }
 
-    // Delete the organisation document
+    // Delete the organisation documen
     const docRef = doc(db, 'organisations', id)
     await deleteDoc(docRef)
   }
-} 
+}

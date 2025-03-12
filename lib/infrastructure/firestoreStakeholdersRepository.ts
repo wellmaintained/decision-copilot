@@ -123,7 +123,7 @@ export class FirestoreStakeholdersRepository implements StakeholdersRepository {
   async getStakeholdersForDecision(decision: Decision): Promise<StakeholderWithRole[]> {
     const stakeholderIds = decision.stakeholders.map(s => s.stakeholder_id);
     const stakeholders = await Promise.all(stakeholderIds.map(id => this.getById(id)));
-    
+
     return stakeholders
       .map((stakeholder, index) => {
         if (!stakeholder) return null;
@@ -166,4 +166,4 @@ export class FirestoreStakeholdersRepository implements StakeholdersRepository {
 
     return unsubscribe;
   }
-} 
+}

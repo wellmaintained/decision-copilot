@@ -30,7 +30,7 @@ export class FirestoreStakeholderTeamsRepository implements StakeholderTeamsRepo
       where('stakeholderId', '==', stakeholderId)
     )
     const querySnapshot = await getDocs(q)
-    return querySnapshot.docs.map(doc => 
+    return querySnapshot.docs.map(doc =>
       StakeholderTeam.create({ id: doc.id, ...doc.data() } as StakeholderTeamProps)
     )
   }
@@ -41,7 +41,7 @@ export class FirestoreStakeholderTeamsRepository implements StakeholderTeamsRepo
       where('teamId', '==', teamId)
     )
     const querySnapshot = await getDocs(q)
-    return querySnapshot.docs.map(doc => 
+    return querySnapshot.docs.map(doc =>
       StakeholderTeam.create({ id: doc.id, ...doc.data() } as StakeholderTeamProps)
     )
   }
@@ -52,7 +52,7 @@ export class FirestoreStakeholderTeamsRepository implements StakeholderTeamsRepo
       where('organisationId', '==', organisationId)
     )
     const querySnapshot = await getDocs(q)
-    return querySnapshot.docs.map(doc => 
+    return querySnapshot.docs.map(doc =>
       StakeholderTeam.create({ id: doc.id, ...doc.data() } as StakeholderTeamProps)
     )
   }
@@ -78,4 +78,4 @@ export class FirestoreStakeholderTeamsRepository implements StakeholderTeamsRepo
   async delete(id: string): Promise<void> {
     await deleteDoc(doc(db, this.collectionName, id))
   }
-} 
+}
