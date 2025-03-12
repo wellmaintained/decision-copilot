@@ -7,6 +7,7 @@ import { redirect, useSearchParams } from 'next/navigation'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useOrganisation } from '@/components/organisation-switcher'
+import { StakeholderTeamManagement } from '@/components/StakeholderTeamManagement'
 
 export default function AdminPage() {
   const { user, loading: authLoading, isAdmin } = useAuth()
@@ -56,6 +57,7 @@ export default function AdminPage() {
       <Tabs defaultValue={activeTab} value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="mb-4">
           <TabsTrigger value="team-hierarchy">Teams</TabsTrigger>
+          <TabsTrigger value="stakeholders">Stakeholders</TabsTrigger>
           <TabsTrigger value="users">Users</TabsTrigger>
           <TabsTrigger value="settings">Settings</TabsTrigger>
         </TabsList>
@@ -70,6 +72,20 @@ export default function AdminPage() {
             </CardHeader>
             <CardContent>
               <TeamHierarchyTree organisationId={organisationId} />
+            </CardContent>
+          </Card>
+        </TabsContent>
+        
+        <TabsContent value="stakeholders">
+          <Card>
+            <CardHeader>
+              <CardTitle>Stakeholder Team Management</CardTitle>
+              <CardDescription>
+                Assign stakeholders to teams in your organization hierarchy
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <StakeholderTeamManagement organisationId={organisationId} />
             </CardContent>
           </Card>
         </TabsContent>
