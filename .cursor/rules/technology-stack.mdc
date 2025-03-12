@@ -16,3 +16,4 @@ alwaysApply: false
 - Data Visualization: Recharts
 - Testing: vitest
 - Dependency Management: pnpm
+  - Always run commands using pnpm rather than npm
