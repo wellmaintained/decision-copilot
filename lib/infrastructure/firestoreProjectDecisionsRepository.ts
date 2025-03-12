@@ -12,7 +12,7 @@ export class FirestoreProjectDecisionsRepository implements ProjectDecisionsRepo
   async create(project: Project): Promise<Project> {
     const path = this.getProjectPath(project.organisationId, project.id)
     const docRef = doc(this.db, path)
-    
+
     await setDoc(docRef, {
       id: project.id,
       name: project.name,
@@ -32,7 +32,7 @@ export class FirestoreProjectDecisionsRepository implements ProjectDecisionsRepo
   async update(project: Project): Promise<Project> {
     const path = this.getProjectPath(project.organisationId, project.id)
     const docRef = doc(this.db, path)
-    
+
     await setDoc(docRef, {
       id: project.id,
       name: project.name,
@@ -40,7 +40,7 @@ export class FirestoreProjectDecisionsRepository implements ProjectDecisionsRepo
       organisationId: project.organisationId,
     }, { merge: true })
 
-    return project
+    return projec
   }
 
   async getById(organisationId: string, projectId: string): Promise<Project | null> {
@@ -55,4 +55,4 @@ export class FirestoreProjectDecisionsRepository implements ProjectDecisionsRepo
     const data = docSnap.data() as ProjectProps
     return Project.create(data)
   }
-} 
+}
