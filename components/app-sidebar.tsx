@@ -5,7 +5,6 @@ import {
   Sparkles,
   ListTodo,
   Users,
-  LayoutDashboard
 } from "lucide-react"
 import { useParams } from 'next/navigation'
 import Link from 'next/link'
@@ -81,16 +80,6 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
             {isAdmin && (
               <SidebarGroup>
                 <SidebarGroupLabel>Admin</SidebarGroupLabel>
-                <SidebarMenu>
-                  <SidebarMenuItem>
-                    <SidebarMenuButton tooltip="Admin Dashboard" asChild>
-                      <Link href="/admin" className={`flex items-center gap-2 px-3 py-2 rounded-md hover:bg-sidebar-accent transition-colors ${isCollapsed ? 'justify-center' : 'w-full'}`}>
-                        <LayoutDashboard className="h-4 w-4" />
-                        {!isCollapsed && <span>Dashboard</span>}
-                      </Link>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                </SidebarMenu>
                 <SidebarMenu>
                   <SidebarMenuItem>
                     <SidebarMenuButton tooltip="Teams" asChild>
