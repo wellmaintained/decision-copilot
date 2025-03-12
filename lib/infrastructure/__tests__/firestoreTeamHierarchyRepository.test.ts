@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import { doc, getDoc, setDoc, DocumentReference, DocumentSnapshot } from 'firebase/firestore'
+import { doc, getDoc, setDoc, DocumentReference } from 'firebase/firestore'
 import { TeamHierarchy } from '@/lib/domain/TeamHierarchy'
 import { FirestoreTeamHierarchyRepository } from '@/lib/infrastructure/firestoreTeamHierarchyRepository'
 

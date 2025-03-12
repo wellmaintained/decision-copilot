@@ -40,7 +40,7 @@ export class FirestoreProjectDecisionsRepository implements ProjectDecisionsRepo
       organisationId: project.organisationId,
     }, { merge: true })
 
-    return projec
+    return project
   }
 
   async getById(organisationId: string, projectId: string): Promise<Project | null> {
