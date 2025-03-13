@@ -21,11 +21,20 @@ import {
 export default function AdminPage() {
   const { user, loading: authLoading, isAdmin } = useAuth()
   const { selectedOrganisation } = useOrganisation()
-  const { organisations, loading: orgsLoading } = useOrganisations()
+  const { organisations, loading: orgsLoading, fetchAllOrganisations } = useOrganisations()
   const [organisationId, setOrganisationId] = useState<string | null>(null)
   const searchParams = useSearchParams()
   const tabParam = searchParams.get('tab')
   const [activeTab, setActiveTab] = useState<string>('team-hierarchy')
+
+  useEffect(() => {
+    // Fetch all organizations for admin view
+    if (isAdmin) {
+      fetchAllOrganisations().catch(error => {
+        console.error('Failed to fetch all organisations:', error)
+      })
+    }
+  }, [isAdmin, fetchAllOrganisations])
 
   useEffect(() => {
     if (selectedOrganisation) {

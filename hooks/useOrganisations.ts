@@ -7,11 +7,28 @@ export function useOrganisations() {
   const [organisations, setOrganisations] = useState<Organisation[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<Error | null>(null)
-  const { user } = useAuth()
+  const { user, isAdmin } = useAuth()
+
   const addOrganisation = async (organisation: OrganisationProps) => {
     const repository = new FirestoreOrganisationsRepository()
     const newOrg = await repository.create(organisation)
     setOrganisations([...organisations, newOrg])
+  }
+
+  const fetchAllOrganisations = async () => {
+    if (!isAdmin) {
+      throw new Error('Only admin users can fetch all organisations')
+    }
+
+    try {
+      const repository = new FirestoreOrganisationsRepository()
+      const allOrgs = await repository.getAll()
+      setOrganisations(allOrgs)
+    } catch (err) {
+      console.error(err)
+      setError(err instanceof Error ? err : new Error('Failed to fetch all organisations'))
+      throw err
+    }
   }
 
   useEffect(() => {
@@ -35,5 +52,5 @@ export function useOrganisations() {
     fetchOrganisation()
   }, [user?.email])
 
-  return { organisations, setOrganisations, addOrganisation, loading, error }
+  return { organisations, setOrganisations, addOrganisation, fetchAllOrganisations, loading, error }
 } 
