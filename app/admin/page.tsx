@@ -7,9 +7,9 @@ import { redirect, useSearchParams } from 'next/navigation'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useOrganisation } from '@/components/organisation-switcher'
-import { StakeholderTeamManagement } from '@/components/StakeholderTeamManagement'
 import { Building2 } from 'lucide-react'
 import { useOrganisations } from '@/hooks/useOrganisations'
+import { StakeholderManagement } from '@/components/StakeholderManagement'
 import {
   Select,
   SelectContent,
@@ -119,13 +119,13 @@ export default function AdminPage() {
           <TabsContent value="stakeholders">
             <Card>
               <CardHeader>
-                <CardTitle>Stakeholder Team Management</CardTitle>
+                <CardTitle>Stakeholder Management</CardTitle>
                 <CardDescription>
-                  Assign stakeholders to teams in your organization hierarchy
+                  Add, edit, and remove stakeholders from your organization
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <StakeholderTeamManagement organisationId={organisationId} />
+                <StakeholderManagement organisationId={organisationId} />
               </CardContent>
             </Card>
           </TabsContent>
