@@ -10,10 +10,15 @@ export async function signInWithGoogle(): Promise<void> {
 // Single Responsibility: this function triggers a Microsoft sign-in flow
 export async function signInWithMicrosoft(): Promise<void> {
   const provider = new OAuthProvider('microsoft.com');
-  // Configure Microsoft provider - you can add scopes as needed
+  // Configure Microsoft provider with necessary scopes
+  provider.addScope('user.read');
+  provider.addScope('openid');
+  provider.addScope('profile');
+  provider.addScope('email');
+  // Set tenant to 'common' to allow both work/school and personal Microsoft accounts
   provider.setCustomParameters({
-    // You can add specific parameters here if needed
-    // For example, prompt: 'consent' to force consent screen
+    tenant: 'common',
+    prompt: 'select_account'
   });
   await signInWithPopup(auth, provider);
 }
