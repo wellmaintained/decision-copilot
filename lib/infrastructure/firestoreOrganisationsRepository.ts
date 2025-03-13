@@ -176,8 +176,23 @@ export class FirestoreOrganisationsRepository implements OrganisationsRepository
       await deleteDoc(teamDoc.ref)
     }
 
-    // Delete the organisation documen
+    // Delete the organisation document
     const docRef = doc(db, 'organisations', id)
     await deleteDoc(docRef)
+  }
+
+  async getAll(): Promise<Organisation[]> {
+    const orgsSnap = await getDocs(collection(db, 'organisations'))
+    const organisations = await Promise.all(
+      orgsSnap.docs.map(async (doc) => {
+        try {
+          return await this.getById(doc.id)
+        } catch (error) {
+          console.error(`Error fetching organisation ${doc.id}:`, error)
+          return null
+        }
+      })
+    )
+    return organisations.filter((org): org is Organisation => org !== null)
   }
 }
