@@ -26,17 +26,10 @@ export async function signInWithMicrosoft(): Promise<void> {
   provider.setCustomParameters({
     tenant: "common",
     prompt: "select_account",
-    // Request photo in the ID token claims
-    response_type: "id_token token",
-    response_mode: "fragment",
   });
 
   const result = await signInWithPopup(auth, provider);
-  // The photo URL should now be available in the user object
-  const user = result.user;
-  console.log("User photo URL:", user.photoURL);
-
-  return;
+  console.log("MS Sign in success: user:", result.user);
 }
 
 // Single Responsibility: sign out the current user
