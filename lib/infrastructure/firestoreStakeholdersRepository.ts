@@ -35,7 +35,7 @@ export class FirestoreStakeholdersRepository implements StakeholdersRepository {
     if (stakeholder && stakeholder.photoURL !== firebaseUser.photoURL) {
       await this.update(Stakeholder.create({
         ...stakeholder,
-        photoURL: firebaseUser.photoURL || undefined
+        photoURL: firebaseUser.photoURL || ''
       }));
     }
   }
