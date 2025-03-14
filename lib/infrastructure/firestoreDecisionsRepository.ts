@@ -88,7 +88,7 @@ export class FirestoreDecisionsRepository implements DecisionsRepository {
   async getById(id: string, scope: DecisionScope): Promise<Decision> {
     const docRef = doc(db, this.getDecisionPath(scope), id)
     const docSnap = await getDoc(docRef)
-    
+
     if (!docSnap.exists()) {
       throw new Error(`Decision with id ${id} not found`)
     }
@@ -98,7 +98,7 @@ export class FirestoreDecisionsRepository implements DecisionsRepository {
 
   async create(initialData: Partial<Omit<DecisionProps, "id">>, scope: DecisionScope): Promise<Decision> {
     const docRef = doc(collection(db, this.getDecisionPath(scope)))
-    
+
     const createData: Record<string, string | string[] | null | FieldValue | Record<string, unknown> | DecisionStakeholderRole[] | SupportingMaterial[]> = {
       title: initialData.title ?? '',
       description: initialData.description ?? '',
@@ -132,9 +132,9 @@ export class FirestoreDecisionsRepository implements DecisionsRepository {
     const scope: DecisionScope = {
       organisationId: decision.organisationId,
     };
-    
+
     const docRef = doc(db, this.getDecisionPath(scope), decision.id)
-    
+
     const updateData: Record<string, FieldValue | Partial<unknown> | undefined> = {
       title: decision.title,
       description: decision.description,
@@ -153,7 +153,7 @@ export class FirestoreDecisionsRepository implements DecisionsRepository {
       projectIds: decision.projectIds,
       updatedAt: serverTimestamp()
     }
-    
+
     await updateDoc(docRef, updateData)
   }
 
@@ -168,7 +168,7 @@ export class FirestoreDecisionsRepository implements DecisionsRepository {
     scope: DecisionScope
   ): () => void {
     const q = collection(db, this.getDecisionPath(scope));
-    
+
     return onSnapshot(
       q,
       (snapshot) => {
@@ -187,9 +187,9 @@ export class FirestoreDecisionsRepository implements DecisionsRepository {
     const scope: DecisionScope = {
       organisationId: decision.organisationId,
     };
-    
+
     const docRef = doc(db, this.getDecisionPath(scope), decision.id);
-    
+
     return onSnapshot(
       docRef,
       (snapshot) => {
@@ -229,7 +229,7 @@ export class FirestoreDecisionsRepository implements DecisionsRepository {
     targetDecisionRelationship: DecisionRelationship,
     operation: 'add' | 'remove'
   ): Promise<void> {
-    // Validate the relationship if we're adding it
+    // Validate the relationship if we're adding i
     if (operation === 'add') {
       if (sourceDecision.id === targetDecisionRelationship.targetDecision.id) {
         throw new DecisionRelationshipError('A decision cannot have a relationship with itself');
@@ -242,7 +242,7 @@ export class FirestoreDecisionsRepository implements DecisionsRepository {
 
     // Get the target decision
     const targetDecision = await this.getDecisionFromDecisionRelationship(targetDecisionRelationship);
-    
+
     // Get the inverse relationship type
     const inverseType = DecisionRelationshipTools.getInverseRelationshipType(targetDecisionRelationship.type);
 
@@ -250,7 +250,7 @@ export class FirestoreDecisionsRepository implements DecisionsRepository {
     const batch = writeBatch(db);
 
     // Update source decision relationships
-    const updatedSourceDecision = operation === 'add' 
+    const updatedSourceDecision = operation === 'add'
       ? sourceDecision.setRelationship(targetDecisionRelationship.type, targetDecision)
       : sourceDecision.unsetRelationship(targetDecisionRelationship.type, targetDecisionRelationship.targetDecision.id);
     this.updateDecisionRelationships(batch, sourceDecision, updatedSourceDecision.relationships);

@@ -1,183 +1,325 @@
-import { collection, doc, getDoc, getDocs, addDoc, updateDoc, deleteDoc, query, where } from 'firebase/firestore'
-import { db } from '@/lib/firebase'
-import { Organisation, OrganisationProps } from '@/lib/domain/Organisation'
-import { OrganisationsRepository } from '@/lib/domain/organisationsRepository'
-import { Team } from '@/lib/domain/Team'
-import { Project } from '@/lib/domain/Project'
-import { FirestoreStakeholdersRepository } from '@/lib/infrastructure/firestoreStakeholdersRepository'
+import {
+  collection,
+  doc,
+  getDoc,
+  getDocs,
+  addDoc,
+  updateDoc,
+  deleteDoc,
+  query,
+  where,
+} from "firebase/firestore";
+import { db } from "@/lib/firebase";
+import { Organisation, OrganisationProps } from "@/lib/domain/Organisation";
+import { OrganisationsRepository } from "@/lib/domain/organisationsRepository";
+import { Team } from "@/lib/domain/Team";
+import { Project } from "@/lib/domain/Project";
+import { FirestoreStakeholdersRepository } from "@/lib/infrastructure/firestoreStakeholdersRepository";
+import { FirestoreTeamHierarchyRepository } from "@/lib/infrastructure/firestoreTeamHierarchyRepository";
+import { TeamHierarchy, TeamHierarchyNode } from "@/lib/domain/TeamHierarchy";
 
-export class FirestoreOrganisationsRepository implements OrganisationsRepository {
-  private stakeholdersRepository: FirestoreStakeholdersRepository
+export class FirestoreOrganisationsRepository
+  implements OrganisationsRepository
+{
+  private stakeholdersRepository: FirestoreStakeholdersRepository;
+  private teamHierarchyRepository: FirestoreTeamHierarchyRepository;
 
   constructor() {
-    this.stakeholdersRepository = new FirestoreStakeholdersRepository()
+    this.stakeholdersRepository = new FirestoreStakeholdersRepository();
+    this.teamHierarchyRepository = new FirestoreTeamHierarchyRepository();
   }
 
-  async create(props: Omit<OrganisationProps, 'id'>): Promise<Organisation> {
+  async create(props: Omit<OrganisationProps, "id">): Promise<Organisation> {
     // Create the main organisation document
-    const orgDoc = await addDoc(collection(db, 'organisations'), {
+    const orgDoc = await addDoc(collection(db, "organisations"), {
       name: props.name,
-      createdAt: new Date()
-    })
+      createdAt: new Date(),
+    });
 
     const organisation = {
       id: orgDoc.id,
-      name: props.name
+      name: props.name,
+    };
+
+    // Create teams using the team hierarchy repository
+    const teamHierarchyNodes: Record<string, TeamHierarchyNode> = {};
+
+    // Convert teams to team hierarchy nodes
+    for (const team of props.teams) {
+      // Create team node
+      teamHierarchyNodes[team.id] = {
+        id: team.id,
+        name: team.name,
+        parentId: null, // All teams are root teams by default
+        children: {},
+      };
+
+      // Add projects to a subcollection within the organisation
+      await Promise.all(
+        team.projects.map(async (project) => {
+          await addDoc(collection(db, "organisations", orgDoc.id, "projects"), {
+            name: project.name,
+            description: project.description,
+            teamId: team.id,
+            organisationId: orgDoc.id,
+          });
+        }),
+      );
     }
 
-    // Add teams and their projects to subcollections
-    const teamsWithIds = await Promise.all(props.teams.map(async team => {
-      const teamDoc = await addDoc(collection(db, 'organisations', orgDoc.id, 'teams'), {
-        name: team.name
-      })
+    // Save the team hierarchy
+    const teamHierarchy = TeamHierarchy.create({ teams: teamHierarchyNodes });
+    await this.teamHierarchyRepository.save(orgDoc.id, teamHierarchy);
 
-      // Add projects to a subcollection within the team
-      const projectsWithIds = await Promise.all(team.projects.map(async project => {
-        const projectDoc = await addDoc(collection(db, 'organisations', orgDoc.id, 'teams', teamDoc.id, 'projects'), {
-          name: project.name,
-          description: project.description,
-          organisationId: orgDoc.id
-        })
-
-        return Project.create({
-          id: projectDoc.id,
-          name: project.name,
-          description: project.description,
-          organisationId: orgDoc.id
-        })
-      }))
-
-      return Team.create({
-        id: teamDoc.id,
-        name: team.name,
-        organisation,
-        projects: projectsWithIds
-      })
-    }))
-
+    // Return the organisation with teams
     return Organisation.create({
       id: orgDoc.id,
       name: props.name,
-      teams: teamsWithIds
-    })
+      teams: props.teams.map((team) =>
+        Team.create({
+          id: team.id,
+          name: team.name,
+          organisation,
+          projects: team.projects,
+        }),
+      ),
+    });
   }
 
   async getById(id: string): Promise<Organisation> {
-    const docRef = doc(db, 'organisations', id)
-    const docSnap = await getDoc(docRef)
+    const docRef = doc(db, "organisations", id);
+    const docSnap = await getDoc(docRef);
 
     if (!docSnap.exists()) {
-      throw new Error('Organisation not found')
+      throw new Error("Organisation not found");
     }
 
-    const data = docSnap.data()
+    const data = docSnap.data();
     const organisation = {
       id: docSnap.id,
-      name: data.name
+      name: data.name,
+    };
+
+    // Get team hierarchy from the team hierarchy repository
+    const teamHierarchy =
+      await this.teamHierarchyRepository.getByOrganisationId(id);
+
+    if (!teamHierarchy) {
+      // Return organisation with empty teams if no team hierarchy exists
+      return Organisation.create({
+        id: docSnap.id,
+        name: data.name,
+        teams: [],
+      });
     }
 
-    // Get teams from subcollection
-    const teamsSnap = await getDocs(collection(db, 'organisations', id, 'teams'))
-    const teams = await Promise.all(teamsSnap.docs.map(async teamDoc => {
-      // Get projects from subcollection within team
-      const projectsSnap = await getDocs(collection(db, 'organisations', id, 'teams', teamDoc.id, 'projects'))
-      const projects = await Promise.all(projectsSnap.docs.map(async projectDoc => {
-        const projectData = projectDoc.data()
-        return Project.create({
-          id: projectDoc.id,
-          name: projectData.name,
-          description: projectData.description,
-          organisationId: id
-        })
-      }))
+    // Get projects from the projects subcollection
+    const projectsSnap = await getDocs(
+      collection(db, "organisations", id, "projects"),
+    );
+    const projectsByTeam: Record<string, Project[]> = {};
 
+    // Group projects by team
+    await Promise.all(
+      projectsSnap.docs.map(async (projectDoc) => {
+        const projectData = projectDoc.data();
+        const teamId = projectData.teamId;
+
+        if (!projectsByTeam[teamId]) {
+          projectsByTeam[teamId] = [];
+        }
+
+        projectsByTeam[teamId].push(
+          Project.create({
+            id: projectDoc.id,
+            name: projectData.name,
+            description: projectData.description,
+            organisationId: id,
+          }),
+        );
+      }),
+    );
+
+    // Create teams from the team hierarchy
+    const teams = Object.values(teamHierarchy.teams).map((teamNode) => {
       return Team.create({
-        id: teamDoc.id,
-        name: teamDoc.data().name,
+        id: teamNode.id,
+        name: teamNode.name,
         organisation,
-        projects: projects
-      })
-    }))
+        projects: projectsByTeam[teamNode.id] || [],
+      });
+    });
 
-    // Update the organisation with teams
+    // Return the organisation with teams
     return Organisation.create({
       id: docSnap.id,
       name: data.name,
-      teams: teams
-    })
+      teams,
+    });
   }
 
   async getForStakeholder(stakeholderEmail: string): Promise<Organisation[]> {
     // First lookup the stakeholder by email
-    const stakeholder = await this.stakeholdersRepository.getByEmail(stakeholderEmail)
-    
+    const stakeholder =
+      await this.stakeholdersRepository.getByEmail(stakeholderEmail);
+
     if (!stakeholder) {
-      throw new Error('Stakeholder with email <<' + stakeholderEmail + '>> not found')
+      throw new Error(
+        "Stakeholder with email <<" + stakeholderEmail + ">> not found",
+      );
     }
 
     // Then get all stakeholderTeams for this stakeholder
     const stakeholderTeamsQuery = query(
-      collection(db, 'stakeholderTeams'),
-      where('stakeholderId', '==', stakeholder.id)
-    )
-    const stakeholderTeamsSnap = await getDocs(stakeholderTeamsQuery)
-    
+      collection(db, "stakeholderTeams"),
+      where("stakeholderId", "==", stakeholder.id),
+    );
+    const stakeholderTeamsSnap = await getDocs(stakeholderTeamsQuery);
+
     // Get unique organisation IDs
     const organisationIds = new Set(
-      stakeholderTeamsSnap.docs.map(doc => doc.data().organisationId)
-    )
+      stakeholderTeamsSnap.docs.map((doc) => doc.data().organisationId),
+    );
 
     // Fetch each organisation
     const organisations = await Promise.all(
-      Array.from(organisationIds).map(orgId => this.getById(orgId))
-    )
+      Array.from(organisationIds).map((orgId) => this.getById(orgId)),
+    );
 
-    return organisations.filter((org): org is Organisation => org !== null)
+    return organisations.filter((org): org is Organisation => org !== null);
   }
 
   async update(organisation: Organisation): Promise<void> {
-    const docRef = doc(db, 'organisations', organisation.id)
+    const docRef = doc(db, "organisations", organisation.id);
     await updateDoc(docRef, {
-      name: organisation.name
-    })
+      name: organisation.name,
+    });
 
-    // Update teams subcollection
+    // Get the current team hierarchy
+    const currentTeamHierarchy =
+      await this.teamHierarchyRepository.getByOrganisationId(organisation.id);
+    const teamHierarchyNodes: Record<string, TeamHierarchyNode> =
+      currentTeamHierarchy?.teams || {};
+
+    // Update team hierarchy nodes with the updated team information
     for (const team of organisation.teams) {
-      const teamRef = doc(db, 'organisations', organisation.id, 'teams', team.id)
-      await updateDoc(teamRef, {
-        name: team.name
-      })
+      if (teamHierarchyNodes[team.id]) {
+        // Update existing team
+        teamHierarchyNodes[team.id].name = team.name;
+      } else {
+        // Add new team
+        teamHierarchyNodes[team.id] = {
+          id: team.id,
+          name: team.name,
+          parentId: null, // New teams are added as root teams by default
+          children: {},
+        };
+      }
 
-      // Update projects subcollection within team
+      // Update projects
       for (const project of team.projects) {
-        const projectRef = doc(db, 'organisations', organisation.id, 'teams', team.id, 'projects', project.id)
-        await updateDoc(projectRef, {
-          name: project.name,
-          description: project.description
-        })
+        // Check if project exists
+        const projectRef = doc(
+          db,
+          "organisations",
+          organisation.id,
+          "projects",
+          project.id,
+        );
+        const projectSnap = await getDoc(projectRef);
+
+        if (projectSnap.exists()) {
+          // Update existing project
+          await updateDoc(projectRef, {
+            name: project.name,
+            description: project.description,
+            teamId: team.id,
+          });
+        } else {
+          // Add new project
+          await addDoc(
+            collection(db, "organisations", organisation.id, "projects"),
+            {
+              name: project.name,
+              description: project.description,
+              teamId: team.id,
+              organisationId: organisation.id,
+            },
+          );
+        }
       }
     }
+
+    // Save the updated team hierarchy
+    const teamHierarchy = TeamHierarchy.create({ teams: teamHierarchyNodes });
+    await this.teamHierarchyRepository.save(organisation.id, teamHierarchy);
   }
 
   async delete(id: string): Promise<void> {
-    // Delete all decisions in all projects in all teams
-    const teamsSnap = await getDocs(collection(db, 'organisations', id, 'teams'))
-    for (const teamDoc of teamsSnap.docs) {
-      const projectsSnap = await getDocs(collection(db, 'organisations', id, 'teams', teamDoc.id, 'projects'))
-      for (const projectDoc of projectsSnap.docs) {
+    // Delete all projects in the organisation
+    const projectsSnap = await getDocs(
+      collection(db, "organisations", id, "projects"),
+    );
+    for (const projectDoc of projectsSnap.docs) {
+      // Delete decisions for this project if they exist
+      try {
         const decisionsSnap = await getDocs(
-          collection(db, 'organisations', id, 'teams', teamDoc.id, 'projects', projectDoc.id, 'decisions')
-        )
+          collection(
+            db,
+            "organisations",
+            id,
+            "projects",
+            projectDoc.id,
+            "decisions",
+          ),
+        );
         for (const decisionDoc of decisionsSnap.docs) {
-          await deleteDoc(decisionDoc.ref)
+          await deleteDoc(decisionDoc.ref);
         }
-        await deleteDoc(projectDoc.ref)
+      } catch (error) {
+        console.error(
+          `Error deleting decisions for project ${projectDoc.id}:`,
+          error,
+        );
       }
-      await deleteDoc(teamDoc.ref)
+
+      // Delete the project
+      await deleteDoc(projectDoc.ref);
+    }
+
+    // Delete the team hierarchy document
+    try {
+      const teamHierarchy =
+        await this.teamHierarchyRepository.getByOrganisationId(id);
+      if (teamHierarchy) {
+        await deleteDoc(
+          doc(db, "organisations", id, "teamHierarchies", "hierarchy"),
+        );
+      }
+    } catch (error) {
+      console.error(
+        `Error deleting team hierarchy for organisation ${id}:`,
+        error,
+      );
     }
 
     // Delete the organisation document
-    const docRef = doc(db, 'organisations', id)
-    await deleteDoc(docRef)
+    const docRef = doc(db, "organisations", id);
+    await deleteDoc(docRef);
   }
-} 
+
+  async getAll(): Promise<Organisation[]> {
+    const orgsSnap = await getDocs(collection(db, "organisations"));
+    const organisations = await Promise.all(
+      orgsSnap.docs.map(async (doc) => {
+        try {
+          return await this.getById(doc.id);
+        } catch (error) {
+          console.error(`Error fetching organisation ${doc.id}:`, error);
+          return null;
+        }
+      }),
+    );
+    return organisations.filter((org): org is Organisation => org !== null);
+  }
+}

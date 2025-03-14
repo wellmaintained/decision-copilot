@@ -1,8 +1,12 @@
-import { StakeholdersRepository, EmailAlreadyExistsError, StakeholderWithRole } from '@/lib/domain/stakeholdersRepository';
-import { Stakeholder, StakeholderProps } from '@/lib/domain/Stakeholder';
-import { db } from '@/lib/firebase';
-import { User } from 'firebase/auth';
-import { Decision } from '@/lib/domain/Decision';
+import {
+  StakeholdersRepository,
+  EmailAlreadyExistsError,
+  StakeholderWithRole,
+} from "@/lib/domain/stakeholdersRepository";
+import { Stakeholder, StakeholderProps } from "@/lib/domain/Stakeholder";
+import { db } from "@/lib/firebase";
+import { User } from "firebase/auth";
+import { Decision } from "@/lib/domain/Decision";
 import {
   collection,
   query,
@@ -16,7 +20,7 @@ import {
   getDocs,
   where,
   limit,
-} from 'firebase/firestore';
+} from "firebase/firestore";
 
 /**
  * Single Responsibility:
@@ -26,21 +30,32 @@ import {
 export class FirestoreStakeholdersRepository implements StakeholdersRepository {
   private collectionPath: string;
 
-  constructor(collectionPath = 'stakeholders') {
+  constructor(collectionPath = "stakeholders") {
     this.collectionPath = collectionPath;
   }
 
   async updateStakeholderForUser(firebaseUser: User): Promise<void> {
-    const stakeholder = await this.getByEmail(firebaseUser.email || '');
-    if (stakeholder && stakeholder.photoURL !== firebaseUser.photoURL) {
-      await this.update(Stakeholder.create({
-        ...stakeholder,
-        photoURL: firebaseUser.photoURL || undefined
-      }));
+    const stakeholder = await this.getByEmail(firebaseUser.email || "");
+    if (stakeholder) {
+      const needsUpdate =
+        stakeholder.photoURL !== (firebaseUser.photoURL || "") ||
+        stakeholder.displayName !== (firebaseUser.displayName || "") ||
+        stakeholder.email !== (firebaseUser.email || "");
+
+      if (needsUpdate) {
+        await this.update(
+          Stakeholder.create({
+            ...stakeholder,
+            photoURL: firebaseUser.photoURL || "",
+            displayName: firebaseUser.displayName || "",
+            email: firebaseUser.email || "",
+          }),
+        );
+      }
     }
   }
 
-  async create(props: Omit<StakeholderProps, 'id'>): Promise<Stakeholder> {
+  async create(props: Omit<StakeholderProps, "id">): Promise<Stakeholder> {
     // Check if email already exists
     const existingStakeholder = await this.getByEmail(props.email);
     if (existingStakeholder) {
@@ -81,8 +96,8 @@ export class FirestoreStakeholdersRepository implements StakeholdersRepository {
   async getByEmail(email: string): Promise<Stakeholder | null> {
     const q = query(
       collection(db, this.collectionPath),
-      where('email', '==', email),
-      limit(1)
+      where("email", "==", email),
+      limit(1),
     );
     const querySnapshot = await getDocs(q);
 
@@ -120,16 +135,20 @@ export class FirestoreStakeholdersRepository implements StakeholdersRepository {
     await deleteDoc(docRef);
   }
 
-  async getStakeholdersForDecision(decision: Decision): Promise<StakeholderWithRole[]> {
-    const stakeholderIds = decision.stakeholders.map(s => s.stakeholder_id);
-    const stakeholders = await Promise.all(stakeholderIds.map(id => this.getById(id)));
-    
+  async getStakeholdersForDecision(
+    decision: Decision,
+  ): Promise<StakeholderWithRole[]> {
+    const stakeholderIds = decision.stakeholders.map((s) => s.stakeholder_id);
+    const stakeholders = await Promise.all(
+      stakeholderIds.map((id) => this.getById(id)),
+    );
+
     return stakeholders
       .map((stakeholder, index) => {
         if (!stakeholder) return null;
         return {
           ...stakeholder,
-          role: decision.stakeholders[index].role
+          role: decision.stakeholders[index].role,
         };
       })
       .filter((s): s is StakeholderWithRole => s !== null);
@@ -137,10 +156,10 @@ export class FirestoreStakeholdersRepository implements StakeholdersRepository {
 
   subscribeToAll(
     onData: (stakeholders: Stakeholder[]) => void,
-    onError: (error: Error) => void
+    onError: (error: Error) => void,
   ): () => void {
     const colRef = collection(db, this.collectionPath);
-    const q = query(colRef, orderBy('displayName', 'asc'));
+    const q = query(colRef, orderBy("displayName", "asc"));
 
     // Subscribe to snapshot updates
     const unsubscribe = onSnapshot(
@@ -161,9 +180,9 @@ export class FirestoreStakeholdersRepository implements StakeholdersRepository {
       },
       (error) => {
         onError(error);
-      }
+      },
     );
 
     return unsubscribe;
   }
-} 
+}
