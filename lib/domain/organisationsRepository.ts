@@ -6,4 +6,5 @@ export interface OrganisationsRepository {
   getForStakeholder(stakeholderEmail: string): Promise<Organisation[]>
   update(organisation: Organisation): Promise<void>
   delete(id: string): Promise<void>
+  getAll(): Promise<Organisation[]>
 } 
