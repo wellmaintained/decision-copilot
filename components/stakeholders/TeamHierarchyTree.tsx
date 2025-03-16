@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ChevronRight, Minus } from "lucide-react";
 import { useTeamHierarchy } from "@/hooks/useTeamHierarchy";
@@ -18,65 +18,54 @@ interface ExtendedTeamHierarchyNode extends TeamHierarchyNode {
 interface TeamHierarchyTreeProps {
   organisationId: string;
   onTeamSelect: (teamId: string, checked: boolean) => void;
-  onStakeholderSelect?: (stakeholderId: string, checked: boolean) => void;
+  onStakeholderSelect?: (stakeholderId: string | string[], checked: boolean) => void;
   selectedStakeholderIds?: string[];
+  driverStakeholderId?: string;
 }
 
 export function TeamHierarchyTree({ 
   organisationId, 
   onTeamSelect,
   onStakeholderSelect,
-  selectedStakeholderIds = []
+  selectedStakeholderIds = [],
+  driverStakeholderId
 }: TeamHierarchyTreeProps) {
   const [expandedTeams, setExpandedTeams] = useState<string[]>([]);
   const { hierarchy, loading: hierarchyLoading } = useTeamHierarchy(organisationId);
   const { stakeholders, loading: stakeholdersLoading } = useStakeholders();
-  const { stakeholderTeams, loading: teamsLoading } = useStakeholderTeams();
+  const { stakeholderTeamsMap, loading: teamsLoading } = useStakeholderTeams();
 
   // Helper function to get stakeholders for a team
-  const getTeamStakeholders = (teamId: string): Stakeholder[] => {
-    const teamStakeholderIds = stakeholderTeams
-      .filter(st => st.teamId === teamId)
-      .map(st => st.stakeholderId);
-    
-    return stakeholders.filter(s => teamStakeholderIds.includes(s.id));
-  };
+  const getTeamStakeholders = useCallback((teamId: string): Stakeholder[] => {
+    return stakeholders.filter(s => stakeholderTeamsMap[s.id]?.includes(teamId));
+  }, [stakeholders, stakeholderTeamsMap]);
 
   // Helper function to convert TeamHierarchyNode to ExtendedTeamHierarchyNode
-  const extendTeamNode = (node: TeamHierarchyNode): ExtendedTeamHierarchyNode => {
-    const extendedChildren: Record<string, ExtendedTeamHierarchyNode> = {};
-    Object.entries(node.children).forEach(([id, child]) => {
-      extendedChildren[id] = extendTeamNode(child);
-    });
-
+  const extendTeamNode = useCallback((node: TeamHierarchyNode): ExtendedTeamHierarchyNode => {
+    const teamStakeholders = getTeamStakeholders(node.id);
     return {
       ...node,
-      children: extendedChildren,
-      stakeholders: getTeamStakeholders(node.id)
+      stakeholders: teamStakeholders,
+      children: Object.fromEntries(
+        Object.entries(node.children || {}).map(([id, child]) => [
+          id,
+          extendTeamNode(child)
+        ])
+      )
     };
-  };
+  }, [getTeamStakeholders]);
   
   // Helper function to find teams containing selected stakeholders
-  const findTeamsWithSelectedStakeholders = (team: ExtendedTeamHierarchyNode): string[] => {
+  const findTeamsWithSelectedStakeholders = useCallback((team: ExtendedTeamHierarchyNode): string[] => {
     const teamsToExpand: string[] = [];
-    
-    // Check if current team has any selected stakeholders
-    const hasSelectedStakeholder = team.stakeholders.some(s => 
-      selectedStakeholderIds.includes(s.id)
-    );
-    
-    if (hasSelectedStakeholder) {
+    if (team.stakeholders.some(s => selectedStakeholderIds.includes(s.id))) {
       teamsToExpand.push(team.id);
     }
-    
-    // Recursively check child teams
-    Object.values(team.children).forEach(childTeam => {
-      const childTeamsToExpand = findTeamsWithSelectedStakeholders(childTeam);
-      teamsToExpand.push(...childTeamsToExpand);
+    Object.values(team.children || {}).forEach(child => {
+      teamsToExpand.push(...findTeamsWithSelectedStakeholders(child));
     });
-    
     return teamsToExpand;
-  };
+  }, [selectedStakeholderIds]);
   
   // Auto-expand teams containing selected stakeholders
   useEffect(() => {
@@ -95,7 +84,7 @@ export function TeamHierarchyTree({
       prev.forEach(teamId => newExpanded.push(teamId));
       return Array.from(new Set(newExpanded));
     });
-  }, [hierarchy, selectedStakeholderIds, stakeholders, stakeholderTeams]);
+  }, [hierarchy, selectedStakeholderIds, stakeholders, stakeholderTeamsMap, extendTeamNode, findTeamsWithSelectedStakeholders]);
 
   const toggleTeam = (teamId: string) => {
     setExpandedTeams(prev => 
@@ -125,12 +114,26 @@ export function TeamHierarchyTree({
   };
 
   const handleTeamSelect = (teamId: string, team: ExtendedTeamHierarchyNode, checked: boolean) => {
+    // Call onTeamSelect with teamId and checked
     onTeamSelect(teamId, checked);
+    // Handle stakeholder selection separately
     if (onStakeholderSelect) {
+      // Get all stakeholder IDs for this team and nested teams
       const stakeholderIds = getAllStakeholderIds(team);
-      stakeholderIds.forEach(id => {
-        onStakeholderSelect(id, checked);
+      // If there are no stakeholders to update, return early
+      if (stakeholderIds.length === 0) return;
+      // Filter to only get stakeholders that need to change state
+      // (i.e., not already in the desired state)
+      const stakeholdersToUpdate = stakeholderIds.filter(id => {
+        const isCurrentlySelected = selectedStakeholderIds.includes(id);
+        return isCurrentlySelected !== checked;
       });
+      // If there are stakeholders to update, call onStakeholderSelect with the array
+      if (stakeholdersToUpdate.length > 0) {
+        // We manually check if each stakeholder already has the right state
+        // to avoid errors from double-selecting or double-deselecting
+        onStakeholderSelect(stakeholdersToUpdate, checked);
+      }
     }
   };
 
@@ -196,6 +199,9 @@ export function TeamHierarchyTree({
                   onCheckedChange={(checked) =>
                     onStakeholderSelect?.(stakeholder.id, checked as boolean)
                   }
+                  disabled={driverStakeholderId === stakeholder.id}
+                  className={driverStakeholderId === stakeholder.id ?
+                    "cursor-not-allowed border-gray-500 data-[state=checked]:bg-gray-500" : ""}
                 />
                 <Avatar className="h-6 w-6">
                   <AvatarImage src={stakeholder.photoURL} alt={stakeholder.displayName} />
@@ -209,6 +215,9 @@ export function TeamHierarchyTree({
                 </Avatar>
                 <div className="flex flex-col flex-1">
                   <span className="font-medium">{stakeholder.displayName}</span>
+                  {driverStakeholderId === stakeholder.id && (
+                    <span className="text-xs text-gray-500 font-medium">Driver</span>
+                  )}
                 </div>
               </div>
             ))}
@@ -237,4 +246,4 @@ export function TeamHierarchyTree({
         .map(([teamId, team]) => renderTeamNode(teamId, team, 0))}
     </div>
   );
-} 
+}

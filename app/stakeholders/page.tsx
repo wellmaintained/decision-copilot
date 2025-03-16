@@ -11,18 +11,35 @@ export default function StakeholdersPage() {
     useState<{ stakeholderId: string; selected: boolean }[]>([]);
 
   const handleStakeholderChange = (
-    stakeholderId: string,
+    stakeholderId: string | string[],
     selected: boolean,
   ) => {
-    setSelectedStakeholderIds((prev) =>
-      selected
-        ? [...prev, stakeholderId]
-        : prev.filter((id) => id !== stakeholderId),
-    );
-    setStakeholderSelectionChanges((prev) => [
-      ...prev,
-      { stakeholderId, selected },
-    ]);
+    if (Array.isArray(stakeholderId)) {
+      setSelectedStakeholderIds(prev => {
+        if (selected) {
+          const uniqueIds = new Set(prev);
+          stakeholderId.forEach(id => uniqueIds.add(id));
+          return Array.from(uniqueIds);
+        }
+        return prev.filter(id => !stakeholderId.includes(id));
+      });
+      stakeholderId.forEach(id => {
+        setStakeholderSelectionChanges(prev => [
+          ...prev,
+          { stakeholderId: id, selected },
+        ]);
+      });
+    } else {
+      setSelectedStakeholderIds(prev =>
+        selected
+          ? [...prev, stakeholderId]
+          : prev.filter(id => id !== stakeholderId)
+      );
+      setStakeholderSelectionChanges(prev => [
+        ...prev,
+        { stakeholderId, selected },
+      ]);
+    }
   };
 
   return (

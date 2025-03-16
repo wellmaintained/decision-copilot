@@ -11,13 +11,15 @@ import { motion, AnimatePresence } from "framer-motion";
 interface StakeholderListViewProps {
   organisationId: string;
   selectedStakeholderIds: string[];
-  onStakeholderChange: (stakeholderId: string, selected: boolean) => void;
+  onStakeholderChange: (stakeholderId: string | string[], selected: boolean) => void;
+  driverStakeholderId?: string;
 }
 
 export function StakeholderListView({
   organisationId,
   selectedStakeholderIds,
   onStakeholderChange,
+  driverStakeholderId,
 }: StakeholderListViewProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const { stakeholders, loading: stakeholdersLoading } = useStakeholders();
@@ -93,6 +95,9 @@ export function StakeholderListView({
                   onCheckedChange={(checked) =>
                     onStakeholderChange(stakeholder.id, checked as boolean)
                   }
+                  disabled={driverStakeholderId === stakeholder.id}
+                  className={driverStakeholderId === stakeholder.id ?
+                    "cursor-not-allowed border-gray-500 data-[state=checked]:bg-gray-500" : ""}
                 />
                 <Avatar>
                   <AvatarImage src={stakeholder.photoURL} alt={stakeholder.displayName} />
@@ -104,7 +109,12 @@ export function StakeholderListView({
                       .toUpperCase()}
                   </AvatarFallback>
                 </Avatar>
-                <div className="font-medium">{stakeholder.displayName}</div>
+                <div className="flex flex-col">
+                  <div className="font-medium">{stakeholder.displayName}</div>
+                  {driverStakeholderId === stakeholder.id && (
+                    <span className="text-xs text-gray-500 font-medium">Driver</span>
+                  )}
+                </div>
               </div>
               <div className="text-sm text-gray-500">
                 {getTeamNamesForStakeholder(stakeholder.id) || "No teams"}

@@ -280,12 +280,20 @@ export class Decision {
   }
 
   setDecisionDriver(driverStakeholderId: string): Decision {
-    // First ensure the driver is a stakeholder
-    const withDriver = this.addStakeholder(driverStakeholderId);
-    
-    return withDriver.with({ 
-      driverStakeholderId 
-    });
+    // First ensure the new driver is a stakeholder and update the driverStakeholderId
+    const withNewDriver = (
+      this.stakeholders.some(s => s.stakeholder_id === driverStakeholderId)
+        ? this
+        : this.addStakeholder(driverStakeholderId)
+    ).with({ driverStakeholderId });
+
+    // Then remove the old driver from stakeholders list if they're not the new driver
+    const oldDriverId = this.driverStakeholderId;
+    return (oldDriverId && oldDriverId !== driverStakeholderId)
+      ? withNewDriver.with({
+          stakeholders: withNewDriver.stakeholders.filter(s => s.stakeholder_id !== oldDriverId)
+        })
+      : withNewDriver;
   }
 
   private constructor(props: DecisionProps) {
