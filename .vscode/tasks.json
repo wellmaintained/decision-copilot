@@ -1,0 +1,48 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Start Dev Environment",
+            "dependsOrder": "parallel",
+            "dependsOn": ["Firebase Emulators", "Next.js Dev", "Browser Tools MCP Server"]
+        },
+        {
+            "label": "Firebase Emulators",
+            "type": "shell",
+            "command": "pnpm",
+            "args": ["dev:emulators:with-data"],
+            "isBackground": true,
+            "presentation": {
+                "reveal": "always",
+                "panel": "new",
+                "group": "dev-servers"
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Next.js Dev",
+            "type": "shell",
+            "command": "pnpm",
+            "args": ["dev:next"],
+            "isBackground": true,
+            "presentation": {
+                "reveal": "always",
+                "panel": "new",
+                "group": "dev-servers"
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Browser Tools MCP Server",
+            "type": "shell",
+            "command": "npx",
+            "args": ["@agentdeskai/browser-tools-server@1.2.0"],
+            "isBackground": true,
+            "presentation": {
+                "reveal": "always",
+                "panel": "new"
+            },
+            "problemMatcher": []
+        }
+    ]
+} 
