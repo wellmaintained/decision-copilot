@@ -6,6 +6,7 @@ import { FirestoreOrganisationsRepository } from '@/lib/infrastructure/firestore
 
 export function useStakeholderTeams() {
   const [stakeholderTeams, setStakeholderTeams] = useState<StakeholderTeam[]>([])
+  const [stakeholderTeamsMap, setStakeholderTeamsMap] = useState<Record<string, string[]>>({})
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<Error | null>(null)
   const { user } = useAuth()
@@ -23,6 +24,16 @@ export function useStakeholderTeams() {
         const stakeholderOrgs = await orgRepository.getForStakeholder(user.email);
         const teams = await stakeholderTeamsRepository.getByOrganisation(stakeholderOrgs);
         setStakeholderTeams(teams)
+        
+        // Create a map of stakeholder IDs to team IDs
+        const teamsMap: Record<string, string[]> = {};
+        teams.forEach(team => {
+          if (!teamsMap[team.stakeholderId]) {
+            teamsMap[team.stakeholderId] = [];
+          }
+          teamsMap[team.stakeholderId].push(team.teamId);
+        });
+        setStakeholderTeamsMap(teamsMap);
       } catch (err) {
         console.error(err)
         setError(err instanceof Error ? err : new Error('Failed to fetch stakeholder teams'))
@@ -38,6 +49,14 @@ export function useStakeholderTeams() {
     const repository = new FirestoreStakeholderTeamsRepository()
     const newTeam = await repository.create(props)
     setStakeholderTeams([...stakeholderTeams, newTeam])
+    setStakeholderTeamsMap(prev => {
+      const newMap = { ...prev };
+      if (!newMap[newTeam.stakeholderId]) {
+        newMap[newTeam.stakeholderId] = [];
+      }
+      newMap[newTeam.stakeholderId].push(newTeam.teamId);
+      return newMap;
+    });
   }
 
   const removeStakeholderTeam = async (stakeholderId: string, teamId: string) => {
@@ -46,8 +65,18 @@ export function useStakeholderTeams() {
     if (existingTeam) {
       await repository.delete(existingTeam.id)
       setStakeholderTeams(stakeholderTeams.filter(st => st.id !== existingTeam.id))
+      setStakeholderTeamsMap(prev => {
+        const newMap = { ...prev };
+        if (newMap[stakeholderId]) {
+          newMap[stakeholderId] = newMap[stakeholderId].filter(id => id !== teamId);
+          if (newMap[stakeholderId].length === 0) {
+            delete newMap[stakeholderId];
+          }
+        }
+        return newMap;
+      });
     }
   }
 
-  return { stakeholderTeams, setStakeholderTeams, addStakeholderTeam, removeStakeholderTeam, loading, error }
+  return { stakeholderTeams, stakeholderTeamsMap, loading, error, addStakeholderTeam, removeStakeholderTeam }
 } 
