@@ -34,6 +34,8 @@ export default function PrototypesPage() {
       <WorkflowAccordion
         currentStep={currentStep}
         onStepComplete={handleStepComplete}
+        organisationId="9HY1YTkOdqxOTFOMZe8r"
+        decisionId="KRWdpmQTU2DRR76jrlC4"
       />
     </div>
   )
