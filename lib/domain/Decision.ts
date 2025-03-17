@@ -1,4 +1,4 @@
-import { Search, Settings, Zap, BookOpen } from 'lucide-react'
+import { Search, Settings, Zap, BookOpen, Users } from 'lucide-react'
 import { SupportingMaterial } from '@/lib/domain/SupportingMaterial'
 import { IsArray, IsDate, IsEnum, IsOptional, IsString } from 'class-validator'
 import { StakeholderError, DecisionStateError } from '@/lib/domain/DecisionError'
@@ -11,6 +11,7 @@ import { DocumentReference } from 'firebase/firestore'
  */
 export const DecisionWorkflowSteps = {
   IDENTIFY: { key: 'identify', icon: Search, label: 'Identify' },
+  STAKEHOLDERS: { key: 'stakeholders', icon: Users, label: 'Stakeholders' },
   METHOD: { key: 'method', icon: Settings, label: 'Method' },
   CHOOSE: { key: 'choose', icon: Zap, label: 'Choose' },
   PUBLISH: { key: 'publish', icon: BookOpen, label: 'Publish' },
@@ -22,6 +23,7 @@ export const DecisionWorkflowSteps = {
  */
 export const DecisionWorkflowStepsSequence = [
   DecisionWorkflowSteps.IDENTIFY,
+  DecisionWorkflowSteps.STAKEHOLDERS,
   DecisionWorkflowSteps.METHOD,
   DecisionWorkflowSteps.CHOOSE,
   DecisionWorkflowSteps.PUBLISH,
@@ -36,9 +38,10 @@ export type DecisionWorkflowStep = typeof DecisionWorkflowSteps[DecisionWorkflow
 export type StepRole = 'Driver' | 'Decider';
 export const StepRoles: Record<DecisionWorkflowStepKey, StepRole> = {
   IDENTIFY: 'Driver',
+  STAKEHOLDERS: 'Driver',
   METHOD: 'Driver',
   CHOOSE: 'Decider',
-  PUBLISH: 'Driver',
+  PUBLISH: 'Decider',
 } as const;
 
 export type DecisionStatus = "in_progress" | "blocked" | "published" | "superseded";
@@ -261,6 +264,9 @@ export class Decision {
     }
     if (this.decisionMethod) {
       return DecisionWorkflowSteps.METHOD;
+    }
+    if (this.decisionStakeholderIds.length > 0) {
+      return DecisionWorkflowSteps.STAKEHOLDERS;
     }
     return DecisionWorkflowSteps.IDENTIFY;
   }
