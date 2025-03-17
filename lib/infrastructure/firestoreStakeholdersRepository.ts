@@ -65,6 +65,7 @@ export class FirestoreStakeholdersRepository implements StakeholdersRepository {
     // Create new stakeholder
     const docRef = await addDoc(collection(db, this.collectionPath), {
       email: props.email,
+      displayName: props.displayName,
       photoURL: props.photoURL,
     });
 

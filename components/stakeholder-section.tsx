@@ -132,7 +132,7 @@ export function StakeholderSection({
                                   .split(" ")
                                   .map((n) => n[0])
                                   .join("")
-                              : "?"}
+                              : "👤"}
                           </AvatarFallback>
                         </Avatar>
                         <div>
