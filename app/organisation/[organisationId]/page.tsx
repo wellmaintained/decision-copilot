@@ -8,7 +8,7 @@ import { Pencil, Trash2, FileText, Users, Clock } from 'lucide-react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { WorkflowProgress } from '@/components/ui/workflow-progress';
-import { Decision } from '@/lib/domain/Decision';
+import { Decision, WorkflowNavigator } from '@/lib/domain/Decision';
 
 interface DecisionCardProps {
   decision: Decision;
@@ -60,7 +60,7 @@ export default function OrganisationDecisionsList() {
           )}
           <div className="flex items-center gap-4 mt-2 text-sm text-gray-500">
             <div className="flex items-center gap-1">
-              <WorkflowProgress currentStep={decision.currentStep} />
+              <WorkflowProgress currentStep={WorkflowNavigator.getStepIndex(decision.currentStep) + 1} />
             </div>
             <div className="flex items-center gap-1">
               <Users className="h-4 w-4" />
