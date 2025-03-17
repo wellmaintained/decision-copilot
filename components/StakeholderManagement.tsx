@@ -340,10 +340,12 @@ export function StakeholderManagement({ organisationId }: StakeholderManagementP
                         <AvatarImage src={stakeholder.photoURL} />
                         <AvatarFallback>
                           {stakeholder.displayName
-                            .split(' ')
-                            .map((n) => n[0])
-                            .join('')
-                            .toUpperCase()}
+                            ? stakeholder.displayName
+                                .split(' ')
+                                .map((n) => n[0])
+                                .join('')
+                                .toUpperCase()
+                            : "👤"}
                         </AvatarFallback>
                       </Avatar>
                       <div>
