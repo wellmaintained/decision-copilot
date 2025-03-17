@@ -1,18 +1,45 @@
-import { Search, Settings, Lightbulb, Zap, BookOpen } from 'lucide-react'
+import { Search, Settings, Zap, BookOpen } from 'lucide-react'
 import { SupportingMaterial } from '@/lib/domain/SupportingMaterial'
 import { IsArray, IsDate, IsEnum, IsOptional, IsString } from 'class-validator'
 import { StakeholderError, DecisionStateError } from '@/lib/domain/DecisionError'
 import { DocumentReference } from 'firebase/firestore'
 
-export const DecisionWorkflowSteps = [
-  { icon: Search, label: 'Identify' },
-  { icon: Settings, label: 'Method' },
-  { icon: Lightbulb, label: 'Options' },
-  { icon: Zap, label: 'Choose' },
-  { icon: BookOpen, label: 'Publish' },
+/**
+ * Represents a step in the decision workflow process.
+ * Each step has a unique key, an icon for visual representation,
+ * and a display label.
+ */
+export const DecisionWorkflowSteps = {
+  IDENTIFY: { key: 'identify', icon: Search, label: 'Identify' },
+  METHOD: { key: 'method', icon: Settings, label: 'Method' },
+  CHOOSE: { key: 'choose', icon: Zap, label: 'Choose' },
+  PUBLISH: { key: 'publish', icon: BookOpen, label: 'Publish' },
+} as const;
+
+/**
+ * Defines the sequence of steps in the decision workflow.
+ * This order is used for navigation and display purposes.
+ */
+export const DecisionWorkflowStepsSequence = [
+  DecisionWorkflowSteps.IDENTIFY,
+  DecisionWorkflowSteps.METHOD,
+  DecisionWorkflowSteps.CHOOSE,
+  DecisionWorkflowSteps.PUBLISH,
 ] as const;
 
-export type DecisionWorkflowStep = typeof DecisionWorkflowSteps[number];
+export type DecisionWorkflowStepKey = keyof typeof DecisionWorkflowSteps;
+export type DecisionWorkflowStep = typeof DecisionWorkflowSteps[DecisionWorkflowStepKey];
+
+/**
+ * Defines the role responsible for each step in the workflow
+ */
+export type StepRole = 'Driver' | 'Decider';
+export const StepRoles: Record<DecisionWorkflowStepKey, StepRole> = {
+  IDENTIFY: 'Driver',
+  METHOD: 'Driver',
+  CHOOSE: 'Decider',
+  PUBLISH: 'Driver',
+} as const;
 
 export type DecisionStatus = "in_progress" | "blocked" | "published" | "superseded";
 export type DecisionMethod = "accountable_individual" | "consent";
@@ -227,18 +254,15 @@ export class Decision {
 
   get currentStep(): DecisionWorkflowStep {
     if (this.status === 'published' || this.status === 'superseded') {
-      return DecisionWorkflowSteps[4]; // Published step
+      return DecisionWorkflowSteps.PUBLISH;
     }
     if (this.decision) {
-      return DecisionWorkflowSteps[3]; // Choose step
-    }
-    if (this.options.length > 0) {
-      return DecisionWorkflowSteps[2]; // Options step
+      return DecisionWorkflowSteps.CHOOSE;
     }
     if (this.decisionMethod) {
-      return DecisionWorkflowSteps[1]; // Method step
+      return DecisionWorkflowSteps.METHOD;
     }
-    return DecisionWorkflowSteps[0]; // Identify step (default)
+    return DecisionWorkflowSteps.IDENTIFY;
   }
 
   get decisionStakeholderIds(): string[] {
@@ -366,5 +390,65 @@ export class Decision {
 
   private validate(): void {
     // Implementation of validation logic
+  }
+}
+
+/**
+ * Provides navigation and state management utilities for the decision workflow.
+ * Ensures consistent step transitions and state management across the application.
+ */
+export class WorkflowNavigator {
+  /**
+   * Gets the index of a step in the workflow sequence.
+   * @throws {Error} If the step is not found in the sequence
+   */
+  static getStepIndex(step: DecisionWorkflowStep): number {
+    const index = DecisionWorkflowStepsSequence.findIndex(s => s.key === step.key);
+    if (index === -1) {
+      throw new Error(`Invalid workflow step: ${step.key}`);
+    }
+    return index;
+  }
+
+  /**
+   * Gets the previous step in the workflow sequence.
+   * @returns The previous step or null if at the start
+   */
+  static getPreviousStep(currentStep: DecisionWorkflowStep): DecisionWorkflowStep | null {
+    const currentIndex = this.getStepIndex(currentStep);
+    return currentIndex > 0 ? DecisionWorkflowStepsSequence[currentIndex - 1] : null;
+  }
+
+  /**
+   * Gets the next step in the workflow sequence.
+   * @returns The next step or null if at the end
+   */
+  static getNextStep(currentStep: DecisionWorkflowStep): DecisionWorkflowStep | null {
+    const currentIndex = this.getStepIndex(currentStep);
+    return currentIndex < DecisionWorkflowStepsSequence.length - 1 ? DecisionWorkflowStepsSequence[currentIndex + 1] : null;
+  }
+
+  /**
+   * Checks if the given step is the first in the sequence
+   */
+  static isFirstStep(step: DecisionWorkflowStep): boolean {
+    return this.getStepIndex(step) === 0;
+  }
+
+  /**
+   * Checks if the given step is the last in the sequence
+   */
+  static isLastStep(step: DecisionWorkflowStep): boolean {
+    return this.getStepIndex(step) === DecisionWorkflowStepsSequence.length - 1;
+  }
+
+  /**
+   * Validates if a transition between steps is allowed.
+   * Only allows moving one step forward or backward.
+   */
+  static isValidTransition(from: DecisionWorkflowStep, to: DecisionWorkflowStep): boolean {
+    const fromIndex = this.getStepIndex(from);
+    const toIndex = this.getStepIndex(to);
+    return toIndex <= fromIndex + 1 && toIndex >= fromIndex - 1;
   }
 }
