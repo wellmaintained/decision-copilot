@@ -108,10 +108,7 @@ describe('Decision Domain Model', () => {
       const withMethod = decision.with({ decisionMethod: 'consent' })
       expect(withMethod.currentStep.label).toBe('Method')
 
-      const withOptions = withMethod.with({ options: ['option1'] })
-      expect(withOptions.currentStep.label).toBe('Options')
-
-      const withDecision = withOptions.with({ decision: 'Final decision' })
+      const withDecision = withMethod.with({ decision: 'Final decision' })
       expect(withDecision.currentStep.label).toBe('Choose')
 
       const published = withDecision.with({ publishDate: new Date() })
