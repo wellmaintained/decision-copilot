@@ -229,9 +229,11 @@ export default function DecisionIdentityPage() {
                                 />
                                 <AvatarFallback>
                                   {driverStakeholder?.displayName
-                                    ?.split(" ")
-                                    .map((n) => n[0])
-                                    .join("") || "?"}
+                                    ? driverStakeholder.displayName
+                                        .split(" ")
+                                        .map((n) => n[0])
+                                        .join("")
+                                    : "👤"}
                                 </AvatarFallback>
                               </Avatar>
                               {driverStakeholder?.displayName}
@@ -269,7 +271,7 @@ export default function DecisionIdentityPage() {
                                     .split(" ")
                                     .map((n) => n[0])
                                     .join("")
-                                : "?"}
+                                : "👤"}
                             </AvatarFallback>
                           </Avatar>
                           {stakeholder.displayName}
