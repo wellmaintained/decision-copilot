@@ -53,6 +53,8 @@ export default function DecisionProcess() {
 
   return (
     <>
+      <RoleAssignment decision={decision} />
+      
       <Card>
         <CardHeader className="pb-3">
           <CardTitle className="text-xl font-semibold">Decision making method</CardTitle>
@@ -81,8 +83,6 @@ export default function DecisionProcess() {
           </div>
         </CardContent>
       </Card>
-
-      <RoleAssignment decision={decision} />
 
       <div className="flex justify-end pt-4">
         <Button size="lg" asChild>
