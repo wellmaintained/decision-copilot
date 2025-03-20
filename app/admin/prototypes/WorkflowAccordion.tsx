@@ -450,6 +450,8 @@ export default function WorkflowAccordion({
     if (step.key === 'method' && decision) {
       return (
         <div className="space-y-6">
+          <RoleAssignment decision={decision} />
+
           <Card>
             <CardHeader className="pb-3">
               <CardTitle className="text-xl font-semibold">Decision making method</CardTitle>
@@ -479,7 +481,6 @@ export default function WorkflowAccordion({
             </CardContent>
           </Card>
 
-          <RoleAssignment decision={decision} />
         </div>
       )
     }
