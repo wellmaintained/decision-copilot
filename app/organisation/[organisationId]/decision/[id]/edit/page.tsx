@@ -1,20 +1,17 @@
-import { use } from 'react'
 import EditDecisionClient from './EditDecisionClient'
 
-interface EditDecisionPageProps {
-  params: {
-    organisationId: string
-    id: string
-  }
-}
+type Params = Promise<{
+  organisationId: string
+  id: string
+}>
 
-export default function EditDecisionPage({ params }: EditDecisionPageProps) {
-  const resolvedParams = use(Promise.resolve(params))
-
+export default async function EditDecisionPage({ params }: { params: Params }) {
+  const { organisationId, id } = await params
+  
   return (
     <EditDecisionClient
-      organisationId={resolvedParams.organisationId}
-      id={resolvedParams.id}
+      organisationId={organisationId}
+      id={id}
     />
   )
 } 
