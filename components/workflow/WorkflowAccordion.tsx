@@ -1,4 +1,6 @@
-import React, { useState, useEffect } from 'react'
+'use client';
+
+import React, { useState, useEffect, useCallback, useMemo } from 'react'
 import {
   Accordion,
   AccordionContent,
@@ -7,6 +9,7 @@ import {
 } from "@/components/ui/accordion"
 import {
   DecisionWorkflowStep,
+  DecisionWorkflowSteps,
   DecisionWorkflowStepsSequence,
   WorkflowNavigator,
   Cost,
@@ -48,16 +51,16 @@ import { STYLE_CLASSES } from './WorkflowAccordionConstants'
 import { StepHeader, ProgressBar, NextButton } from './WorkflowAccordionComponents'
 
 interface WorkflowAccordionProps {
-  currentStep: DecisionWorkflowStep
-  onStepComplete?: (step: DecisionWorkflowStep) => void
+  currentStep?: DecisionWorkflowStep
+  onStepChange?: (nextStep: DecisionWorkflowStep) => void
   className?: string
   organisationId?: string
   decisionId?: string
 }
 
 export default function WorkflowAccordion({
-  currentStep,
-  onStepComplete,
+  currentStep = DecisionWorkflowSteps.IDENTIFY,
+  onStepChange,
   className,
   organisationId = "9HY1YTkOdqxOTFOMZe8r",
   decisionId = "KRWdpmQTU2DRR76jrlC4"
@@ -216,6 +219,13 @@ export default function WorkflowAccordion({
     const newCriteria = decision.criteria.filter((_, i) => i !== index)
     updateDecisionCriteria(newCriteria)
   }
+
+  const handleStepComplete = useCallback((step: DecisionWorkflowStep) => {
+    const nextStep = WorkflowNavigator.getNextStep(step);
+    if (nextStep && onStepChange) {
+      onStepChange(nextStep);
+    }
+  }, [onStepChange]);
 
   const renderStepContent = (step: DecisionWorkflowStep) => {
     if (step.key === 'identify' && decision && stakeholders) {
@@ -583,7 +593,9 @@ export default function WorkflowAccordion({
               {isCurrent && (
                 <div className="flex justify-between items-center mt-8">
                   <NextButton 
-                    onComplete={() => onStepComplete?.(step)} 
+                    onComplete={() => {
+                      handleStepComplete(step);
+                    }}
                     stepLabel={step.label} 
                   />
                   <ProgressBar 

@@ -1,3 +1,5 @@
+'use client';
+
 import { cn } from '@/lib/utils'
 import { ArrowDown } from 'lucide-react'
 import { DecisionWorkflowStep, DecisionWorkflowStepKey, StepRoles } from '@/lib/domain/Decision'
@@ -82,10 +84,16 @@ interface NextButtonProps {
 }
 
 export function NextButton({ onComplete, stepLabel }: NextButtonProps) {
+  if (typeof onComplete !== 'function') {
+    return null;
+  }
+
   return (
     <button
-      onClick={onComplete}
-      className="mr-4 px-4 py-2 bg-primary text-primary-foreground rounded-md inline-flex items-center gap-2 hover:bg-primary/90 transition-colors"
+      onClick={() => {
+        onComplete();
+      }}
+      className="mr-4 px-4 py-2 bg-primary text-primary-foreground rounded-md inline-flex items-center gap-2 hover:bg-primary/90 transition-colors hover:scale-105 active:scale-95"
       aria-label={`Complete ${stepLabel} and proceed to next step`}
     >
       Next
