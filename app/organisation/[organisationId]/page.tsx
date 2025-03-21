@@ -75,7 +75,7 @@ export default function OrganisationDecisionsList() {
         <div className="flex space-x-2">
           {showEditButton ? (
             <Button variant="ghost" size="icon" title="Edit decision">
-              <Link href={`/organisation/${organisationId}/decision/${decision.id}/identify`}>
+              <Link href={`/organisation/${organisationId}/decision/${decision.id}/edit`}>
                 <Pencil className="h-4 w-4" />
               </Link>
             </Button>
