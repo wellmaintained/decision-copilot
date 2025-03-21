@@ -1,14 +1,14 @@
 import * as React from "react"
 import { cn } from "@/lib/utils"
-import { DecisionWorkflowStep, DecisionWorkflowSteps } from "@/lib/domain/Decision"
+import { DecisionWorkflowStepsSequence } from "@/lib/domain/Decision"
 
-export function WorkflowProgress({ currentStep }: { currentStep: DecisionWorkflowStep }) {
+export function WorkflowProgress({ currentStep }: { currentStep: number }) {
   return (
     <div className="flex gap-1 items-center">
-      {DecisionWorkflowSteps.map((step, index) => {
+      {DecisionWorkflowStepsSequence.map((step, index) => {
         const StepIcon = step.icon
-        const isCompleted = DecisionWorkflowSteps.indexOf(currentStep) > index
-        const isActive = step === currentStep
+        const isCompleted = currentStep > index + 1
+        const isActive = index + 1 === currentStep
 
         return (
           <div
