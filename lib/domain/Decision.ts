@@ -283,6 +283,28 @@ export class Decision {
     return this.status === 'blocked' && this.getRelationshipsByType('blocked_by').length > 0;
   }
 
+  publish(): Decision {
+    if (!this.decision) {
+      throw new DecisionStateError('Cannot publish a decision without a chosen option');
+    }
+
+    if (this.publishDate) {
+      throw new DecisionStateError('Decision is already published');
+    }
+
+    if (this.isBlocked()) {
+      throw new DecisionStateError('Cannot publish a blocked decision');
+    }
+
+    if (this.isSuperseded()) {
+      throw new DecisionStateError('Cannot publish a superseded decision');
+    }
+
+    return this.with({
+      publishDate: new Date()
+    });
+  }
+
   addStakeholder(stakeholderId: string, role: StakeholderRole = "informed"): Decision {
     if (this.stakeholders.some(s => s.stakeholder_id === stakeholderId)) {
       throw new StakeholderError(`Stakeholder ${stakeholderId} is already part of this decision`);
