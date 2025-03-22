@@ -147,7 +147,7 @@ export default function DecisionView() {
           <div className="bottom-0 right-0 bg-sky-100 p-4 flex items-center justify-between z-50">
             <p className="text-slate-700">This decision has been published and can no longer be edited</p>
             <Button variant="default" className="bg-blue-600 hover:bg-blue-700">
-              <Link href={`/organisation/${organisationId}/decision/${decisionId}/identify`}>
+              <Link href={`/organisation/${organisationId}/decision/${decisionId}/edit`}>
                 Un-publish
               </Link>
             </Button>
