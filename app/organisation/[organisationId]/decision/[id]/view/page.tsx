@@ -31,10 +31,10 @@ function PublishedBanner() {
 
 export default function DecisionView() {
   const params = useParams()
-  const { decision, isLoading } = useDecision(params.id as string)
-  const { stakeholders } = useStakeholders(params.organisationId as string)
+  const { decision, loading } = useDecision(params.id as string, params.organisationId as string)
+  const { stakeholders } = useStakeholders()
 
-  if (isLoading) {
+  if (loading) {
     return <div>Loading...</div>
   }
 
@@ -53,7 +53,7 @@ export default function DecisionView() {
         </Button>
       </div>
 
-      {decision.publishedAt && <PublishedBanner />}
+      {decision.publishDate && <PublishedBanner />}
 
       <DecisionSection title="Summary">
         <DecisionSummary decision={decision} stakeholders={stakeholders} />
