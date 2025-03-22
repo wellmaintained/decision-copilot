@@ -49,6 +49,9 @@ import { DecisionItemList } from '@/components/decision-item-list'
 import { SupportingMaterialsList } from '@/components/supporting-materials-list'
 import { STYLE_CLASSES } from './WorkflowAccordionConstants'
 import { StepHeader, ProgressBar, NextButton } from './WorkflowAccordionComponents'
+import { useToast } from "@/components/ui/use-toast"
+import { DecisionSummary } from '@/components/decision-summary'
+import { useRouter } from 'next/navigation'
 
 interface WorkflowAccordionProps {
   currentStep?: DecisionWorkflowStep
@@ -69,11 +72,12 @@ export default function WorkflowAccordion({
   const [openSteps, setOpenSteps] = useState<string[]>([currentStep.key])
   const [driverOpen, setDriverOpen] = useState(false)
   const [selectedMethod, setSelectedMethod] = useState<DecisionMethod | null>(null)
+  const { toast } = useToast()
+  const router = useRouter()
 
   const {
     decision,
     loading: decisionsLoading,
-    error: decisionsError,
     updateDecisionTitle,
     updateDecisionDescription,
     updateDecisionCost,
@@ -88,6 +92,7 @@ export default function WorkflowAccordion({
     addStakeholder,
     removeStakeholder,
     updateStakeholders,
+    publishDecision,
   } = useDecision(decisionId, organisationId)
 
   const {
@@ -531,10 +536,57 @@ export default function WorkflowAccordion({
           </div>
 
           <SupportingMaterialsList 
-            materials={decision.supportingMaterials} 
+            materials={decision.supportingMaterials}
             onAdd={addSupportingMaterial}
             onRemove={removeSupportingMaterial}
           />
+        </div>
+      )
+    }
+
+    if (step.key === 'publish' && decision) {
+      return (
+        <div className="space-y-8">
+          <div className="space-y-4">
+            <div className="flex items-center gap-2">
+              <Label className="text-xl text-muted-foreground">Publish Decision</Label>
+              <span className="text-sm text-muted-foreground">
+                - review and publish your decision to inform all stakeholders
+              </span>
+            </div>
+            
+            <DecisionSummary 
+              decision={decision}
+              stakeholders={stakeholders}
+              compact
+            />
+
+            <Button 
+              variant="default"
+              className="px-8" 
+              onClick={async () => {
+                try {
+                  await publishDecision();
+                  toast({
+                    title: "Decision Published",
+                    description: "The decision has been successfully published and <TODO>stakeholders will be notified</TODO>.",
+                  });
+                  handleStepComplete(step);
+                  // Only redirect on successful publish
+                  router.push(`/organisation/${decision.organisationId}`);
+                } catch (error) {
+                  toast({
+                    variant: "destructive",
+                    title: "Failed to Publish Decision",
+                    description: error instanceof Error ? error.message : "An unexpected error occurred",
+                  });
+                  // Don't redirect or complete step on error
+                }
+              }}
+            >
+              Publish
+            </Button>
+          </div>
         </div>
       )
     }
@@ -552,10 +604,6 @@ export default function WorkflowAccordion({
 
   if (decisionsLoading || stakeholdersLoading || stakeholderTeamsLoading || organisationsLoading) {
     return <div>Loading...</div>
-  }
-
-  if (decisionsError) {
-    return <div>Error: {decisionsError.message}</div>
   }
 
   return (
@@ -590,7 +638,7 @@ export default function WorkflowAccordion({
             </AccordionTrigger>
             <AccordionContent className="px-4 pb-4">
               {renderStepContent(step)}
-              {isCurrent && (
+              {isCurrent && step.key !== 'publish' && (
                 <div className="flex justify-between items-center mt-8">
                   <NextButton 
                     onComplete={() => {
