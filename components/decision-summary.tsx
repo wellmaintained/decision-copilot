@@ -15,7 +15,7 @@ export function DecisionSummary({
   compact = false,
 }: DecisionSummaryProps) {
   const supersedesRelationship = decision.getRelationshipsByType('supersedes')[0];
-
+  const supersededByRelationship = decision.getRelationshipsByType('superseded_by')[0];
   return (
     <Card>
       <CardHeader>
@@ -23,6 +23,11 @@ export function DecisionSummary({
         {supersedesRelationship && (
           <CardDescription>
             supersedes <em>{supersedesRelationship.targetDecisionTitle}</em>
+          </CardDescription>
+        )}
+        {supersededByRelationship && (
+          <CardDescription>
+            superseded by <em>{supersededByRelationship.targetDecisionTitle}</em>
           </CardDescription>
         )}
       </CardHeader>
