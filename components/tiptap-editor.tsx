@@ -25,38 +25,6 @@ export function TipTapEditor({ content, onChange, className = '' }: TipTapEditor
   const [isFocused, setIsFocused] = React.useState(false);
   const [isRawMode, setIsRawMode] = React.useState(false);
   const [rawMarkdown, setRawMarkdown] = React.useState(content || '');
-  
-  // Update raw markdown when content changes from outside
-  React.useEffect(() => {
-    if (!isRawMode) {
-      setRawMarkdown(content || '');
-    }
-  }, [content, isRawMode]);
-
-  // Global event handler for keyboard shortcuts
-  React.useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (isFocused && (e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'b') {
-        // Prevent default behavior AND stop propagation
-        e.preventDefault();
-        e.stopPropagation();
-        
-        // Manually toggle bold in the editor
-        if (editor) {
-          editor.chain().focus().toggleBold().run();
-        }
-        
-        return false;
-      }
-    };
-    
-    // Add to document level to catch all events
-    document.addEventListener('keydown', handleKeyDown, true);
-    
-    return () => {
-      document.removeEventListener('keydown', handleKeyDown, true);
-    };
-  }, [isFocused, editor]);
 
   const editor = useEditor({
     extensions: [
@@ -94,6 +62,38 @@ export function TipTapEditor({ content, onChange, className = '' }: TipTapEditor
     onFocus: () => setIsFocused(true),
     onBlur: () => setIsFocused(false)
   });
+  
+  // Update raw markdown when content changes from outside
+  React.useEffect(() => {
+    if (!isRawMode) {
+      setRawMarkdown(content || '');
+    }
+  }, [content, isRawMode]);
+
+  // Global event handler for keyboard shortcuts
+  React.useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (isFocused && (e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'b') {
+        // Prevent default behavior AND stop propagation
+        e.preventDefault();
+        e.stopPropagation();
+        
+        // Manually toggle bold in the editor
+        if (editor) {
+          editor.chain().focus().toggleBold().run();
+        }
+        
+        return false;
+      }
+    };
+    
+    // Add to document level to catch all events
+    document.addEventListener('keydown', handleKeyDown, true);
+    
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown, true);
+    };
+  }, [isFocused, editor]);
 
   // Toggle between rich text and raw markdown modes
   const toggleEditMode = () => {
