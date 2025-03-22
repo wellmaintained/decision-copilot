@@ -3,7 +3,6 @@
 import * as React from 'react'
 import { useEditor, EditorContent } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
-import { generateHTML } from '@tiptap/html'
 import { Bold, Italic, List, ListOrdered } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
@@ -20,32 +19,44 @@ interface TipTapEditorProps {
   className?: string
 }
 
-// Function to convert HTML to Markdown (simplified version)
+// Improved function to convert HTML to Markdown
 function htmlToMarkdown(html: string): string {
+  if (!html) return '';
+  
   // Replace bold tags
   let markdown = html.replace(/<strong>(.*?)<\/strong>/g, '**$1**');
   
   // Replace italic tags
   markdown = markdown.replace(/<em>(.*?)<\/em>/g, '*$1*');
   
-  // Replace paragraphs
-  markdown = markdown.replace(/<p>(.*?)<\/p>/g, '$1\n\n');
-  
-  // Replace unordered lists
-  markdown = markdown.replace(/<ul>(.*?)<\/ul>/g, function(match, p1) {
-    return p1.replace(/<li>(.*?)<\/li>/g, '- $1\n');
-  });
-  
-  // Replace ordered lists
-  markdown = markdown.replace(/<ol>(.*?)<\/ol>/g, function(match, p1) {
-    let index = 1;
-    return p1.replace(/<li>(.*?)<\/li>/g, function(match, content) {
-      return `${index++}. ${content}\n`;
+  // Handle lists more carefully
+  // Process unordered lists
+  markdown = markdown.replace(/<ul>([\s\S]*?)<\/ul>/g, function(match, listContent) {
+    // Process each list item with proper indentation and line breaks
+    return listContent.replace(/<li>([\s\S]*?)<\/li>/g, function(match, itemContent) {
+      return `- ${itemContent.trim()}\n`;
     });
   });
   
+  // Process ordered lists
+  markdown = markdown.replace(/<ol>([\s\S]*?)<\/ol>/g, function(match, listContent) {
+    let index = 1;
+    return listContent.replace(/<li>([\s\S]*?)<\/li>/g, function(match, itemContent) {
+      return `${index++}. ${itemContent.trim()}\n`;
+    });
+  });
+  
+  // Replace paragraphs (must be after lists to prevent nested paragraph issues)
+  markdown = markdown.replace(/<p>([\s\S]*?)<\/p>/g, '$1\n\n');
+  
   // Clean up any remaining HTML tags
   markdown = markdown.replace(/<[^>]*>/g, '');
+  
+  // Fix double spaces
+  markdown = markdown.replace(/\s+/g, ' ');
+  
+  // Fix multiple newlines
+  markdown = markdown.replace(/\n\s*\n\s*\n/g, '\n\n');
   
   // Clean up extra whitespace
   markdown = markdown.trim();

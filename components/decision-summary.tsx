@@ -4,6 +4,23 @@ import { Stakeholder } from "@/lib/domain/Stakeholder"
 import { StakeholderRoleGroups } from "@/components/stakeholders/StakeholderRoleGroups"
 import ReactMarkdown from 'react-markdown'
 
+// Components for custom rendering
+const MarkdownComponents = {
+  // Override how strong (bold) is rendered
+  strong: ({node, ...props}: any) => <span className="font-bold" {...props} />,
+  
+  // Override how emphasis (italic) is rendered
+  em: ({node, ...props}: any) => <span className="italic" {...props} />,
+  
+  // Override how lists are rendered
+  ul: ({node, ...props}: any) => <ul className="list-disc ml-5 my-2" {...props} />,
+  ol: ({node, ...props}: any) => <ol className="list-decimal ml-5 my-2" {...props} />,
+  li: ({node, ...props}: any) => <li className="my-1" {...props} />,
+  
+  // Override how paragraphs are rendered
+  p: ({node, ...props}: any) => <p className="my-2" {...props} />
+};
+
 interface DecisionSummaryProps {
   decision: Decision
   stakeholders?: Stakeholder[]
@@ -36,7 +53,7 @@ export function DecisionSummary({
         <div className="space-y-2">
           <h3 className="text-muted-foreground">Description</h3>
           <div className="prose prose-sm dark:prose-invert max-w-none">
-            <ReactMarkdown>{decision.description || ''}</ReactMarkdown>
+            <ReactMarkdown components={MarkdownComponents}>{decision.description || ''}</ReactMarkdown>
           </div>
         </div>
 
@@ -56,7 +73,7 @@ export function DecisionSummary({
         <div className="space-y-2">
           <h3 className="text-muted-foreground">Decision</h3>
           <div className="rounded-md bg-muted p-4 prose prose-sm dark:prose-invert max-w-none">
-            <ReactMarkdown>{decision.decision || "No decision recorded"}</ReactMarkdown>
+            <ReactMarkdown components={MarkdownComponents}>{decision.decision || "No decision recorded"}</ReactMarkdown>
           </div>
         </div>
 
