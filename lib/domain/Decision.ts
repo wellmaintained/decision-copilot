@@ -283,6 +283,18 @@ export class Decision {
     return this.status === 'blocked' && this.getRelationshipsByType('blocked_by').length > 0;
   }
 
+  isPublished(): boolean {
+    return this.publishDate !== undefined;
+  }
+
+  getSupersedesRelationship(): DecisionRelationship | undefined {
+    return this.getRelationshipsByType('supersedes')[0];
+  }
+
+  getSupersededByRelationship(): DecisionRelationship | undefined {
+    return this.getRelationshipsByType('superseded_by')[0];
+  }
+
   publish(): Decision {
     if (!this.decision) {
       throw new DecisionStateError('Cannot publish a decision without a chosen option');
