@@ -33,4 +33,10 @@ env:
     availability:
       - BUILD
 
+  - variable: NEXT_PUBLIC_BASE_URL
+    value: https://decision-copilot.staging.wellmaintained.org
+    availability:
+      - BUILD
+      - RUNTIME
+
   # DO NOT set NODE_ENV here - let it default to 'production' for builds

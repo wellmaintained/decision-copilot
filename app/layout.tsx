@@ -14,21 +14,36 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+// Ensure NEXT_PUBLIC_BASE_URL is set
+if (!process.env.NEXT_PUBLIC_BASE_URL) {
+  throw new Error('NEXT_PUBLIC_BASE_URL environment variable is not set');
+}
+
 export const metadata: Metadata = {
   title: "Decision Copilot",
   description: "Helping teams make great decisions together",
+  metadataBase: new URL(process.env.NEXT_PUBLIC_BASE_URL),
+  authors: [{ name: 'David Laing' }],
+  openGraph: {
+    title: 'Decision Copilot',
+    description: 'Helping teams make great decisions together',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Decision Copilot',
+    description: 'Helping teams make great decisions together',
+  },
 };
 
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-}>) {
+}) {
   return (
-    <html lang="en">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
+    <html lang="en" className={`${geistSans.variable} ${geistMono.variable}`}>
+      <body className="min-h-screen bg-background font-sans antialiased">
         {children}
         <Toaster />
       </body>
