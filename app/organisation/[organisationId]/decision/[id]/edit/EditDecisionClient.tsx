@@ -18,9 +18,11 @@ export default function EditDecisionClient({ organisationId, id }: EditDecisionC
   const { toast } = useToast()
   const { decision, loading } = useDecision(id, organisationId)
   const [currentStep, setCurrentStep] = useState<DecisionWorkflowStep>(DecisionWorkflowSteps.IDENTIFY)
+  const [initialLoadComplete, setInitialLoadComplete] = useState(false)
 
   useEffect(() => {
-    if (decision) {
+    if (decision && !initialLoadComplete) {
+      setInitialLoadComplete(true)
       if (decision.isPublished()) {
         toast({
           title: "Decision is published",
@@ -38,7 +40,7 @@ export default function EditDecisionClient({ organisationId, id }: EditDecisionC
         router.push(`/organisation/${organisationId}/decision/${id}/view`)
       }
     }
-  }, [decision, organisationId, id, router, toast])
+  }, [decision, organisationId, id, router, toast, initialLoadComplete])
 
   if (!organisationId || !id) {
     return notFound()
