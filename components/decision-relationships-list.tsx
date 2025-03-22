@@ -57,8 +57,6 @@ export function DecisionRelationshipsList({
         description: '',
         cost: 'low',
         createdAt: new Date(),
-        criteria: [],
-        options: [],
         reversibility: 'hat',
         stakeholders: [],
         driverStakeholderId: '',
