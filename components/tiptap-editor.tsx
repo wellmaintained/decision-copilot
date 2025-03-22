@@ -56,7 +56,7 @@ export function TipTapEditor({ content, onChange, className = '' }: TipTapEditor
     return () => {
       document.removeEventListener('keydown', handleKeyDown, true);
     };
-  }, [isFocused]);
+  }, [isFocused, editor]);
 
   const editor = useEditor({
     extensions: [
