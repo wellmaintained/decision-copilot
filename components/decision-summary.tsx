@@ -3,22 +3,29 @@ import { Decision } from "@/lib/domain/Decision"
 import { Stakeholder } from "@/lib/domain/Stakeholder"
 import { StakeholderRoleGroups } from "@/components/stakeholders/StakeholderRoleGroups"
 import ReactMarkdown from 'react-markdown'
+import { ReactNode } from 'react'
+
+// Define proper types for the ReactMarkdown components
+interface ReactMarkdownProps {
+  children?: ReactNode;
+  className?: string;
+}
 
 // Components for custom rendering
 const MarkdownComponents = {
   // Override how strong (bold) is rendered
-  strong: ({node, ...props}: any) => <span className="font-bold" {...props} />,
+  strong: ({ children, ...props }: ReactMarkdownProps) => <span className="font-bold" {...props}>{children}</span>,
   
   // Override how emphasis (italic) is rendered
-  em: ({node, ...props}: any) => <span className="italic" {...props} />,
+  em: ({ children, ...props }: ReactMarkdownProps) => <span className="italic" {...props}>{children}</span>,
   
   // Override how lists are rendered
-  ul: ({node, ...props}: any) => <ul className="list-disc ml-5 my-2" {...props} />,
-  ol: ({node, ...props}: any) => <ol className="list-decimal ml-5 my-2" {...props} />,
-  li: ({node, ...props}: any) => <li className="my-1" {...props} />,
+  ul: ({ children, ...props }: ReactMarkdownProps) => <ul className="list-disc ml-5 my-2" {...props}>{children}</ul>,
+  ol: ({ children, ...props }: ReactMarkdownProps) => <ol className="list-decimal ml-5 my-2" {...props}>{children}</ol>,
+  li: ({ children, ...props }: ReactMarkdownProps) => <li className="my-1" {...props}>{children}</li>,
   
   // Override how paragraphs are rendered
-  p: ({node, ...props}: any) => <p className="my-2" {...props} />
+  p: ({ children, ...props }: ReactMarkdownProps) => <p className="my-2" {...props}>{children}</p>
 };
 
 interface DecisionSummaryProps {
