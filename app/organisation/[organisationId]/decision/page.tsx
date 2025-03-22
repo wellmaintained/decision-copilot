@@ -26,7 +26,7 @@ export default function DecisionsPage() {
       <div className="grid gap-4">
         {decisions?.map((decision) => (
           <Card key={decision.id} className="p-4">
-            <Link href={`/organisation/${params.organisationId}/team/${params.teamId}/project/${params.projectId}/decision/${decision.id}/identify`} className="block">
+            <Link href={`/organisation/${params.organisationId}/decision/${decision.id}/edit`} className="block">
               <h2 className="text-xl font-semibold mb-2">{decision.title || 'Untitled Decision'}</h2>
               <p className="text-muted-foreground">{decision.description || 'No description'}</p>
               <div className="flex gap-2 mt-2">

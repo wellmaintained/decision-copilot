@@ -16,7 +16,7 @@ function DecisionRelationshipItem({ targetDecision, type, onRemove }: DecisionRe
     <div className="flex items-center justify-between p-2 bg-muted rounded-md group">
       <div>
         <Link
-          href={`/organisation/${targetDecision.organisationId}/decision/${targetDecision.id}/identify`}
+          href={`/organisation/${targetDecision.organisationId}/decision/${targetDecision.id}/edit`}
           className="font-medium hover:underline"
         >
           {targetDecision.title}

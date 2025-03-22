@@ -73,7 +73,7 @@ export default function ProjectDecisionsPage() {
       <div className="flex space-x-2">
         {showEditButton ? (
           <Button variant="ghost" size="icon" title="Edit decision">
-            <Link href={`/organisation/${params.organisationId}/team/${params.teamId}/project/${params.projectId}/decision/${decision.id}/identify`}>
+            <Link href={`/organisation/${params.organisationId}/decision/${decision.id}/edit`}>
               <Pencil className="h-4 w-4" />
             </Link>
           </Button>

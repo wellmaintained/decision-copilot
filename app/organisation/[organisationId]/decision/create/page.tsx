@@ -18,7 +18,7 @@ export default function DecisionPage() {
       if (!hasCreatedDecision.current) { // we only want to run createDecision once
         hasCreatedDecision.current = true;
         createDecision().then((decision) => {
-          router.push(`${decision.id}/identify`)
+          router.push(`${decision.id}/edit`)
         })
       }
     }
