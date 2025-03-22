@@ -96,11 +96,8 @@ export function TipTapEditor({ content, onChange, className = '' }: TipTapEditor
   const toggleEditMode = () => {
     if (isRawMode && editor) {
       // When switching from raw to rich, parse the markdown content
-      editor.commands.setContent(rawMarkdown, {
-        parseOptions: {
-          preserveWhitespace: 'full'
-        }
-      });
+      const content = editor.storage.markdown.parser.parse(rawMarkdown);
+      editor.commands.setContent(content);
     }
     setIsRawMode(!isRawMode);
   };
