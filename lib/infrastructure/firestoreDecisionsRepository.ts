@@ -145,16 +145,21 @@ export class FirestoreDecisionsRepository implements DecisionsRepository {
       decisionMethod: decision.decisionMethod,
       reversibility: decision.reversibility,
       stakeholders: decision.stakeholders,
-      status: decision.status,
       driverStakeholderId: decision.driverStakeholderId,
       supportingMaterials: decision.supportingMaterials,
       organisationId: decision.organisationId,
       teamIds: decision.teamIds,
       projectIds: decision.projectIds,
+      publishDate: decision.publishDate,
       updatedAt: serverTimestamp()
     }
 
-    await updateDoc(docRef, updateData)
+    // Filter out any undefined values
+    const filteredUpdateData = Object.fromEntries(
+      Object.entries(updateData).filter(([, value]) => value !== undefined)
+    );
+
+    await updateDoc(docRef, filteredUpdateData)
   }
 
   async delete(id: string, scope: DecisionScope): Promise<void> {

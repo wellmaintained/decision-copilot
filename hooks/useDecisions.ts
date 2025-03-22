@@ -237,6 +237,18 @@ export function useDecision(decisionId: string, organisationId: string) {
     }
   };
 
+  const publishDecision = async () => {
+    try {
+      if (!decision) return;
+      await decisionsRepository.update(
+        decision.publish()
+      );
+    } catch (error) {
+      setError(error as Error);
+      throw error;
+    }
+  };
+
   return {
     decision,
     loading,
@@ -256,5 +268,6 @@ export function useDecision(decisionId: string, organisationId: string) {
     updateSupportingMaterials,
     addSupportingMaterial,
     removeSupportingMaterial,
+    publishDecision,
   };
 }
