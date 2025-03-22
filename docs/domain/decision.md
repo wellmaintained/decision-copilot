@@ -17,8 +17,6 @@ erDiagram
         string description
         string status
         string driverStakeholderId
-        string[] criteria
-        string[] options
         string decision
         string decisionMethod
         enum cost "low|medium|high"

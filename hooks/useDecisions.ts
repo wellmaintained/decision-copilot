@@ -163,30 +163,6 @@ export function useDecision(decisionId: string, organisationId: string) {
     }
   };
 
-  const updateDecisionOptions = async (options: string[]) => {
-    try {
-      if (!decision) return;
-      await decisionsRepository.update(
-        decision.with({ options }),
-      );
-    } catch (error) {
-      setError(error as Error);
-      throw error;
-    }
-  };
-
-  const updateDecisionCriteria = async (criteria: string[]) => {
-    try {
-      if (!decision) return;
-      await decisionsRepository.update(
-        decision.with({ criteria }),
-      );
-    } catch (error) {
-      setError(error as Error);
-      throw error;
-    }
-  };
-
   const updateDecisionContent = async (content: string) => {
     try {
       if (!decision) return;
@@ -262,8 +238,6 @@ export function useDecision(decisionId: string, organisationId: string) {
     updateDecisionMethod,
     addStakeholder,
     removeStakeholder,
-    updateDecisionOptions,
-    updateDecisionCriteria,
     updateDecisionContent,
     updateSupportingMaterials,
     addSupportingMaterial,

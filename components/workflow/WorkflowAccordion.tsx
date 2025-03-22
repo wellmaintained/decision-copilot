@@ -44,8 +44,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { RoleAssignment } from "@/components/role-assignment"
 import { DecisionMethodCard } from "@/components/decision-method-card"
-import { Editor } from '@/components/editor'
-import { DecisionItemList } from '@/components/decision-item-list'
+import { TipTapEditor } from '@/components/tiptap-editor'
 import { SupportingMaterialsList } from '@/components/supporting-materials-list'
 import { STYLE_CLASSES } from './WorkflowAccordionConstants'
 import { StepHeader, ProgressBar, NextButton } from './WorkflowAccordionComponents'
@@ -84,8 +83,6 @@ export default function WorkflowAccordion({
     updateDecisionReversibility,
     updateDecisionDriver,
     updateDecisionMethod,
-    updateDecisionOptions,
-    updateDecisionCriteria,
     updateDecisionContent,
     addSupportingMaterial,
     removeSupportingMaterial,
@@ -118,11 +115,6 @@ export default function WorkflowAccordion({
       setSelectedMethod(decision.decisionMethod as DecisionMethod)
     }
   }, [decision])
-
-  const handleMethodSelect = (method: DecisionMethod) => {
-    setSelectedMethod(method)
-    updateDecisionMethod(method)
-  }
 
   const handleStakeholderChange = (stakeholderId: string | string[], checked: boolean) => {
     if (!decision) return;
@@ -187,42 +179,9 @@ export default function WorkflowAccordion({
     }
   };
 
-  const handleAddOption = (option: string) => {
-    if (!decision) return;
-    const newOptions = [...decision.options.filter(o => o !== ""), option]
-    updateDecisionOptions(newOptions)
-  }
-
-  const handleUpdateOption = (index: number, option: string) => {
-    if (!decision) return;
-    const newOptions = [...decision.options]
-    newOptions[index] = option
-    updateDecisionOptions(newOptions)
-  }
-
-  const handleDeleteOption = (index: number) => {
-    if (!decision) return;
-    const newOptions = decision.options.filter((_, i) => i !== index)
-    updateDecisionOptions(newOptions)
-  }
-
-  const handleAddCriterion = (criterion: string) => {
-    if (!decision) return;
-    const newCriteria = [...decision.criteria.filter(c => c !== ""), criterion]
-    updateDecisionCriteria(newCriteria)
-  }
-
-  const handleUpdateCriterion = (index: number, criterion: string) => {
-    if (!decision) return;
-    const newCriteria = [...decision.criteria]
-    newCriteria[index] = criterion
-    updateDecisionCriteria(newCriteria)
-  }
-
-  const handleDeleteCriterion = (index: number) => {
-    if (!decision) return;
-    const newCriteria = decision.criteria.filter((_, i) => i !== index)
-    updateDecisionCriteria(newCriteria)
+  const handleMethodSelect = (method: DecisionMethod) => {
+    setSelectedMethod(method)
+    updateDecisionMethod(method)
   }
 
   const handleStepComplete = useCallback((step: DecisionWorkflowStep) => {
@@ -349,15 +308,10 @@ export default function WorkflowAccordion({
 
           <div className="space-y-3">
             <Label className="text-base text-muted-foreground">Details</Label>
-            <div className="border rounded-md">
-              <textarea
-                className="w-full p-4 min-h-[200px] bg-background resize-none focus:outline-none"
-                defaultValue={decision.description}
-                onBlur={(e) =>
-                  updateDecisionDescription(e.target.value)
-                }
-              />
-            </div>
+            <TipTapEditor
+              content={decision.description || ""}
+              onChange={(content) => updateDecisionDescription(content)}
+            />
           </div>
 
           <div className="space-y-3">
@@ -509,27 +463,9 @@ export default function WorkflowAccordion({
             title="Blocked By Decision(s)"
           />
 
-          <DecisionItemList
-            title="Options"
-            items={decision.options}
-            onAdd={handleAddOption}
-            onUpdate={handleUpdateOption}
-            onDelete={handleDeleteOption}
-            placeholder="Enter new option"
-          />
-
-          <DecisionItemList
-            title="Criteria"
-            items={decision.criteria}
-            onAdd={handleAddCriterion}
-            onUpdate={handleUpdateCriterion}
-            onDelete={handleDeleteCriterion}
-            placeholder="Enter new criterion"
-          />
-
           <div className="space-y-4">
             <h2 className="text-xl text-muted-foreground">Decision</h2>
-            <Editor 
+            <TipTapEditor 
               content={decision.decision || ""}
               onChange={(content) => updateDecisionContent(content)}
             />
