@@ -2,6 +2,7 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/com
 import { Decision } from "@/lib/domain/Decision"
 import { Stakeholder } from "@/lib/domain/Stakeholder"
 import { StakeholderRoleGroups } from "@/components/stakeholders/StakeholderRoleGroups"
+import ReactMarkdown from 'react-markdown'
 
 interface DecisionSummaryProps {
   decision: Decision
@@ -34,7 +35,9 @@ export function DecisionSummary({
       <CardContent className="space-y-6">
         <div className="space-y-2">
           <h3 className="text-muted-foreground">Description</h3>
-          <p>{decision.description}</p>
+          <div className="prose prose-sm dark:prose-invert max-w-none">
+            <ReactMarkdown>{decision.description || ''}</ReactMarkdown>
+          </div>
         </div>
 
         {!compact && (
@@ -52,8 +55,8 @@ export function DecisionSummary({
 
         <div className="space-y-2">
           <h3 className="text-muted-foreground">Decision</h3>
-          <div className="rounded-md bg-muted p-4">
-            {decision.decision || "No decision recorded"}
+          <div className="rounded-md bg-muted p-4 prose prose-sm dark:prose-invert max-w-none">
+            <ReactMarkdown>{decision.decision || "No decision recorded"}</ReactMarkdown>
           </div>
         </div>
 
