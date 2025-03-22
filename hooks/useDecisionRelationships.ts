@@ -13,12 +13,10 @@ export function useDecisionRelationships(sourceDecision: Decision) {
     try {
       const targetDecision = Decision.create({
         id: targetDetails.toDecisionId,
-        title: '', // Will be updated by the repository
+        title: '',
         description: '',
         cost: 'low',
         createdAt: new Date(),
-        criteria: [],
-        options: [],
         reversibility: 'hat',
         stakeholders: [],
         driverStakeholderId: '',
