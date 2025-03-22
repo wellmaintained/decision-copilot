@@ -88,3 +88,19 @@ body {
     @apply bg-background text-foreground;
   }
 }
+
+@layer components {
+  /* Custom styles for stakeholder selection */
+  .indeterminate[data-state="unchecked"] {
+    @apply bg-primary/30 text-primary-foreground;
+  }
+
+  .indeterminate[data-state="unchecked"]::after {
+    content: "";
+    @apply absolute inset-0 flex items-center justify-center;
+    background-color: currentColor;
+    width: 8px;
+    height: 2px;
+    margin: auto;
+  }
+}

@@ -2,7 +2,6 @@ import '@/lib/reflection'
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import "./styles/stakeholders.css";
 import { Toaster } from "@/components/ui/toaster";
 
 const geistSans = Geist({
@@ -18,18 +17,28 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Decision Copilot",
   description: "Helping teams make great decisions together",
+  metadataBase: new URL(process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'),
+  authors: [{ name: 'David Laing' }],
+  openGraph: {
+    title: 'Decision Copilot',
+    description: 'Helping teams make great decisions together',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Decision Copilot',
+    description: 'Helping teams make great decisions together',
+  },
 };
 
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-}>) {
+}) {
   return (
-    <html lang="en">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
+    <html lang="en" className={`${geistSans.variable} ${geistMono.variable}`}>
+      <body className="min-h-screen bg-background font-sans antialiased">
         {children}
         <Toaster />
       </body>

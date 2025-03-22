@@ -74,13 +74,13 @@ export default function OrganisationDecisionsList() {
         </div>
         <div className="flex space-x-2">
           {showEditButton ? (
-            <Button variant="ghost" size="icon" title="Edit decision">
+            <Button variant="ghost" size="icon" title="Edit decision" asChild>
               <Link href={`/organisation/${organisationId}/decision/${decision.id}/edit`}>
                 <Pencil className="h-4 w-4" />
               </Link>
             </Button>
           ) : (
-            <Button variant="ghost" size="icon" title="View decision">
+            <Button variant="ghost" size="icon" title="View decision" asChild>
               <Link href={`/organisation/${organisationId}/decision/${decision.id}/view`}>
                 <FileText className="h-4 w-4" />
               </Link>

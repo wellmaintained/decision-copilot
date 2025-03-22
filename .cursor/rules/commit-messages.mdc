@@ -1,0 +1,10 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+
+# Commit messages
+
+- Use Conventional Commit messages
+- Be brief and concise
