@@ -103,8 +103,6 @@ export type DecisionProps = {
   description: string;
   cost: Cost;
   createdAt: Date;
-  criteria: string[];
-  options: string[];
   decision?: string;
   decisionMethod?: string;
   reversibility: Reversibility;
@@ -134,14 +132,6 @@ export class Decision {
 
   @IsDate()
   readonly createdAt: Date;
-
-  @IsArray()
-  @IsString({ each: true })
-  readonly criteria: string[];
-
-  @IsArray()
-  @IsString({ each: true })
-  readonly options: string[];
 
   @IsOptional()
   @IsString()
@@ -366,8 +356,6 @@ export class Decision {
     this.description = props.description;
     this.cost = props.cost;
     this.createdAt = props.createdAt;
-    this.criteria = props.criteria;
-    this.options = props.options;
     this.decision = props.decision;
     this.decisionMethod = props.decisionMethod;
     this.reversibility = props.reversibility;
@@ -395,8 +383,8 @@ export class Decision {
       description: '',
       cost: 'low',
       createdAt: now,
-      criteria: [],
-      options: [],
+      decision: undefined,
+      decisionMethod: undefined,
       reversibility: 'hat',
       stakeholders: [],
       driverStakeholderId: '',
