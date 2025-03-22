@@ -50,7 +50,7 @@ import { STYLE_CLASSES } from './WorkflowAccordionConstants'
 import { StepHeader, ProgressBar, NextButton } from './WorkflowAccordionComponents'
 import { useToast } from "@/components/ui/use-toast"
 import { DecisionSummary } from '@/components/decision-summary'
-import { useRouter } from 'next/router'
+import { useRouter } from 'next/navigation'
 
 interface WorkflowAccordionProps {
   currentStep?: DecisionWorkflowStep
