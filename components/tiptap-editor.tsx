@@ -3,6 +3,7 @@
 import * as React from 'react'
 import { useEditor, EditorContent } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
+import { Markdown } from 'tiptap-markdown'
 import { Bold, Italic, List, ListOrdered } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
@@ -17,51 +18,6 @@ interface TipTapEditorProps {
   content: string
   onChange: (content: string) => void
   className?: string
-}
-
-// Improved function to convert HTML to Markdown
-function htmlToMarkdown(html: string): string {
-  if (!html) return '';
-  
-  // Replace bold tags
-  let markdown = html.replace(/<strong>(.*?)<\/strong>/g, '**$1**');
-  
-  // Replace italic tags
-  markdown = markdown.replace(/<em>(.*?)<\/em>/g, '*$1*');
-  
-  // Handle lists more carefully
-  // Process unordered lists
-  markdown = markdown.replace(/<ul>([\s\S]*?)<\/ul>/g, function(match, listContent) {
-    // Process each list item with proper indentation and line breaks
-    return listContent.replace(/<li>([\s\S]*?)<\/li>/g, function(match, itemContent) {
-      return `- ${itemContent.trim()}\n`;
-    });
-  });
-  
-  // Process ordered lists
-  markdown = markdown.replace(/<ol>([\s\S]*?)<\/ol>/g, function(match, listContent) {
-    let index = 1;
-    return listContent.replace(/<li>([\s\S]*?)<\/li>/g, function(match, itemContent) {
-      return `${index++}. ${itemContent.trim()}\n`;
-    });
-  });
-  
-  // Replace paragraphs (must be after lists to prevent nested paragraph issues)
-  markdown = markdown.replace(/<p>([\s\S]*?)<\/p>/g, '$1\n\n');
-  
-  // Clean up any remaining HTML tags
-  markdown = markdown.replace(/<[^>]*>/g, '');
-  
-  // Fix double spaces
-  markdown = markdown.replace(/\s+/g, ' ');
-  
-  // Fix multiple newlines
-  markdown = markdown.replace(/\n\s*\n\s*\n/g, '\n\n');
-  
-  // Clean up extra whitespace
-  markdown = markdown.trim();
-  
-  return markdown;
 }
 
 export function TipTapEditor({ content, onChange, className = '' }: TipTapEditorProps) {
@@ -100,13 +56,20 @@ export function TipTapEditor({ content, onChange, className = '' }: TipTapEditor
             class: 'font-bold'
           }
         }
+      }),
+      Markdown.configure({
+        html: false,
+        transformPastedText: true,
+        transformCopiedText: true
       })
     ],
-    content,
+    content: {
+      type: 'doc',
+      content: content ? [{ type: 'paragraph', content: [{ type: 'text', text: content }] }] : [],
+    },
     onUpdate: ({ editor }) => {
-      // Get HTML content and convert to Markdown
-      const html = editor.getHTML();
-      const markdown = htmlToMarkdown(html);
+      // Use the markdown extension to get markdown content
+      const markdown = editor.storage.markdown.getMarkdown();
       onChange(markdown);
     },
     editorProps: {
