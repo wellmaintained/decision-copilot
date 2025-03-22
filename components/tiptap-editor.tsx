@@ -44,10 +44,7 @@ export function TipTapEditor({ content, onChange, className = '' }: TipTapEditor
         transformCopiedText: true
       })
     ],
-    content: {
-      type: 'doc',
-      content: content ? [{ type: 'paragraph', content: [{ type: 'text', text: content }] }] : [],
-    },
+    content: rawMarkdown,
     onUpdate: ({ editor }) => {
       // Use the markdown extension to get markdown content
       const markdown = editor.storage.markdown.getMarkdown();

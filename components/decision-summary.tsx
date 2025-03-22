@@ -2,31 +2,7 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/com
 import { Decision } from "@/lib/domain/Decision"
 import { Stakeholder } from "@/lib/domain/Stakeholder"
 import { StakeholderRoleGroups } from "@/components/stakeholders/StakeholderRoleGroups"
-import ReactMarkdown from 'react-markdown'
-import { ReactNode } from 'react'
-
-// Define proper types for the ReactMarkdown components
-interface ReactMarkdownProps {
-  children?: ReactNode;
-  className?: string;
-}
-
-// Components for custom rendering
-const MarkdownComponents = {
-  // Override how strong (bold) is rendered
-  strong: ({ children, ...props }: ReactMarkdownProps) => <span className="font-bold" {...props}>{children}</span>,
-  
-  // Override how emphasis (italic) is rendered
-  em: ({ children, ...props }: ReactMarkdownProps) => <span className="italic" {...props}>{children}</span>,
-  
-  // Override how lists are rendered
-  ul: ({ children, ...props }: ReactMarkdownProps) => <ul className="list-disc ml-5 my-2" {...props}>{children}</ul>,
-  ol: ({ children, ...props }: ReactMarkdownProps) => <ol className="list-decimal ml-5 my-2" {...props}>{children}</ol>,
-  li: ({ children, ...props }: ReactMarkdownProps) => <li className="my-1" {...props}>{children}</li>,
-  
-  // Override how paragraphs are rendered
-  p: ({ children, ...props }: ReactMarkdownProps) => <p className="my-2" {...props}>{children}</p>
-};
+import { TipTapView } from '@/components/tiptap-view'
 
 interface DecisionSummaryProps {
   decision: Decision
@@ -60,7 +36,7 @@ export function DecisionSummary({
         <div className="space-y-2">
           <h3 className="text-muted-foreground">Description</h3>
           <div className="prose prose-sm dark:prose-invert max-w-none">
-            <ReactMarkdown components={MarkdownComponents}>{decision.description || ''}</ReactMarkdown>
+            <TipTapView content={decision.description || ''} />
           </div>
         </div>
 
@@ -80,7 +56,7 @@ export function DecisionSummary({
         <div className="space-y-2">
           <h3 className="text-muted-foreground">Decision</h3>
           <div className="rounded-md bg-muted p-4 prose prose-sm dark:prose-invert max-w-none">
-            <ReactMarkdown components={MarkdownComponents}>{decision.decision || "No decision recorded"}</ReactMarkdown>
+            <TipTapView content={decision.decision || "No decision recorded"} />
           </div>
         </div>
 
