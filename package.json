@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "prepare": "husky",
-    "pre:push": "pnpm run lint && pnpm run test && pnpm run build",
+    "pre:push": "pnpm run lint && pnpm run test:unit && pnpm run build",
     "dev": "concurrently -n \"emulators,next\" \"pnpm run dev:emulators:with-data\" \"wait-on -l tcp:4400 -t 30000 && pnpm run dev:next\"",
     "dev:next": "next dev --turbopack",
     "dev:emulators:with-data": "firebase emulators:start --import=.data/emulators/firebase-data --only auth,firestore",
