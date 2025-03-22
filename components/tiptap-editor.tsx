@@ -4,7 +4,7 @@ import * as React from 'react'
 import { useEditor, EditorContent } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
 import { Markdown } from 'tiptap-markdown'
-import { Bold, Italic, List, ListOrdered, Code } from 'lucide-react'
+import { Bold, Italic, List, ListOrdered, Code, Heading1, Heading2, Heading3 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Textarea } from '@/components/ui/textarea'
@@ -65,6 +65,9 @@ export function TipTapEditor({ content, onChange, className = '' }: TipTapEditor
           HTMLAttributes: {
             class: 'font-bold'
           }
+        },
+        heading: {
+          levels: [1, 2, 3]
         }
       }),
       Markdown.configure({
@@ -114,6 +117,27 @@ export function TipTapEditor({ content, onChange, className = '' }: TipTapEditor
   }
 
   const tools = [
+    { 
+      icon: Heading1, 
+      title: 'Heading 1',
+      action: () => editor?.chain().focus().toggleHeading({ level: 1 }).run(),
+      isActive: () => editor?.isActive('heading', { level: 1 }) || false,
+      showInRawMode: false,
+    },
+    { 
+      icon: Heading2, 
+      title: 'Heading 2',
+      action: () => editor?.chain().focus().toggleHeading({ level: 2 }).run(),
+      isActive: () => editor?.isActive('heading', { level: 2 }) || false,
+      showInRawMode: false,
+    },
+    { 
+      icon: Heading3, 
+      title: 'Heading 3',
+      action: () => editor?.chain().focus().toggleHeading({ level: 3 }).run(),
+      isActive: () => editor?.isActive('heading', { level: 3 }) || false,
+      showInRawMode: false,
+    },
     { 
       icon: Bold, 
       title: 'Bold',
@@ -187,7 +211,7 @@ export function TipTapEditor({ content, onChange, className = '' }: TipTapEditor
         <div className="[&_.ProseMirror]:focus-visible:outline-none [&_.ProseMirror]:focus-visible:ring-0">
           <EditorContent 
             editor={editor} 
-            className="[&_ul]:list-disc [&_ul]:ml-4 [&_ol]:list-decimal [&_ol]:ml-4" 
+            className="[&_ul]:list-disc [&_ul]:ml-4 [&_ol]:list-decimal [&_ol]:ml-4 [&_h1]:text-3xl [&_h1]:font-bold [&_h1]:mb-4 [&_h2]:text-2xl [&_h2]:font-bold [&_h2]:mb-3 [&_h3]:text-xl [&_h3]:font-bold [&_h3]:mb-2" 
           />
         </div>
       )}
