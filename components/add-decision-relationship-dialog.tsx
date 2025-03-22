@@ -24,7 +24,7 @@ import {
 } from '@/components/ui/popover'
 import { Check, ChevronDown } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import { useProjectDecisions } from '@/hooks/useProjectDecisions'
+import { useOrganisationDecisions } from '@/hooks/useOrganisationDecisions'
 import { Decision } from '@/lib/domain/Decision'
 import { SelectedDecisionDetails } from '@/hooks/useDecisionRelationships'
 
@@ -32,16 +32,17 @@ interface AddDecisionRelationshipDialogProps {
   onAdd: (details: SelectedDecisionDetails) => Promise<void>
   relationshipDescription: string
   children?: React.ReactNode
+  organisationId: string
 }
 
-export function AddDecisionRelationshipDialog({ onAdd, relationshipDescription, children }: AddDecisionRelationshipDialogProps) {
+export function AddDecisionRelationshipDialog({ onAdd, relationshipDescription, children, organisationId }: AddDecisionRelationshipDialogProps) {
   const [open, setOpen] = useState(false)
   const [selectedDecisionId, setSelectedDecisionId] = useState<string>('')
   const [errors, setErrors] = useState<string[]>([])
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [comboboxOpen, setComboboxOpen] = useState(false)
 
-  const { decisions } = useProjectDecisions()
+  const { decisions } = useOrganisationDecisions(organisationId)
 
   const resetForm = () => {
     setSelectedDecisionId('')

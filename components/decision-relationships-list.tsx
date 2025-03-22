@@ -16,7 +16,7 @@ function DecisionRelationshipItem({ targetDecision, type, onRemove }: DecisionRe
     <div className="flex items-center justify-between p-2 bg-muted rounded-md group">
       <div>
         <Link
-          href={`/organisation/${targetDecision.organisationId}/decision/${targetDecision.id}/identify`}
+          href={`/organisation/${targetDecision.organisationId}/decision/${targetDecision.id}/edit`}
           className="font-medium hover:underline"
         >
           {targetDecision.title}
@@ -102,6 +102,7 @@ export function DecisionRelationshipsList({
         <AddDecisionRelationshipDialog
           onAdd={handleAdd}
           relationshipDescription={getRelationshipDescriptionForAddDialog(relationshipType)}
+          organisationId={fromDecision.organisationId}
         >
           <Button variant="ghost" size="icon" className="h-6 w-6 ml-1 -mt-0.5">
             <Plus className="h-4 w-4" />
