@@ -31,18 +31,11 @@ function PublishedBanner() {
 
 export default function DecisionView() {
   const params = useParams()
-  const decisionId = params.id as string
-  const organisationId = params.organisationId as string
+  const { decision, isLoading } = useDecision(params.id as string)
+  const { stakeholders } = useStakeholders(params.organisationId as string)
 
-  const { decision, loading, error } = useDecision(decisionId, organisationId)
-  const { stakeholders } = useStakeholders()
-
-  if (loading) {
+  if (isLoading) {
     return <div>Loading...</div>
-  }
-
-  if (error) {
-    return <div>Error: {error.message}</div>
   }
 
   if (!decision) {
@@ -50,24 +43,22 @@ export default function DecisionView() {
   }
 
   return (
-    <>
-      <div className="space-y-8">
-        <DecisionSummary 
-          decision={decision}
-          stakeholders={stakeholders}
-        />
-
-        {decision.status === 'published' && <PublishedBanner />}
-
-        <div className="flex justify-between items-center mb-8">
-          <Button variant="outline" asChild>
-            <Link href={`/organisation/${organisationId}`}>
-              Back to Decisions
-            </Link>
-          </Button>
-        </div>
+    <div className="space-y-8">
+      <div className="flex justify-between items-center">
+        <h1 className="text-2xl font-bold text-slate-900">{decision.title}</h1>
+        <Button asChild>
+          <Link href={`/organisation/${params.organisationId}/decision/${params.id}/edit`}>
+            Edit
+          </Link>
+        </Button>
       </div>
-    </>
+
+      {decision.publishedAt && <PublishedBanner />}
+
+      <DecisionSection title="Summary">
+        <DecisionSummary decision={decision} stakeholders={stakeholders} />
+      </DecisionSection>
+    </div>
   )
 }
 
