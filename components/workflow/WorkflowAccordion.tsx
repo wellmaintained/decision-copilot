@@ -78,7 +78,6 @@ export default function WorkflowAccordion({
   const {
     decision,
     loading: decisionsLoading,
-    error: decisionsError,
     updateDecisionTitle,
     updateDecisionDescription,
     updateDecisionCost,

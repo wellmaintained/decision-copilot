@@ -5,7 +5,6 @@ import Link from 'next/link'
 import { useParams } from 'next/navigation'
 import { useDecision } from '@/hooks/useDecisions'
 import { useStakeholders } from '@/hooks/useStakeholders'
-import { SupportingMaterialIcon } from '@/components/supporting-material-icon'
 import { DecisionSummary } from '@/components/decision-summary'
 
 interface DecisionSectionProps {
