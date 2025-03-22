@@ -45,13 +45,12 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { RoleAssignment } from "@/components/role-assignment"
 import { DecisionMethodCard } from "@/components/decision-method-card"
 import { TipTapEditor } from '@/components/tiptap-editor'
-import { DecisionItemList } from '@/components/decision-item-list'
 import { SupportingMaterialsList } from '@/components/supporting-materials-list'
 import { STYLE_CLASSES } from './WorkflowAccordionConstants'
 import { StepHeader, ProgressBar, NextButton } from './WorkflowAccordionComponents'
 import { useToast } from "@/components/ui/use-toast"
 import { DecisionSummary } from '@/components/decision-summary'
-import { useRouter } from 'next/navigation'
+import { useRouter } from 'next/router'
 
 interface WorkflowAccordionProps {
   currentStep?: DecisionWorkflowStep
@@ -84,8 +83,6 @@ export default function WorkflowAccordion({
     updateDecisionReversibility,
     updateDecisionDriver,
     updateDecisionMethod,
-    updateDecisionOptions,
-    updateDecisionCriteria,
     updateDecisionContent,
     addSupportingMaterial,
     removeSupportingMaterial,
@@ -118,11 +115,6 @@ export default function WorkflowAccordion({
       setSelectedMethod(decision.decisionMethod as DecisionMethod)
     }
   }, [decision])
-
-  const handleMethodSelect = (method: DecisionMethod) => {
-    setSelectedMethod(method)
-    updateDecisionMethod(method)
-  }
 
   const handleStakeholderChange = (stakeholderId: string | string[], checked: boolean) => {
     if (!decision) return;
@@ -187,42 +179,9 @@ export default function WorkflowAccordion({
     }
   };
 
-  const handleAddOption = (option: string) => {
-    if (!decision) return;
-    const newOptions = [...decision.options.filter(o => o !== ""), option]
-    updateDecisionOptions(newOptions)
-  }
-
-  const handleUpdateOption = (index: number, option: string) => {
-    if (!decision) return;
-    const newOptions = [...decision.options]
-    newOptions[index] = option
-    updateDecisionOptions(newOptions)
-  }
-
-  const handleDeleteOption = (index: number) => {
-    if (!decision) return;
-    const newOptions = decision.options.filter((_, i) => i !== index)
-    updateDecisionOptions(newOptions)
-  }
-
-  const handleAddCriterion = (criterion: string) => {
-    if (!decision) return;
-    const newCriteria = [...decision.criteria.filter(c => c !== ""), criterion]
-    updateDecisionCriteria(newCriteria)
-  }
-
-  const handleUpdateCriterion = (index: number, criterion: string) => {
-    if (!decision) return;
-    const newCriteria = [...decision.criteria]
-    newCriteria[index] = criterion
-    updateDecisionCriteria(newCriteria)
-  }
-
-  const handleDeleteCriterion = (index: number) => {
-    if (!decision) return;
-    const newCriteria = decision.criteria.filter((_, i) => i !== index)
-    updateDecisionCriteria(newCriteria)
+  const handleMethodSelect = (method: DecisionMethod) => {
+    setSelectedMethod(method)
+    updateDecisionMethod(method)
   }
 
   const handleStepComplete = useCallback((step: DecisionWorkflowStep) => {
@@ -502,24 +461,6 @@ export default function WorkflowAccordion({
             relationshipType="blocked_by"
             fromDecision={decision}
             title="Blocked By Decision(s)"
-          />
-
-          <DecisionItemList
-            title="Options"
-            items={decision.options}
-            onAdd={handleAddOption}
-            onUpdate={handleUpdateOption}
-            onDelete={handleDeleteOption}
-            placeholder="Enter new option"
-          />
-
-          <DecisionItemList
-            title="Criteria"
-            items={decision.criteria}
-            onAdd={handleAddCriterion}
-            onUpdate={handleUpdateCriterion}
-            onDelete={handleDeleteCriterion}
-            placeholder="Enter new criterion"
           />
 
           <div className="space-y-4">
