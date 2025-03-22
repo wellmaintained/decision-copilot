@@ -44,7 +44,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { RoleAssignment } from "@/components/role-assignment"
 import { DecisionMethodCard } from "@/components/decision-method-card"
-import { Editor } from '@/components/editor'
+import { TipTapEditor } from '@/components/tiptap-editor'
 import { DecisionItemList } from '@/components/decision-item-list'
 import { SupportingMaterialsList } from '@/components/supporting-materials-list'
 import { STYLE_CLASSES } from './WorkflowAccordionConstants'
@@ -349,15 +349,10 @@ export default function WorkflowAccordion({
 
           <div className="space-y-3">
             <Label className="text-base text-muted-foreground">Details</Label>
-            <div className="border rounded-md">
-              <textarea
-                className="w-full p-4 min-h-[200px] bg-background resize-none focus:outline-none"
-                defaultValue={decision.description}
-                onBlur={(e) =>
-                  updateDecisionDescription(e.target.value)
-                }
-              />
-            </div>
+            <TipTapEditor
+              content={decision.description || ""}
+              onChange={(content) => updateDecisionDescription(content)}
+            />
           </div>
 
           <div className="space-y-3">
@@ -529,7 +524,7 @@ export default function WorkflowAccordion({
 
           <div className="space-y-4">
             <h2 className="text-xl text-muted-foreground">Decision</h2>
-            <Editor 
+            <TipTapEditor 
               content={decision.decision || ""}
               onChange={(content) => updateDecisionContent(content)}
             />
