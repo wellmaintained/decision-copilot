@@ -14,15 +14,10 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-// Ensure NEXT_PUBLIC_BASE_URL is set
-if (!process.env.NEXT_PUBLIC_BASE_URL) {
-  throw new Error('NEXT_PUBLIC_BASE_URL environment variable is not set');
-}
-
 export const metadata: Metadata = {
   title: "Decision Copilot",
   description: "Helping teams make great decisions together",
-  metadataBase: new URL(process.env.NEXT_PUBLIC_BASE_URL),
+  metadataBase: new URL(process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'),
   authors: [{ name: 'David Laing' }],
   openGraph: {
     title: 'Decision Copilot',
