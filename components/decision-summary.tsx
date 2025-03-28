@@ -92,6 +92,15 @@ export function DecisionSummary({
           </div>
         )}
 
+        {decision.decisionNotes && !compact && (
+          <div className="space-y-2">
+            <h3 className="text-muted-foreground">Notes</h3>
+            <div className="prose prose-sm dark:prose-invert max-w-none">
+              <TipTapView content={decision.decisionNotes} />
+            </div>
+          </div>
+        )}
+
         {!compact && (
           <div className="grid grid-cols-2 gap-4 pt-4 border-t">
             <div className="space-y-2">

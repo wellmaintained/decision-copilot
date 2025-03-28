@@ -14,14 +14,21 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip'
+import { cn } from "@/lib/utils"
 
 interface TipTapEditorProps {
   content: string
   onChange: (content: string) => void
   className?: string
+  minimal?: boolean
 }
 
-export function TipTapEditor({ content, onChange, className = '' }: TipTapEditorProps) {
+const getEditorClassNames = (minimal: boolean) => cn(
+  'prose prose-sm dark:prose-invert focus:outline-none max-w-none',
+  minimal ? 'p-2' : 'p-4 min-h-[200px]'
+);
+
+export function TipTapEditor({ content, onChange, className = '', minimal = false }: TipTapEditorProps) {
   const [isFocused, setIsFocused] = React.useState(false);
   const [isRawMode, setIsRawMode] = React.useState(false);
   const [rawMarkdown, setRawMarkdown] = React.useState(content || '');
@@ -59,7 +66,7 @@ export function TipTapEditor({ content, onChange, className = '' }: TipTapEditor
     },
     editorProps: {
       attributes: {
-        class: 'prose prose-sm dark:prose-invert focus:outline-none max-w-none p-4 min-h-[200px]'
+        class: getEditorClassNames(minimal)
       }
     },
     onFocus: () => setIsFocused(true),
@@ -186,35 +193,42 @@ export function TipTapEditor({ content, onChange, className = '' }: TipTapEditor
   ];
 
   return (
-    <Card className={`min-h-[300px] ${className}`}>
-      <div className="flex items-center gap-1 border-b p-2">
-        <TooltipProvider>
-          {tools
-            .filter(tool => isRawMode ? tool.showInRawMode : true)
-            .map((Tool) => (
-              <Tooltip key={Tool.title}>
-                <TooltipTrigger asChild>
-                  <Button 
-                    variant={Tool.isActive() ? "secondary" : "ghost"} 
-                    size="icon" 
-                    className="h-8 w-8"
-                    onClick={Tool.action}
-                    title={Tool.title}
-                  >
-                    <Tool.icon className="h-4 w-4" />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>{Tool.title}</TooltipContent>
-              </Tooltip>
-            ))}
-        </TooltipProvider>
-      </div>
+    <Card className={cn(
+      minimal ? 'min-h-0 border-0 shadow-none bg-transparent' : 'min-h-[300px]',
+      className
+    )}>
+      {!minimal && (
+        <div className="flex items-center gap-1 border-b p-2">
+          <TooltipProvider>
+            {tools
+              .filter(tool => isRawMode ? tool.showInRawMode : true)
+              .map((Tool) => (
+                <Tooltip key={Tool.title}>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant={Tool.isActive() ? "secondary" : "ghost"}
+                      size="icon"
+                      className="h-8 w-8"
+                      onClick={Tool.action}
+                      title={Tool.title}
+                    >
+                      <Tool.icon className="h-4 w-4" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>{Tool.title}</TooltipContent>
+                </Tooltip>
+              ))}
+          </TooltipProvider>
+        </div>
+      )}
       
       {isRawMode ? (
         <Textarea
           value={typeof rawMarkdown === 'string' ? JSON.parse(rawMarkdown) : ''}
           onChange={handleRawMarkdownChange}
-          className="min-h-[200px] resize-none border-none rounded-none focus-visible:ring-0 p-4 font-mono text-sm"
+          className={`resize-none border-none rounded-none focus-visible:ring-0 p-4 font-mono text-sm ${
+            minimal ? 'min-h-0' : 'min-h-[200px]'
+          }`}
           placeholder="Enter markdown here..."
         />
       ) : (
