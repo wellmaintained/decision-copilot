@@ -45,7 +45,15 @@ export function TipTapEditor({ content, onChange, className = '', minimal = fals
           levels: [1, 2, 3]
         },
         hardBreak: {
-          keepMarks: true
+          keepMarks: true,
+          HTMLAttributes: {
+            class: 'my-2'
+          }
+        },
+        paragraph: {
+          HTMLAttributes: {
+            class: 'mb-2'
+          }
         }
       }),
       Markdown.configure({
@@ -58,11 +66,10 @@ export function TipTapEditor({ content, onChange, className = '', minimal = fals
     content: rawMarkdown,
     onUpdate: ({ editor }) => {
       const markdown = editor.storage.markdown.getMarkdown();
-      const escapedMarkdown = JSON.stringify(markdown);
-      console.log('JSON.stringify(markdown)', escapedMarkdown);
+      console.log('markdown content:', markdown);
 
-      setRawMarkdown(escapedMarkdown);
-      onChange(escapedMarkdown);
+      setRawMarkdown(markdown);
+      onChange(markdown);
     },
     editorProps: {
       attributes: {
@@ -76,13 +83,7 @@ export function TipTapEditor({ content, onChange, className = '', minimal = fals
   // Update raw markdown when content changes from outside
   React.useEffect(() => {
     if (!isRawMode) {
-      try {
-        const parsedContent = typeof content === 'string' ? content : JSON.stringify(content);
-        setRawMarkdown(parsedContent);
-      } catch (e) {
-        console.error('Error parsing content:', e);
-        setRawMarkdown('');
-      }
+      setRawMarkdown(content || '');
     }
   }, [content, isRawMode]);
 
@@ -114,9 +115,8 @@ export function TipTapEditor({ content, onChange, className = '', minimal = fals
   // Toggle between rich text and raw markdown modes
   const toggleEditMode = () => {
     if (isRawMode && editor) {
-      const parsedContent = typeof rawMarkdown === 'string' ? JSON.parse(rawMarkdown) : '';
       editor.commands.clearContent();
-      editor.commands.setContent(parsedContent);
+      editor.commands.setContent(rawMarkdown);
     }
     setIsRawMode(!isRawMode);
   };
@@ -124,9 +124,8 @@ export function TipTapEditor({ content, onChange, className = '', minimal = fals
   // Handle raw markdown changes
   const handleRawMarkdownChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const newValue = e.target.value;
-    const escapedMarkdown = JSON.stringify(newValue);
-    setRawMarkdown(escapedMarkdown);
-    onChange(escapedMarkdown);
+    setRawMarkdown(newValue);
+    onChange(newValue);
   };
 
   if (!editor && !isRawMode) {
@@ -224,7 +223,7 @@ export function TipTapEditor({ content, onChange, className = '', minimal = fals
       
       {isRawMode ? (
         <Textarea
-          value={typeof rawMarkdown === 'string' ? JSON.parse(rawMarkdown) : ''}
+          value={rawMarkdown || ''}
           onChange={handleRawMarkdownChange}
           className={`resize-none border-none rounded-none focus-visible:ring-0 p-4 font-mono text-sm ${
             minimal ? 'min-h-0' : 'min-h-[200px]'
