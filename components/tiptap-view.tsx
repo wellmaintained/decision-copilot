@@ -21,12 +21,24 @@ export function TipTapView({ content, className = '' }: TipTapViewProps) {
         },
         heading: {
           levels: [1, 2, 3]
+        },
+        hardBreak: {
+          keepMarks: true,
+          HTMLAttributes: {
+            class: 'my-2'
+          }
+        },
+        paragraph: {
+          HTMLAttributes: {
+            class: 'mb-2'
+          }
         }
       }),
       Markdown.configure({
         html: false,
         transformPastedText: true,
-        transformCopiedText: true
+        transformCopiedText: true,
+        breaks: true
       })
     ],
     content: typeof content === 'string' ? (content.startsWith('"') ? JSON.parse(content) : content) : '',
