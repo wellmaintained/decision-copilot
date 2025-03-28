@@ -225,6 +225,23 @@ export function useDecision(decisionId: string, organisationId: string) {
     }
   };
 
+  /**
+   * Updates the notes associated with a decision
+   * @param decisionNotes - The new notes content in HTML format
+   * @throws {Error} If the update fails or if no decision is loaded
+   */
+  const updateDecisionNotes = async (decisionNotes: string) => {
+    try {
+      if (!decision) return;
+      await decisionsRepository.update(
+        decision.with({ decisionNotes }),
+      );
+    } catch (error) {
+      setError(error as Error);
+      throw error;
+    }
+  };
+
   return {
     decision,
     loading,
@@ -243,5 +260,6 @@ export function useDecision(decisionId: string, organisationId: string) {
     addSupportingMaterial,
     removeSupportingMaterial,
     publishDecision,
+    updateDecisionNotes,
   };
 }

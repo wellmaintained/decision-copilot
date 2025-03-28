@@ -115,6 +115,7 @@ export type DecisionProps = {
   teamIds: string[];
   projectIds: string[];
   relationships?: DecisionRelationshipMap;
+  decisionNotes?: string;
 };
 
 export class Decision {
@@ -174,6 +175,10 @@ export class Decision {
 
   @IsOptional()
   readonly relationships?: DecisionRelationshipMap;
+
+  @IsOptional()
+  @IsString()
+  readonly decisionNotes?: string;
 
   toDocumentReference(): DocumentReference {
     return {
@@ -368,6 +373,7 @@ export class Decision {
     this.teamIds = props.teamIds || [];
     this.projectIds = props.projectIds || [];
     this.relationships = props.relationships;
+    this.decisionNotes = props.decisionNotes;
     this.validate();
   }
 
