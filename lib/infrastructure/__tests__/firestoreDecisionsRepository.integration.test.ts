@@ -403,6 +403,64 @@ describe('FirestoreDecisionsRepository Integration Tests', () => {
     }, 20000);
   });
 
+  describe('newline preservation', () => {
+    it('should preserve empty lines in markdown content', async () => {
+      const testName = 'newline-preservation';
+      const emptyDecision = Decision.createEmptyDecision();
+      const randomChars = Math.random().toString(36).substring(5, 9);
+      const projectId = `test-${testName}-${randomChars}`;
+      const teamId = `team-${testName}-${randomChars}`;
+
+      const project = await projectRepository.create(Project.create({
+        id: projectId,
+        name: `Test Project ${testName}`,
+        description: `Temporary project for integration tests ${testName}`,
+        organisationId: BASE_TEST_SCOPE.organisationId,
+      }));
+
+      projectsToCleanUp.push(project);
+
+      const decisionScope = {
+        organisationId: project.organisationId,
+      }
+
+      // Create a decision with markdown content containing multiple empty lines
+      const markdownWithEmptyLines = `# Title
+
+This is a paragraph.
+
+
+This is another paragraph after two empty lines.
+
+* List item 1
+
+* List item 2 after an empty line`;
+
+      const decision = await repository.create(
+        emptyDecision
+          .with({
+            title: 'Decision with empty lines',
+            description: markdownWithEmptyLines,
+            teamIds: [teamId],
+            projectIds: [project.id]
+          })
+          .withoutId(),
+        decisionScope
+      );
+
+      decisionsToCleanUp.push(decision);
+
+      // Retrieve the decision and check if empty lines are preserved
+      const retrievedDecision = await repository.getById(decision.id, decisionScope);
+
+      expect(retrievedDecision.description).toBe(markdownWithEmptyLines);
+
+      // Specifically check for the double newlines
+      expect(retrievedDecision.description).toContain('paragraph.\n\n\nThis');
+      expect(retrievedDecision.description).toContain('item 1\n\n* List');
+    });
+  });
+
   describe('Relationship Management', () => {
     it('should add and remove relationships correctly', async () => {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
