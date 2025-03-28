@@ -21,15 +21,27 @@ export function TipTapView({ content, className = '' }: TipTapViewProps) {
         },
         heading: {
           levels: [1, 2, 3]
+        },
+        hardBreak: {
+          keepMarks: true,
+          HTMLAttributes: {
+            class: 'my-2'
+          }
+        },
+        paragraph: {
+          HTMLAttributes: {
+            class: 'mb-2'
+          }
         }
       }),
       Markdown.configure({
         html: false,
         transformPastedText: true,
-        transformCopiedText: true
+        transformCopiedText: true,
+        breaks: true
       })
     ],
-    content,
+    content: typeof content === 'string' ? (content.startsWith('"') ? JSON.parse(content) : content) : '',
     editable: false,
     editorProps: {
       attributes: {
@@ -41,9 +53,15 @@ export function TipTapView({ content, className = '' }: TipTapViewProps) {
   // Update editor content when content prop changes
   React.useEffect(() => {
     if (editor && content !== undefined) {
-      // Only update if content actually changed
-      if (editor.storage.markdown.getMarkdown() !== content) {
-        editor.commands.setContent(content);
+      try {
+        const parsedContent = content.startsWith('"') ? JSON.parse(content) : content;
+        // Only update if content actually changed
+        if (editor.storage.markdown.getMarkdown() !== parsedContent) {
+          editor.commands.setContent(parsedContent);
+        }
+      } catch (e) {
+        console.error('Error parsing content:', e);
+        editor.commands.setContent('');
       }
     }
   }, [editor, content]);

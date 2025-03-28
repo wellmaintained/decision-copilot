@@ -43,18 +43,31 @@ export function TipTapEditor({ content, onChange, className = '', minimal = fals
         },
         heading: {
           levels: [1, 2, 3]
+        },
+        hardBreak: {
+          keepMarks: true,
+          HTMLAttributes: {
+            class: 'my-2'
+          }
+        },
+        paragraph: {
+          HTMLAttributes: {
+            class: 'mb-2'
+          }
         }
       }),
       Markdown.configure({
         html: false,
         transformPastedText: true,
-        transformCopiedText: true
+        transformCopiedText: true,
+        breaks: true
       })
     ],
     content: rawMarkdown,
     onUpdate: ({ editor }) => {
-      // Use the markdown extension to get markdown content
       const markdown = editor.storage.markdown.getMarkdown();
+      console.log('markdown content:', markdown);
+
       setRawMarkdown(markdown);
       onChange(markdown);
     },
@@ -102,9 +115,8 @@ export function TipTapEditor({ content, onChange, className = '', minimal = fals
   // Toggle between rich text and raw markdown modes
   const toggleEditMode = () => {
     if (isRawMode && editor) {
-      // When switching from raw to rich, set the markdown content
       editor.commands.clearContent();
-      editor.commands.insertContent(rawMarkdown);
+      editor.commands.setContent(rawMarkdown);
     }
     setIsRawMode(!isRawMode);
   };
@@ -211,7 +223,7 @@ export function TipTapEditor({ content, onChange, className = '', minimal = fals
       
       {isRawMode ? (
         <Textarea
-          value={rawMarkdown}
+          value={rawMarkdown || ''}
           onChange={handleRawMarkdownChange}
           className={`resize-none border-none rounded-none focus-visible:ring-0 p-4 font-mono text-sm ${
             minimal ? 'min-h-0' : 'min-h-[200px]'
