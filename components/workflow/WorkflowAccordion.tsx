@@ -90,6 +90,7 @@ export default function WorkflowAccordion({
     removeStakeholder,
     updateStakeholders,
     publishDecision,
+    updateDecisionNotes,
   } = useDecision(decisionId, organisationId)
 
   const {
@@ -457,25 +458,42 @@ export default function WorkflowAccordion({
     if (step.key === 'choose' && decision) {
       return (
         <div className="space-y-8">
+          <div className="space-y-4">
+            <h2 className="text-xl text-muted-foreground">Notes</h2>
+            <TipTapEditor
+              content={decision.decisionNotes || ""}
+              onChange={(content) => updateDecisionNotes(content)}
+            />
+          </div>
+
           <DecisionRelationshipsList
             relationshipType="blocked_by"
             fromDecision={decision}
             title="Blocked By Decision(s)"
           />
 
-          <div className="space-y-4">
-            <h2 className="text-xl text-muted-foreground">Decision</h2>
-            <TipTapEditor 
-              content={decision.decision || ""}
-              onChange={(content) => updateDecisionContent(content)}
-            />
-          </div>
-
-          <SupportingMaterialsList 
+          <SupportingMaterialsList
             materials={decision.supportingMaterials}
             onAdd={addSupportingMaterial}
             onRemove={removeSupportingMaterial}
           />
+
+          <div className="space-y-4">
+            <div className="flex items-center gap-2">
+              <h2 className="text-xl text-muted-foreground">Decision</h2>
+              <span className="text-sm text-muted-foreground">
+                - state your decision concisely in 1-2 sentences
+              </span>
+            </div>
+            <div className="rounded-md border">
+              <TipTapEditor
+                content={decision.decision || ""}
+                onChange={(content) => updateDecisionContent(content)}
+                className="prose-sm min-h-[4rem] max-h-[8rem] overflow-y-auto"
+                minimal
+              />
+            </div>
+          </div>
         </div>
       )
     }

@@ -55,6 +55,7 @@ export class FirestoreDecisionsRepository implements DecisionsRepository {
       teamIds: data.teamIds || [],
       projectIds: data.projectIds || [],
       relationships: data.relationships || {},
+      decisionNotes: data.decisionNotes || '',
     };
     return Decision.create(props);
   }
@@ -94,10 +95,10 @@ export class FirestoreDecisionsRepository implements DecisionsRepository {
     return this.decisionFromFirestore(docSnap)
   }
 
-  async create(initialData: Partial<Omit<DecisionProps, "id">>, scope: DecisionScope): Promise<Decision> {
+  async create(scope: DecisionScope, initialData: Partial<DecisionProps> = {}): Promise<Decision> {
     const docRef = doc(collection(db, this.getDecisionPath(scope)))
 
-    const createData: Record<string, string | string[] | null | FieldValue | Record<string, unknown> | DecisionStakeholderRole[] | SupportingMaterial[]> = {
+    const data: Record<string, string | string[] | null | FieldValue | Record<string, unknown> | DecisionStakeholderRole[] | SupportingMaterial[]> = {
       title: initialData.title ?? '',
       description: initialData.description ?? '',
       cost: initialData.cost ?? 'low',
@@ -110,16 +111,17 @@ export class FirestoreDecisionsRepository implements DecisionsRepository {
       organisationId: scope.organisationId,
       teamIds: initialData.teamIds ?? [],
       projectIds: initialData.projectIds ?? [],
+      decisionNotes: initialData.decisionNotes ?? '',
       createdAt: serverTimestamp(),
       updatedAt: serverTimestamp(),
     }
 
     // Filter out any undefined values
-    const filteredCreateData = Object.fromEntries(
-      Object.entries(createData).filter(([, value]) => value !== undefined)
+    const filteredData = Object.fromEntries(
+      Object.entries(data).filter(([, value]) => value !== undefined)
     );
 
-    await setDoc(docRef, filteredCreateData)
+    await setDoc(docRef, filteredData)
 
     return this.getById(docRef.id, scope)
   }
@@ -131,7 +133,7 @@ export class FirestoreDecisionsRepository implements DecisionsRepository {
 
     const docRef = doc(db, this.getDecisionPath(scope), decision.id)
 
-    const updateData: Record<string, FieldValue | Partial<unknown> | undefined> = {
+    const data: Record<string, FieldValue | Partial<unknown> | undefined> = {
       title: decision.title,
       description: decision.description,
       cost: decision.cost,
@@ -145,15 +147,16 @@ export class FirestoreDecisionsRepository implements DecisionsRepository {
       teamIds: decision.teamIds,
       projectIds: decision.projectIds,
       publishDate: decision.publishDate,
+      decisionNotes: decision.decisionNotes,
       updatedAt: serverTimestamp()
     }
 
     // Filter out any undefined values
-    const filteredUpdateData = Object.fromEntries(
-      Object.entries(updateData).filter(([, value]) => value !== undefined)
+    const filteredData = Object.fromEntries(
+      Object.entries(data).filter(([, value]) => value !== undefined)
     );
 
-    await updateDoc(docRef, filteredUpdateData)
+    await updateDoc(docRef, filteredData)
   }
 
   async delete(id: string, scope: DecisionScope): Promise<void> {
