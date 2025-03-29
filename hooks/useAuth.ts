@@ -1,15 +1,9 @@
 // hooks/useAuth.ts
-import { useState, useEffect } from 'react';
-import { User, onAuthStateChanged } from 'firebase/auth';
-import { auth } from '../lib/firebase';
-import { FirestoreStakeholdersRepository } from '@/lib/infrastructure/firestoreStakeholdersRepository';
-
-// List of admin emails
-const ADMIN_EMAILS = [
-  'mrdavidlaing@gmail.com',
-  'david@mechanical-orchard.com',
-  // Add more admin emails as needed
-];
+import { useState, useEffect } from "react";
+import { User, onAuthStateChanged } from "firebase/auth";
+import { auth, functions } from "@/lib/firebase";
+import { FirestoreStakeholdersRepository } from "@/lib/infrastructure/firestoreStakeholdersRepository";
+import { httpsCallable } from "firebase/functions";
 
 /**
  * Single Responsibility: keeps track of the current Firebase Auth user
@@ -25,10 +19,14 @@ export function useAuth() {
 
       if (firebaseUser) {
         await stakeholderRepository.updateStakeholderForUser(firebaseUser);
-        
-        // Check if the user is an admin
-        const isUserAdmin = firebaseUser.email ? ADMIN_EMAILS.includes(firebaseUser.email) : false;
-        setIsAdmin(isUserAdmin);
+        // Call the setAdminClaim function and get the token
+        const setAdminClaimFn = httpsCallable(functions, "setAdminClaim");
+        await setAdminClaimFn();
+        // Force token refresh to get latest claims
+        await firebaseUser.getIdToken(true);
+        // Get the claims
+        const token = await firebaseUser.getIdTokenResult();
+        setIsAdmin(token.claims.admin === true);
       } else {
         setIsAdmin(false);
       }
