@@ -1,19 +1,89 @@
 ---
-description: Technology stack
-globs: 
+description: 
+globs: *\.(ts|tsx|js|jsx)$
 alwaysApply: false
 ---
+# Technology Stack
 
-# Technology stack
+Rule for documenting and maintaining consistency in the technology stack used across the project.
 
-- Framework: Next.js 15.1 with React 19
-- Language: TypeScript
-- Styling: Tailwind CSS with shadcn/ui components
-- Databas*: Firebase Firestore
-- Authentication: Firebase Auth
-- State Management: React Hooks + Custom Hooks
-- Form Handling: React Hook Form
-- Data Visualization: Recharts
-- Testing: vitest
-- Dependency Management: pnpm
-  - Always run commands using pnpm rather than npm
+<rule>
+name: technology-stack
+description: Documents the core technology stack and enforces consistent version usage
+filters:
+  - type: file_extension
+    pattern: "*\.(ts|tsx|js|jsx)$"
+  - type: content
+    pattern: "import|require"
+  - type: event
+    pattern: "file_change|file_create"
+
+actions:
+  - type: suggest
+    message: |
+      This project uses the following technology stack:
+
+      Core Framework:
+      - Next.js 15.x (with Turbopack)
+      - React 19.x
+      - TypeScript 5.x
+
+      Backend & Authentication:
+      - Firebase 11.x
+        - Authentication
+        - Firestore
+        - Cloud Functions
+        - App Hosting
+      - Firebase Admin SDK 12.x
+      - Firebase Functions 6.x
+
+      UI Components & Styling:
+      - Radix UI (Headless Components)
+      - Tailwind CSS 3.x
+      - Class Variance Authority
+      - Framer Motion 12.x
+      - Lucide React (Icons)
+
+      Form Handling & Validation:
+      - React Hook Form 7.x
+      - Zod 3.x
+      - Class Validator
+      - Class Transformer
+
+      Rich Text Editing:
+      - Tiptap 2.x
+      - React Markdown 10.x
+
+      Data Visualization:
+      - Recharts 2.x
+
+      Development Tools:
+      - ESLint 9.x
+      - Vitest 3.x
+      - Husky (Git Hooks)
+      - Concurrently (Dev Process)
+
+      When adding new dependencies:
+      1. Ensure compatibility with existing stack versions
+      2. Prefer established libraries from current stack
+      3. Document major version changes
+      4. Consider bundle size impact
+      5. Check Firebase compatibility
+
+examples:
+  - input: |
+      # Adding a new UI component library
+      import { Button } from '@some-ui/react'
+    output: "Consider using Radix UI components with our existing styling system"
+
+  - input: |
+      # Using an older React version
+      "react": "^18.0.0"
+    output: "Project uses React 19.x, please update version"
+
+metadata:
+  priority: high
+  version: 1.0
+  last_updated: "2024-03-21"
+  maintainer: "Team"
+</rule>
