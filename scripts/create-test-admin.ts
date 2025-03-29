@@ -28,7 +28,7 @@ async function main() {
         console.log(chalk.blue('Email:', TEST_ADMIN_EMAIL));
         console.log(chalk.blue('Password:', TEST_ADMIN_PASSWORD));
     } catch (error) {
-        if (error.code === 'auth/email-already-exists') {
+        if (error instanceof Error && 'code' in error && error.code === 'auth/email-already-exists') {
             console.log(chalk.yellow('Test admin user already exists'));
         } else {
             console.error(chalk.red('Error creating test admin user:'), error);
