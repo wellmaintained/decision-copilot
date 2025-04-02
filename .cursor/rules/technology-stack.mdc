@@ -1,6 +1,6 @@
 ---
 description: 
-globs: *\.(ts|tsx|js|jsx)$
+globs: package.json
 alwaysApply: false
 ---
 # Technology Stack
@@ -12,7 +12,7 @@ name: technology-stack
 description: Documents the core technology stack and enforces consistent version usage
 filters:
   - type: file_extension
-    pattern: "*\.(ts|tsx|js|jsx)$"
+    pattern: "package.json"
   - type: content
     pattern: "import|require"
   - type: event

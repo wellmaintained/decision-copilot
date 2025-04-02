@@ -7,7 +7,7 @@ import { DomainValidationError } from '@/lib/domain/DomainValidationError'
 export interface OrganisationProps {
   id: string
   name: string
-  teams: Team[]
+  teams?: Team[]
 }
 
 export class Organisation {
@@ -25,7 +25,7 @@ export class Organisation {
   private constructor(props: OrganisationProps) {
     this.id = props.id
     this.name = props.name
-    this.teams = props.teams.map(t => Team.create(t))
+    this.teams = props.teams?.map(t => Team.create(t)) || []
     this.validate()
   }
 

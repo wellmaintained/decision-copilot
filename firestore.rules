@@ -2,9 +2,9 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Allow all operations when running in the emulator
-    match /{document=**} {
-      allow read, write: if request.auth != null && (request.auth.uid != null || request.resource.data.test == true);
+    // Helper function to check if user is admin
+    function isAdmin() {
+      return request.auth.token.admin == true;
     }
 
     // Helper function to check if user can access an organisation
@@ -14,29 +14,41 @@ service cloud.firestore {
     }
 
     match /organisations/{orgId} {
-      // Allow read if user is a member of the organisation
-      allow read: if canAccessOrganisation(orgId);
+      // Allow read if user is a member of the organisation or is admin
+      allow read: if canAccessOrganisation(orgId) || isAdmin();
 
       // Teams collection
       match /teams/{teamId} {
-        allow read, write: if canAccessOrganisation(orgId);
+        allow read, write: if canAccessOrganisation(orgId) || isAdmin();
+      }
+
+      // Team hierarchies collection
+      match /teamHierarchies/{hierarchyId} {
+        allow read: if canAccessOrganisation(orgId);
+        allow write: if isAdmin();
       }
 
       // Projects collection - directly under organisation
       match /projects/{projectId} {
-        allow read, write: if canAccessOrganisation(orgId);
+        allow read, write: if canAccessOrganisation(orgId) || isAdmin();
       }
 
       // Decisions collection - directly under organisation
       match /decisions/{decisionId} {
-        allow read, write: if canAccessOrganisation(orgId);
+        allow read, write: if canAccessOrganisation(orgId) || isAdmin();
       }
     }
 
     // StakeholderTeams collection
     match /stakeholderTeams/{stakeholderTeamId} {
-      allow read: if request.auth.uid == stakeholderTeamId;
-      allow write: if request.auth.uid == stakeholderTeamId;
+      allow read: if request.auth.uid == stakeholderTeamId || isAdmin();
+      allow write: if request.auth.uid == stakeholderTeamId || isAdmin();
+    }
+
+    // Allow all operations when running in the emulator
+    match /{document=**} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null && request.resource.data.test == true;
     }
   }
 }

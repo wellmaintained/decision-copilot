@@ -13,6 +13,13 @@ interface HierarchicalTeamNode {
   [key: string]: unknown
 }
 
+interface FirestoreTeamNode {
+  id: string;
+  name: string;
+  parentId: string | null;
+  children: Record<string, FirestoreTeamNode>;
+}
+
 export class FirestoreTeamHierarchyRepository implements TeamHierarchyRepository {
   /**
    * Get the team hierarchy for an organisation
@@ -21,23 +28,19 @@ export class FirestoreTeamHierarchyRepository implements TeamHierarchyRepository
    */
   async getByOrganisationId(organisationId: string): Promise<TeamHierarchy | null> {
     try {
-      const docRef = doc(db, 'organisations', organisationId, 'teamHierarchies', 'hierarchy')
-      const docSnap = await getDoc(docRef)
-
-      if (docSnap.exists()) {
-        const data = docSnap.data()
-        if (data.rootTeams) {
-          // Convert hierarchical structure to flat structure with parent-child relationships
-          const teams = this.convertHierarchicalToFlat(data.rootTeams as Record<string, HierarchicalTeamNode>)
-          return TeamHierarchy.create({ teams })
-        }
-
+      const hierarchyRef = doc(db, 'organisations', organisationId, 'teamHierarchies', 'hierarchy')
+      const snapshot = await getDoc(hierarchyRef)
+      
+      if (!snapshot.exists()) {
         return null
       }
-
-      return null
+      
+      const data = snapshot.data()
+      return TeamHierarchy.create({
+        teams: this.convertFromFirestore(data.teams || {})
+      })
     } catch (error) {
-      console.error('Error getting team hierarchy:', error)
+      console.error('Error fetching team hierarchy:', error)
       throw error
     }
   }
@@ -49,16 +52,44 @@ export class FirestoreTeamHierarchyRepository implements TeamHierarchyRepository
    */
   async save(organisationId: string, hierarchy: TeamHierarchy): Promise<void> {
     try {
-      const docRef = doc(db, 'organisations', organisationId, 'teamHierarchies', 'hierarchy')
-
-      // Transform to a pure hierarchical structure
-      const rootTeams = this.convertFlatToHierarchical(hierarchy.teams)
-
-      await setDoc(docRef, { rootTeams })
+      const hierarchyRef = doc(db, 'organisations', organisationId, 'teamHierarchies', 'hierarchy')
+      await setDoc(hierarchyRef, {
+        teams: this.convertToFirestore(hierarchy.teams)
+      })
     } catch (error) {
       console.error('Error saving team hierarchy:', error)
       throw error
     }
+  }
+
+  private convertToFirestore(teams: Record<string, TeamHierarchyNode>): Record<string, FirestoreTeamNode> {
+    const result: Record<string, FirestoreTeamNode> = {}
+    
+    for (const [id, team] of Object.entries(teams)) {
+      result[id] = {
+        id: team.id,
+        name: team.name,
+        parentId: team.parentId,
+        children: this.convertToFirestore(team.children)
+      }
+    }
+    
+    return result
+  }
+
+  private convertFromFirestore(data: Record<string, FirestoreTeamNode>): Record<string, TeamHierarchyNode> {
+    const result: Record<string, TeamHierarchyNode> = {}
+    
+    for (const [id, team] of Object.entries(data)) {
+      result[id] = {
+        id: team.id,
+        name: team.name,
+        parentId: team.parentId,
+        children: this.convertFromFirestore(team.children || {})
+      }
+    }
+    
+    return result
   }
 
   /**

@@ -39,4 +39,10 @@ env:
       - BUILD
       - RUNTIME
 
+  - variable: ADMIN_USERS
+    value: mrdavidlaing@gmail.com,david@mechanical-orchard.com,david@castlelaing.com
+    availability:
+      - BUILD
+      - RUNTIME
+
   # DO NOT set NODE_ENV here - let it default to 'production' for builds

@@ -1,17 +1,13 @@
-import { useState, useEffect, useMemo } from 'react'
-import { doc, onSnapshot } from 'firebase/firestore'
-import { db } from '@/lib/firebase'
+import { useState, useEffect } from 'react'
 import { TeamHierarchy, TeamHierarchyNode } from '@/lib/domain/TeamHierarchy'
-import { FirestoreTeamHierarchyRepository } from '@/lib/infrastructure/firestoreTeamHierarchyRepository'
 
 interface UseTeamHierarchyResult {
   hierarchy: TeamHierarchy | null
   loading: boolean
   error: Error | null
-  addTeam: (team: Omit<TeamHierarchyNode, 'children'>) => Promise<void>
-  updateTeam: (team: Omit<TeamHierarchyNode, 'children'>) => Promise<void>
-  moveTeam: (teamId: string, newParentId: string | null) => Promise<void>
+  addTeam: (team: TeamHierarchyNode) => Promise<void>
   removeTeam: (teamId: string) => Promise<void>
+  updateTeam: (teamId: string, team: TeamHierarchyNode) => Promise<void>
 }
 
 /**
@@ -21,90 +17,80 @@ interface UseTeamHierarchyResult {
  */
 export function useTeamHierarchy(organisationId: string): UseTeamHierarchyResult {
   const [hierarchy, setHierarchy] = useState<TeamHierarchy | null>(null)
-  const [loading, setLoading] = useState<boolean>(true)
+  const [loading, setLoading] = useState(true)
   const [error, setError] = useState<Error | null>(null)
 
-  const repository = useMemo(() => new FirestoreTeamHierarchyRepository(), [])
-
   useEffect(() => {
-    if (!organisationId) {
-      setLoading(false)
-      return () => {}
-    }
-
-    setLoading(true)
-    setError(null)
-
-    const hierarchyRef = doc(db, 'organisations', organisationId, 'teamHierarchies', 'hierarchy')
-    
-    const unsubscribe = onSnapshot(
-      hierarchyRef,
-      async (snapshot) => {
-        try {
-          if (snapshot.exists()) {
-            // Use the repository to handle the conversion from hierarchical to flat structure
-            const hierarchyFromRepo = await repository.getByOrganisationId(organisationId)
-            if (hierarchyFromRepo) {
-              setHierarchy(hierarchyFromRepo)
-            } else {
-              // Create an empty hierarchy if it doesn't exist
-              setHierarchy(TeamHierarchy.create({ teams: {} }))
-            }
-          } else {
-            // Create an empty hierarchy if it doesn't exist
-            setHierarchy(TeamHierarchy.create({ teams: {} }))
-          }
-          setLoading(false)
-        } catch (err) {
-          console.error('Error parsing team hierarchy:', err)
-          setError(err instanceof Error ? err : new Error(String(err)))
-          setLoading(false)
-        }
-      },
-      (err) => {
-        console.error('Error subscribing to team hierarchy:', err)
-        setError(err)
+    async function fetchHierarchy() {
+      try {
+        const response = await fetch(`/api/admin/organisations/${organisationId}/team-hierarchy`)
+        if (!response.ok) throw new Error('Failed to fetch team hierarchy')
+        const data = await response.json()
+        setHierarchy(data)
+      } catch (err) {
+        setError(err instanceof Error ? err : new Error('Unknown error'))
+      } finally {
         setLoading(false)
       }
-    )
-
-    return () => unsubscribe()
-  }, [organisationId, repository])
-
-  const addTeam = async (team: Omit<TeamHierarchyNode, 'children'>): Promise<void> => {
-    if (!hierarchy) {
-      throw new Error('Hierarchy not loaded')
     }
-    
-    const updatedHierarchy = hierarchy.addTeam(team)
-    await repository.save(organisationId, updatedHierarchy)
+
+    fetchHierarchy()
+  }, [organisationId])
+
+  const addTeam = async (team: TeamHierarchyNode) => {
+    try {
+      const response = await fetch(`/api/admin/organisations/${organisationId}/team-hierarchy/teams`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(team)
+      })
+      
+      if (!response.ok) throw new Error('Failed to add team')
+      
+      const updatedHierarchy = await response.json()
+      setHierarchy(updatedHierarchy)
+    } catch (err) {
+      setError(err instanceof Error ? err : new Error('Failed to add team'))
+      throw err
+    }
   }
 
-  const updateTeam = async (team: Omit<TeamHierarchyNode, 'children'>): Promise<void> => {
-    if (!hierarchy) {
-      throw new Error('Hierarchy not loaded')
+  const removeTeam = async (teamId: string) => {
+    try {
+      const response = await fetch(
+        `/api/admin/organisations/${organisationId}/team-hierarchy/teams/${teamId}`,
+        { method: 'DELETE' }
+      )
+      
+      if (!response.ok) throw new Error('Failed to remove team')
+      
+      const updatedHierarchy = await response.json()
+      setHierarchy(updatedHierarchy)
+    } catch (err) {
+      setError(err instanceof Error ? err : new Error('Failed to remove team'))
+      throw err
     }
-    
-    const updatedHierarchy = hierarchy.updateTeam(team)
-    await repository.save(organisationId, updatedHierarchy)
   }
 
-  const moveTeam = async (teamId: string, newParentId: string | null): Promise<void> => {
-    if (!hierarchy) {
-      throw new Error('Hierarchy not loaded')
+  const updateTeam = async (teamId: string, team: TeamHierarchyNode) => {
+    try {
+      const response = await fetch(
+        `/api/admin/organisations/${organisationId}/team-hierarchy/teams/${teamId}`,
+        {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(team)
+        }
+      )
+      
+      if (!response.ok) throw new Error('Failed to update team')
+      
+      const updatedHierarchy = await response.json()
+      setHierarchy(updatedHierarchy)
+    } catch (err) {
+      setError(err instanceof Error ? err : new Error('Failed to update team'))
+      throw err
     }
-    
-    const updatedHierarchy = hierarchy.moveTeam(teamId, newParentId)
-    await repository.save(organisationId, updatedHierarchy)
-  }
-
-  const removeTeam = async (teamId: string): Promise<void> => {
-    if (!hierarchy) {
-      throw new Error('Hierarchy not loaded')
-    }
-    
-    const updatedHierarchy = hierarchy.removeTeam(teamId)
-    await repository.save(organisationId, updatedHierarchy)
   }
 
   return {
@@ -112,8 +98,7 @@ export function useTeamHierarchy(organisationId: string): UseTeamHierarchyResult
     loading,
     error,
     addTeam,
-    updateTeam,
-    moveTeam,
-    removeTeam
+    removeTeam,
+    updateTeam
   }
 } 
