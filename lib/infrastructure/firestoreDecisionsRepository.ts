@@ -95,7 +95,7 @@ export class FirestoreDecisionsRepository implements DecisionsRepository {
     return this.decisionFromFirestore(docSnap)
   }
 
-  async create(scope: DecisionScope, initialData: Partial<DecisionProps> = {}): Promise<Decision> {
+  async create(initialData: Partial<DecisionProps> = {}, scope: DecisionScope): Promise<Decision> {
     const docRef = doc(collection(db, this.getDecisionPath(scope)))
 
     const data: Record<string, string | string[] | null | FieldValue | Record<string, unknown> | DecisionStakeholderRole[] | SupportingMaterial[]> = {
