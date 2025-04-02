@@ -122,6 +122,12 @@ export function DecisionRelationshipsList({
         return "Select a decision that this decision supersedes";
       case "superseded_by":
         return "Select a decision that supersedes this decision";
+      case "did_block":
+        return "Select a decision that this decision blocked";
+      case "was_blocked_by":
+        return "Select a decision that blocked this decision";
+      default:
+        return `Select a decision to create a ${type} relationship`;
     }
   };
 

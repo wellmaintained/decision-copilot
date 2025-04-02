@@ -408,37 +408,22 @@ export class FirestoreDecisionsRepository implements DecisionsRepository {
           await this.getDecisionFromDecisionRelationship(relationship);
 
         if (targetDecision && targetDecision.relationships) {
-          // Get the key for the blocked_by relationship
-          const oldKey = targetDecision.getRelationshipKey(
-            "blocked_by",
-            decisionId,
-          );
+          // Find all relationships of type blocked_by that point to the published decision
+          const blockedByRelationships = targetDecision
+            .getRelationshipsByType("blocked_by")
+            .filter((rel) => rel.targetDecision.id === decisionId);
 
-          // If the relationship exists, transform it to was_blocked_by
-          if (targetDecision.relationships[oldKey]) {
-            const oldRelationship = targetDecision.relationships[oldKey];
+          if (blockedByRelationships.length > 0) {
+            // Remove all blocked_by relationships and add was_blocked_by relationships
+            const updatedDecision = targetDecision
+              .unsetRelationship("blocked_by", decisionId)
+              .setRelationship("was_blocked_by", decision);
 
-            // Create updated relationships map with the transformed relationship
-            const updatedRelationships = { ...targetDecision.relationships };
-
-            // Remove the old relationship
-            delete updatedRelationships[oldKey];
-
-            // Add the new relationship
-            const newKey = targetDecision.getRelationshipKey(
-              "was_blocked_by",
-              decisionId,
-            );
-            updatedRelationships[newKey] = {
-              ...oldRelationship,
-              type: "was_blocked_by",
-            };
-
-            // Update the relationship in the batch
+            // Update the relationships in the batch
             this.updateDecisionRelationships(
               batch,
               targetDecision,
-              updatedRelationships,
+              updatedDecision.relationships,
             );
           }
         }
@@ -475,7 +460,7 @@ export class FirestoreDecisionsRepository implements DecisionsRepository {
       // Find all keys that point to this relationship
       const keys = Object.entries(freshDecision.relationships || {})
         .filter(
-          ([_, rel]) =>
+          ([, rel]) =>
             rel.targetDecision.id === relationship.targetDecision.id &&
             rel.type === "blocks",
         )
@@ -510,7 +495,7 @@ export class FirestoreDecisionsRepository implements DecisionsRepository {
       // Find all keys that point to this relationship
       const inverseKeys = Object.entries(targetRelationships)
         .filter(
-          ([_, rel]) =>
+          ([, rel]) =>
             rel.targetDecision.id === freshDecision.id &&
             rel.type === "blocked_by",
         )
