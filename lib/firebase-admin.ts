@@ -2,6 +2,7 @@ import { config } from 'dotenv'
 import { resolve } from 'path'
 import { initializeApp, getApps, cert, getApp } from 'firebase-admin/app'
 import { getFirestore } from 'firebase-admin/firestore'
+import { getAuth } from 'firebase-admin/auth'
 
 // Simulate NextJS behaviour)
 // .env will be loaded automatically by dotenv
@@ -35,3 +36,13 @@ const app = getApp();
 export const adminDb = isProduction 
     ? getFirestore(app, 'decision-copilot-prod') 
     : getFirestore();
+
+// Export Auth for user management
+export const adminAuth = getAuth(app);
+
+/**
+ * Get the list of admin users from environment variables
+ */
+export function getAdminUsers(): string[] {
+    return (process.env.ADMIN_USERS || '').split(',').map(email => email.trim());
+}

@@ -1,12 +1,11 @@
 // hooks/useAuth.ts
 import { useState, useEffect } from "react";
 import { User, onAuthStateChanged } from "firebase/auth";
-import { auth, functions } from "@/lib/firebase";
+import { auth } from "@/lib/firebase";
 import { FirestoreStakeholdersRepository } from "@/lib/infrastructure/firestoreStakeholdersRepository";
-import { httpsCallable } from "firebase/functions";
 
 /**
- * Single Responsibility: keeps track of the current Firebase Auth user
+ * Keeps track of the current Firebase Auth user and manages admin session
  */
 export function useAuth() {
   const [user, setUser] = useState<User | null>(null);
@@ -19,16 +18,45 @@ export function useAuth() {
 
       if (firebaseUser) {
         await stakeholderRepository.updateStakeholderForUser(firebaseUser);
-        // Call the setAdminClaim function and get the token
-        const setAdminClaimFn = httpsCallable(functions, "setAdminClaim");
-        await setAdminClaimFn();
-        // Force token refresh to get latest claims
-        await firebaseUser.getIdToken(true);
-        // Get the claims
-        const token = await firebaseUser.getIdTokenResult();
-        setIsAdmin(token.claims.admin === true);
+        try {
+          // Get the current token
+          const idToken = await firebaseUser.getIdToken();
+          
+          // Create session cookie
+          await fetch('/api/auth/session', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ idToken }),
+          });
+
+          // Check admin status
+          const response = await fetch('/api/auth/check-admin', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ idToken }),
+          });
+
+          if (response.ok) {
+            const result = await response.json();
+            setIsAdmin(result.isAdmin === true);
+          } else {
+            console.error('Failed to check admin status:', await response.text());
+            setIsAdmin(false);
+          }
+        } catch (error) {
+          console.error('Error checking admin status:', error);
+          setIsAdmin(false);
+        }
       } else {
         setIsAdmin(false);
+        // Clear session cookie on sign out
+        await fetch('/api/auth/session', {
+          method: 'DELETE',
+        });
       }
 
       setUser(firebaseUser);
