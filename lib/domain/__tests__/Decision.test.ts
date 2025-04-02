@@ -10,8 +10,6 @@ describe('Decision Domain Model', () => {
     description: 'Test Description',
     cost: 'low',
     createdAt: new Date(),
-    criteria: [],
-    options: [],
     reversibility: 'hat',
     stakeholders: [],
     driverStakeholderId: 'driver-1',

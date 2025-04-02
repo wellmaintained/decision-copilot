@@ -36,7 +36,7 @@ erDiagram
 ## Domain Model
 
 ```typescript
-type DecisionRelationshipType = "blocked_by" | "supersedes" | "blocks" | "superseded_by";
+type DecisionRelationshipType = "blocked_by" | "supersedes" | "blocks" | "superseded_by" | "was_blocked_by" | "did_block";
 
 interface DecisionRelationship {
   targetDecision: DocumentReference;
@@ -85,11 +85,11 @@ class Decision {
   readonly options: string[]
   readonly decision?: string
   readonly decisionMethod?: string
-  
+
   // Stakeholder management
   readonly stakeholders: DecisionStakeholderRole[]
   readonly supportingMaterials: SupportingMaterial[]
-  
+
   // Timestamps
   readonly createdAt: Date
   readonly updatedAt?: Date
@@ -252,7 +252,9 @@ export class DecisionRelationshipTools {
       'supersedes': 'superseded_by',
       'blocked_by': 'blocks',
       'blocks': 'blocked_by',
-      'superseded_by': 'supersedes'
+      'superseded_by': 'supersedes',
+      'was_blocked_by': 'did_block',
+      'did_block': 'was_blocked_by'
     }
     return lookupInverse[type];
   }
@@ -267,7 +269,7 @@ match /organisations/{orgId} {
   // Helper function to check if user can access a decision
   function canAccessDecision() {
     return exists(/databases/$(database)/documents/stakeholderTeams/{stakeholderTeamId}
-      where stakeholderTeamId == request.auth.uid 
+      where stakeholderTeamId == request.auth.uid
       && organisationId == orgId);
   }
 
@@ -334,6 +336,37 @@ const projectDecisions = await decisionsRepo.getByProject('project-website', {
 });
 ```
 
+### Transitioning Blocking Relationships When Publishing a Decision
+```typescript
+// This would be part of the workflow when a decision is published
+async function publishDecision(decisionId: string, organisationId: string) {
+  // Get the decision to be published
+  const decision = await decisionsRepo.getById(decisionId, { organisationId });
+  // Get all "blocks" relationships for this decision
+  const blockingRelationships = decision.getRelationshipsByType('blocks');
+  // For each relationship, update both sides (this and the target decision)
+  for (const relationship of blockingRelationships) {
+    // Create the new relationships with updated types
+    const updatedSourceRelationship = {
+      ...relationship,
+      type: 'did_block' as DecisionRelationshipType
+    };
+    // Get the target decision
+    const targetDecisionRef = relationship.targetDecision;
+    const targetDecision = await decisionsRepo.getById(
+      targetDecisionRef.id,
+      { organisationId: DecisionRelationshipTools.getTargetDecisionOrganisationId(relationship) }
+    );
+    // Remove the old relationships
+    await decisionsRepo.removeRelationship(decision, relationship);
+    // Add the new relationships
+    await decisionsRepo.addRelationship(decision, updatedSourceRelationship);
+    // Mark the decision as published (other logic...)
+    // ...
+  }
+}
+```
+
 ## Business Rules
 
 1. Decisions belong to exactly one organisation
@@ -352,6 +385,7 @@ const projectDecisions = await decisionsRepo.getByProject('project-website', {
 14. Decisions can be related to other decisions within the same organisation
 15. Users must have access to the organisation to create or view decisions
 16. Relationships are bidirectional - creating a relationship of type A from decision X to decision Y automatically creates the inverse relationship from Y to X
+17. When a decision is published, all its "blocks" relationships change to "did_block", and the corresponding "blocked_by" relationships in other decisions change to "was_blocked_by"
 
 ## Error Handling
 
