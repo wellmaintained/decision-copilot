@@ -1,16 +1,30 @@
-'use client'
+"use client";
 
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
-import { useOrganisation } from '@/components/organisation-switcher';
-import { useOrganisationDecisions } from '@/hooks/useOrganisationDecisions';
+import React, { useState, useEffect, useMemo, useCallback } from "react";
+import { useOrganisation } from "@/components/organisation-switcher";
+import { useOrganisationDecisions } from "@/hooks/useOrganisationDecisions";
 import { Button } from "@/components/ui/button";
-import { Pencil, Trash2, FileText, Users, Clock, Search, ArrowUpDown } from 'lucide-react';
-import Link from 'next/link';
-import { useParams } from 'next/navigation';
-import { WorkflowProgress } from '@/components/ui/workflow-progress';
-import { Decision, WorkflowNavigator } from '@/lib/domain/Decision';
+import {
+  Pencil,
+  Trash2,
+  FileText,
+  Users,
+  Clock,
+  Search,
+  ArrowUpDown,
+} from "lucide-react";
+import Link from "next/link";
+import { useParams } from "next/navigation";
+import { WorkflowProgress } from "@/components/ui/workflow-progress";
+import { Decision, WorkflowNavigator } from "@/lib/domain/Decision";
 import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface DecisionCardProps {
   decision: Decision;
@@ -18,19 +32,20 @@ interface DecisionCardProps {
   organisationId: string;
 }
 
-type SortOrder = 'newest' | 'oldest' | 'title-asc' | 'title-desc';
+type SortOrder = "newest" | "oldest" | "title-asc" | "title-desc";
 
 export default function OrganisationDecisionsList() {
   const params = useParams();
-  const organisationId = params.organisationId as string;
   const { selectedOrganisation } = useOrganisation();
-  const { decisions, loading, error, deleteDecision } = useOrganisationDecisions(organisationId);
-  
+  const organisationId = (params?.organisationId as string) || "";
+  const { decisions, loading, error, deleteDecision } =
+    useOrganisationDecisions(organisationId);
+
   // State for filters and search
-  const [searchQuery, setSearchQuery] = useState('');
-  const [statusFilter, setStatusFilter] = useState<string>('all');
-  const [sortOrder, setSortOrder] = useState<SortOrder>('newest');
-  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [sortOrder, setSortOrder] = useState<SortOrder>("newest");
+  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState("");
 
   // Create debounced search handler using useCallback
   const debouncedSearch = useCallback((value: string) => {
@@ -55,27 +70,33 @@ export default function OrganisationDecisionsList() {
     let filtered = decisions;
 
     // Apply status filter
-    if (statusFilter !== 'all') {
-      filtered = filtered.filter(d => d.status === statusFilter);
+    if (statusFilter !== "all") {
+      filtered = filtered.filter((d) => d.status === statusFilter);
     }
 
     // Apply search filter (if at least 3 characters or empty)
     if (debouncedSearchQuery.length >= 3) {
-      filtered = filtered.filter(d => 
-        d.title.toLowerCase().includes(debouncedSearchQuery.toLowerCase())
+      filtered = filtered.filter((d) =>
+        d.title.toLowerCase().includes(debouncedSearchQuery.toLowerCase()),
       );
     }
 
     // Apply sorting
     return [...filtered].sort((a, b) => {
       switch (sortOrder) {
-        case 'newest':
-          return (b.updatedAt || b.createdAt).getTime() - (a.updatedAt || a.createdAt).getTime();
-        case 'oldest':
-          return (a.updatedAt || a.createdAt).getTime() - (b.updatedAt || b.createdAt).getTime();
-        case 'title-asc':
+        case "newest":
+          return (
+            (b.updatedAt || b.createdAt).getTime() -
+            (a.updatedAt || a.createdAt).getTime()
+          );
+        case "oldest":
+          return (
+            (a.updatedAt || a.createdAt).getTime() -
+            (b.updatedAt || b.createdAt).getTime()
+          );
+        case "title-asc":
           return a.title.localeCompare(b.title);
-        case 'title-desc':
+        case "title-desc":
           return b.title.localeCompare(a.title);
         default:
           return 0;
@@ -89,10 +110,10 @@ export default function OrganisationDecisionsList() {
       in_progress: [] as Decision[],
       blocked: [] as Decision[],
       published: [] as Decision[],
-      superseded: [] as Decision[]
+      superseded: [] as Decision[],
     };
 
-    filteredAndSortedDecisions.forEach(decision => {
+    filteredAndSortedDecisions.forEach((decision) => {
       if (decision.status in groups) {
         groups[decision.status as keyof typeof groups].push(decision);
       }
@@ -101,20 +122,33 @@ export default function OrganisationDecisionsList() {
     return groups;
   }, [filteredAndSortedDecisions]);
 
+  if (!params?.organisationId) {
+    return <div>Invalid organisation ID</div>;
+  }
+
   if (loading) return <div className="p-6">Loading decisions...</div>;
-  if (error) return <div className="p-6 text-red-500">Error loading decisions: {error.message}</div>;
+  if (error)
+    return (
+      <div className="p-6 text-red-500">
+        Error loading decisions: {error.message}
+      </div>
+    );
   if (!selectedOrganisation) return <p>...</p>;
 
   const handleDelete = async (decisionId: string) => {
     try {
       await deleteDecision(decisionId);
-      console.log('Decision deleted:', decisionId);
+      console.log("Decision deleted:", decisionId);
     } catch (error) {
-      console.error('Error deleting decision:', error);
+      console.error("Error deleting decision:", error);
     }
   };
 
-  const DecisionCard = ({ decision, showEditButton = true, organisationId }: DecisionCardProps) => {
+  const DecisionCard = ({
+    decision,
+    showEditButton = true,
+    organisationId,
+  }: DecisionCardProps) => {
     return (
       <div
         key={decision.id}
@@ -134,7 +168,11 @@ export default function OrganisationDecisionsList() {
           )}
           <div className="flex items-center gap-4 mt-2 text-sm text-gray-500">
             <div className="flex items-center gap-1">
-              <WorkflowProgress currentStep={WorkflowNavigator.getStepIndex(decision.currentStep) + 1} />
+              <WorkflowProgress
+                currentStep={
+                  WorkflowNavigator.getStepIndex(decision.currentStep) + 1
+                }
+              />
             </div>
             <div className="flex items-center gap-1">
               <Users className="h-4 w-4" />
@@ -142,20 +180,28 @@ export default function OrganisationDecisionsList() {
             </div>
             <div className="flex items-center gap-1">
               <Clock className="h-4 w-4" />
-              <span>Updated {decision.updatedAt?.toLocaleDateString() || decision.createdAt.toLocaleDateString()}</span>
+              <span>
+                Updated{" "}
+                {decision.updatedAt?.toLocaleDateString() ||
+                  decision.createdAt.toLocaleDateString()}
+              </span>
             </div>
           </div>
         </div>
         <div className="flex space-x-2">
           {showEditButton ? (
             <Button variant="ghost" size="icon" title="Edit decision" asChild>
-              <Link href={`/organisation/${organisationId}/decision/${decision.id}/edit`}>
+              <Link
+                href={`/organisation/${organisationId}/decision/${decision.id}/edit`}
+              >
                 <Pencil className="h-4 w-4" />
               </Link>
             </Button>
           ) : (
             <Button variant="ghost" size="icon" title="View decision" asChild>
-              <Link href={`/organisation/${organisationId}/decision/${decision.id}/view`}>
+              <Link
+                href={`/organisation/${organisationId}/decision/${decision.id}/view`}
+              >
                 <FileText className="h-4 w-4" />
               </Link>
             </Button>
@@ -173,9 +219,15 @@ export default function OrganisationDecisionsList() {
     );
   };
 
-  const DecisionGroup = ({ title, decisions }: { title: string, decisions: Decision[] }) => {
-    if (statusFilter !== 'all' && !decisions.length) return null;
-    
+  const DecisionGroup = ({
+    title,
+    decisions,
+  }: {
+    title: string;
+    decisions: Decision[];
+  }) => {
+    if (statusFilter !== "all" && !decisions.length) return null;
+
     return (
       <div>
         <h2 className="text-lg font-medium mb-4">{title}</h2>
@@ -184,11 +236,14 @@ export default function OrganisationDecisionsList() {
             <DecisionCard
               key={decision.id}
               decision={decision}
-              showEditButton={decision.status === 'in_progress' || decision.status === 'blocked'}
+              showEditButton={
+                decision.status === "in_progress" ||
+                decision.status === "blocked"
+              }
               organisationId={organisationId}
             />
           ))}
-          {statusFilter === 'all' && !decisions.length && (
+          {statusFilter === "all" && !decisions.length && (
             <p className="text-gray-500">No {title.toLowerCase()} decisions</p>
           )}
         </div>
@@ -199,7 +254,10 @@ export default function OrganisationDecisionsList() {
   return (
     <div className="container mx-auto py-6">
       <h1 className="text-3xl font-bold mb-6">
-        <span className="text-primary bg-gray-100 rounded-md px-2 py-1">{selectedOrganisation.name}</span>&apos;s Decisions
+        <span className="text-primary bg-gray-100 rounded-md px-2 py-1">
+          {selectedOrganisation.name}
+        </span>
+        &apos;s Decisions
       </h1>
 
       {/* Filters and Search Bar */}
@@ -225,7 +283,10 @@ export default function OrganisationDecisionsList() {
             <SelectItem value="published">Published</SelectItem>
           </SelectContent>
         </Select>
-        <Select value={sortOrder} onValueChange={(value) => setSortOrder(value as SortOrder)}>
+        <Select
+          value={sortOrder}
+          onValueChange={(value) => setSortOrder(value as SortOrder)}
+        >
           <SelectTrigger className="w-[180px]">
             <SelectValue placeholder="Sort by" />
           </SelectTrigger>
@@ -265,14 +326,25 @@ export default function OrganisationDecisionsList() {
           </div>
         ) : (
           <>
-            <DecisionGroup title="In Progress" decisions={groupedDecisions.in_progress} />
-            <DecisionGroup title="Blocked" decisions={groupedDecisions.blocked} />
-            <DecisionGroup title="Published" decisions={groupedDecisions.published} />
-            <DecisionGroup title="Superseded" decisions={groupedDecisions.superseded} />
+            <DecisionGroup
+              title="In Progress"
+              decisions={groupedDecisions.in_progress}
+            />
+            <DecisionGroup
+              title="Blocked"
+              decisions={groupedDecisions.blocked}
+            />
+            <DecisionGroup
+              title="Published"
+              decisions={groupedDecisions.published}
+            />
+            <DecisionGroup
+              title="Superseded"
+              decisions={groupedDecisions.superseded}
+            />
           </>
         )}
       </div>
     </div>
   );
 }
-
