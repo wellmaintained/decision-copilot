@@ -23,7 +23,10 @@ export function useDecision(decisionId: string, organisationId: string) {
       try {
         // First get the decision by ID to ensure we have a valid Decision object
         const scope: DecisionScope = { organisationId };
-        const fetchedDecision = await decisionsRepository.getById(decisionId, scope);
+        const fetchedDecision = await decisionsRepository.getById(
+          decisionId,
+          scope,
+        );
         // Then subscribe to updates
         unsubscribe = decisionsRepository.subscribeToOne(
           fetchedDecision,
@@ -35,13 +38,13 @@ export function useDecision(decisionId: string, organisationId: string) {
           (error: Error) => {
             setError(error);
             setLoading(false);
-          }
+          },
         );
       } catch (err) {
         setError(err as Error);
         setLoading(false);
       }
-    }
+    };
 
     fetchDecision();
 
@@ -55,9 +58,7 @@ export function useDecision(decisionId: string, organisationId: string) {
   const updateDecisionTitle = async (title: string) => {
     try {
       if (!decision) return;
-      await decisionsRepository.update(
-        decision.with({ title }),
-      );
+      await decisionsRepository.update(decision.with({ title }));
     } catch (error) {
       setError(error as Error);
       throw error;
@@ -67,9 +68,7 @@ export function useDecision(decisionId: string, organisationId: string) {
   const updateDecisionDescription = async (description: string) => {
     try {
       if (!decision) return;
-      await decisionsRepository.update(
-        decision.with({ description }),
-      );
+      await decisionsRepository.update(decision.with({ description }));
     } catch (error) {
       setError(error as Error);
       throw error;
@@ -79,9 +78,7 @@ export function useDecision(decisionId: string, organisationId: string) {
   const updateDecisionCost = async (cost: Cost) => {
     try {
       if (!decision) return;
-      await decisionsRepository.update(
-        decision.with({ cost }),
-      );
+      await decisionsRepository.update(decision.with({ cost }));
     } catch (error) {
       setError(error as Error);
       throw error;
@@ -91,9 +88,7 @@ export function useDecision(decisionId: string, organisationId: string) {
   const updateDecisionReversibility = async (reversibility: Reversibility) => {
     try {
       if (!decision) return;
-      await decisionsRepository.update(
-        decision.with({ reversibility }),
-      );
+      await decisionsRepository.update(decision.with({ reversibility }));
     } catch (error) {
       setError(error as Error);
       throw error;
@@ -112,12 +107,12 @@ export function useDecision(decisionId: string, organisationId: string) {
     }
   };
 
-  const updateStakeholders = async (stakeholders: DecisionStakeholderRole[]) => {
+  const updateStakeholders = async (
+    stakeholders: DecisionStakeholderRole[],
+  ) => {
     try {
       if (!decision) return;
-      await decisionsRepository.update(
-        decision.with({ stakeholders }),
-      );
+      await decisionsRepository.update(decision.with({ stakeholders }));
     } catch (error) {
       setError(error as Error);
       throw error;
@@ -126,7 +121,7 @@ export function useDecision(decisionId: string, organisationId: string) {
 
   const addStakeholder = async (
     stakeholderId: string,
-    role: DecisionStakeholderRole["role"] = "informed"
+    role: DecisionStakeholderRole["role"] = "informed",
   ) => {
     try {
       if (!decision) return;
@@ -166,9 +161,7 @@ export function useDecision(decisionId: string, organisationId: string) {
   const updateDecisionContent = async (content: string) => {
     try {
       if (!decision) return;
-      await decisionsRepository.update(
-        decision.with({ decision: content }),
-      );
+      await decisionsRepository.update(decision.with({ decision: content }));
     } catch (error) {
       setError(error as Error);
       throw error;
@@ -203,7 +196,9 @@ export function useDecision(decisionId: string, organisationId: string) {
   const removeSupportingMaterial = async (materialUrl: string) => {
     try {
       if (!decision) return;
-      const newMaterials = decision.supportingMaterials.filter(m => m.url !== materialUrl);
+      const newMaterials = decision.supportingMaterials.filter(
+        (m) => m.url !== materialUrl,
+      );
       await decisionsRepository.update(
         decision.with({ supportingMaterials: newMaterials }),
       );
@@ -216,9 +211,9 @@ export function useDecision(decisionId: string, organisationId: string) {
   const publishDecision = async () => {
     try {
       if (!decision) return;
-      await decisionsRepository.update(
-        decision.publish()
-      );
+      await decisionsRepository.publishDecision(decision.id, {
+        organisationId,
+      });
     } catch (error) {
       setError(error as Error);
       throw error;
@@ -233,9 +228,7 @@ export function useDecision(decisionId: string, organisationId: string) {
   const updateDecisionNotes = async (decisionNotes: string) => {
     try {
       if (!decision) return;
-      await decisionsRepository.update(
-        decision.with({ decisionNotes }),
-      );
+      await decisionsRepository.update(decision.with({ decisionNotes }));
     } catch (error) {
       setError(error as Error);
       throw error;

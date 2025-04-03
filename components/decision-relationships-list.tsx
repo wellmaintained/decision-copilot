@@ -1,36 +1,54 @@
-import { Decision, DecisionRelationshipType } from '@/lib/domain/Decision'
-import { Button } from '@/components/ui/button'
-import { AddDecisionRelationshipDialog } from '@/components/add-decision-relationship-dialog'
-import { useDecisionRelationships, SelectedDecisionDetails } from '@/hooks/useDecisionRelationships'
-import { Plus, X } from 'lucide-react'
-import Link from 'next/link'
+import { Decision, DecisionRelationshipType } from "@/lib/domain/Decision";
+import { Button } from "@/components/ui/button";
+import { AddDecisionRelationshipDialog } from "@/components/add-decision-relationship-dialog";
+import {
+  useDecisionRelationships,
+  SelectedDecisionDetails,
+} from "@/hooks/useDecisionRelationships";
+import { Plus, X } from "lucide-react";
+import Link from "next/link";
+import { cn } from "@/lib/utils";
 
 interface DecisionRelationshipItemProps {
   targetDecision: Decision;
   type: DecisionRelationshipType;
-  onRemove: (type: DecisionRelationshipType, targetDecision: Decision) => Promise<void>;
+  onRemove: (
+    type: DecisionRelationshipType,
+    targetDecision: Decision,
+  ) => Promise<void>;
 }
 
-function DecisionRelationshipItem({ targetDecision, type, onRemove }: DecisionRelationshipItemProps) {
+function DecisionRelationshipItem({
+  targetDecision,
+  type,
+  onRemove,
+}: DecisionRelationshipItemProps) {
+  const isWasBlockedBy = type === "was_blocked_by";
+
   return (
     <div className="flex items-center justify-between p-2 bg-muted rounded-md group">
       <div>
         <Link
           href={`/organisation/${targetDecision.organisationId}/decision/${targetDecision.id}/edit`}
-          className="font-medium hover:underline"
+          className={cn(
+            "font-medium hover:underline",
+            isWasBlockedBy && "line-through text-muted-foreground",
+          )}
         >
           {targetDecision.title}
         </Link>
       </div>
-      <Button
-        variant="ghost"
-        size="sm"
-        onClick={() => onRemove(type, targetDecision)}
-        className="opacity-0 group-hover:opacity-100 transition-opacity"
-        title="Remove relationship"
-      >
-        <X className="h-4 w-4" />
-      </Button>
+      {!isWasBlockedBy && (
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => onRemove(type, targetDecision)}
+          className="opacity-0 group-hover:opacity-100 transition-opacity"
+          title="Remove relationship"
+        >
+          <X className="h-4 w-4" />
+        </Button>
+      )}
     </div>
   );
 }
@@ -46,26 +64,38 @@ export function DecisionRelationshipsList({
   relationshipType,
   title,
 }: DecisionRelationshipsListProps) {
-  const { addRelationship, removeRelationship } = useDecisionRelationships(fromDecision);
+  const { addRelationship, removeRelationship } =
+    useDecisionRelationships(fromDecision);
 
   const getRelationshipsForType = (type: DecisionRelationshipType) => {
-    const relationships = fromDecision.getRelationshipsByType(type);
-    return relationships.map(relationship => ({
+    let relationships = [];
+
+    // If we're showing blocked_by relationships, also include was_blocked_by
+    if (type === "blocked_by") {
+      relationships = [
+        ...fromDecision.getRelationshipsByType("blocked_by"),
+        ...fromDecision.getRelationshipsByType("was_blocked_by"),
+      ];
+    } else {
+      relationships = fromDecision.getRelationshipsByType(type);
+    }
+
+    return relationships.map((relationship) => ({
       targetDecision: Decision.create({
         id: relationship.targetDecision.id,
         title: relationship.targetDecisionTitle,
-        description: '',
-        cost: 'low',
+        description: "",
+        cost: "low",
         createdAt: new Date(),
-        reversibility: 'hat',
+        reversibility: "hat",
         stakeholders: [],
-        driverStakeholderId: '',
+        driverStakeholderId: "",
         organisationId: fromDecision.organisationId,
         teamIds: [],
         projectIds: [],
-        supportingMaterials: []
+        supportingMaterials: [],
       }),
-      type: relationship.type
+      type: relationship.type,
     }));
   };
 
@@ -73,20 +103,31 @@ export function DecisionRelationshipsList({
     await addRelationship(details, relationshipType);
   };
 
-  const handleRemove = async (type: DecisionRelationshipType, targetDecision: Decision) => {
+  const handleRemove = async (
+    type: DecisionRelationshipType,
+    targetDecision: Decision,
+  ) => {
     await removeRelationship(type, targetDecision);
   };
 
-  const getRelationshipDescriptionForAddDialog = (type: DecisionRelationshipType): string => {
+  const getRelationshipDescriptionForAddDialog = (
+    type: DecisionRelationshipType,
+  ): string => {
     switch (type) {
-      case 'blocked_by':
-        return 'Select a decision that blocks this decision';
-      case 'blocks':
-        return 'Select a decision that this decision blocks';
-      case 'supersedes':
-        return 'Select a decision that this decision supersedes';
-      case 'superseded_by':
-        return 'Select a decision that supersedes this decision';
+      case "blocked_by":
+        return "Select a decision that blocks this decision";
+      case "blocks":
+        return "Select a decision that this decision blocks";
+      case "supersedes":
+        return "Select a decision that this decision supersedes";
+      case "superseded_by":
+        return "Select a decision that supersedes this decision";
+      case "did_block":
+        return "Select a decision that this decision blocked";
+      case "was_blocked_by":
+        return "Select a decision that blocked this decision";
+      default:
+        return `Select a decision to create a ${type} relationship`;
     }
   };
 
@@ -99,7 +140,9 @@ export function DecisionRelationshipsList({
         <h3 className="text-base text-muted-foreground font-normal">{title}</h3>
         <AddDecisionRelationshipDialog
           onAdd={handleAdd}
-          relationshipDescription={getRelationshipDescriptionForAddDialog(relationshipType)}
+          relationshipDescription={getRelationshipDescriptionForAddDialog(
+            relationshipType,
+          )}
           organisationId={fromDecision.organisationId}
         >
           <Button variant="ghost" size="icon" className="h-6 w-6 ml-1 -mt-0.5">
