@@ -1,68 +1,82 @@
-'use client'
+"use client";
 
-import { useState, useEffect } from 'react'
-import { TeamHierarchyTree } from '@/components/TeamHierarchyTree'
-import { useAuth } from '@/hooks/useAuth'
-import { redirect, useSearchParams } from 'next/navigation'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { useOrganisation } from '@/components/organisation-switcher'
-import { Building2 } from 'lucide-react'
-import { useOrganisations } from '@/hooks/useOrganisations'
-import { StakeholderManagement } from '@/components/StakeholderManagement'
+import { useState, useEffect } from "react";
+import { TeamHierarchyTree } from "@/components/TeamHierarchyTree";
+import { useAuth } from "@/hooks/useAuth";
+import { redirect, useSearchParams } from "next/navigation";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useOrganisation } from "@/components/organisation-switcher";
+import { Building2 } from "lucide-react";
+import { useOrganisations } from "@/hooks/useOrganisations";
+import { StakeholderManagement } from "@/components/StakeholderManagement";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select"
+} from "@/components/ui/select";
 
 export default function AdminPage() {
-  const { user, loading: authLoading, isAdmin } = useAuth()
-  const { selectedOrganisation } = useOrganisation()
-  const { organisations, loading: orgsLoading, fetchAllOrganisations } = useOrganisations()
-  const [organisationId, setOrganisationId] = useState<string | null>(null)
-  const searchParams = useSearchParams()
-  const tabParam = searchParams.get('tab')
-  const [activeTab, setActiveTab] = useState<string>('team-hierarchy')
+  const { user, loading: authLoading, isAdmin } = useAuth();
+  const { selectedOrganisation } = useOrganisation();
+  const {
+    organisations,
+    loading: orgsLoading,
+    fetchAllOrganisations,
+  } = useOrganisations();
+  const [organisationId, setOrganisationId] = useState<string | null>(null);
+  const searchParams = useSearchParams();
+  const tabParam = searchParams?.get("tab") ?? "team-hierarchy";
+  const [activeTab, setActiveTab] = useState<string>("team-hierarchy");
 
   useEffect(() => {
     // Fetch all organizations for admin view
     if (isAdmin) {
-      fetchAllOrganisations().catch(error => {
-        console.error('Failed to fetch all organisations:', error)
-      })
+      fetchAllOrganisations().catch((error) => {
+        console.error("Failed to fetch all organisations:", error);
+      });
     }
-  }, [isAdmin, fetchAllOrganisations])
+  }, [isAdmin, fetchAllOrganisations]);
 
   useEffect(() => {
     if (selectedOrganisation) {
-      setOrganisationId(selectedOrganisation.id)
+      setOrganisationId(selectedOrganisation.id);
     }
-  }, [selectedOrganisation])
+  }, [selectedOrganisation]);
 
   // Set the active tab based on the URL parameter
   useEffect(() => {
     if (tabParam) {
-      setActiveTab(tabParam)
+      setActiveTab(tabParam);
     }
-  }, [tabParam])
+  }, [tabParam]);
 
   if (authLoading || orgsLoading) {
-    return <div className="flex items-center justify-center min-h-screen">Loading...</div>
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        Loading...
+      </div>
+    );
   }
 
   // If user is not logged in, redirect to login page
   if (!user) {
-    redirect('/login')
-    return null
+    redirect("/login");
+    return null;
   }
 
   // If user is not an admin, redirect to organization page
   if (!isAdmin) {
-    redirect('/organisation')
-    return null
+    redirect("/organisation");
+    return null;
   }
 
   return (
@@ -71,14 +85,17 @@ export default function AdminPage() {
         <h1 className="text-3xl font-bold">Admin Dashboard</h1>
         <div className="flex items-center gap-4">
           <Select
-            value={organisationId || ''}
+            value={organisationId || ""}
             onValueChange={(value) => setOrganisationId(value)}
           >
             <SelectTrigger className="w-[250px]">
               <SelectValue placeholder="Select organisation">
                 <div className="flex items-center gap-2">
                   <Building2 className="h-4 w-4" />
-                  <span>{organisations?.find(org => org.id === organisationId)?.name || "Select organisation"}</span>
+                  <span>
+                    {organisations?.find((org) => org.id === organisationId)
+                      ?.name || "Select organisation"}
+                  </span>
                 </div>
               </SelectValue>
             </SelectTrigger>
@@ -95,7 +112,7 @@ export default function AdminPage() {
           </Select>
         </div>
       </div>
-      
+
       {!organisationId ? (
         <Card>
           <CardContent className="flex items-center justify-center min-h-[200px] text-muted-foreground">
@@ -103,7 +120,12 @@ export default function AdminPage() {
           </CardContent>
         </Card>
       ) : (
-        <Tabs defaultValue={activeTab} value={activeTab} onValueChange={setActiveTab} className="w-full">
+        <Tabs
+          defaultValue={activeTab}
+          value={activeTab}
+          onValueChange={setActiveTab}
+          className="w-full"
+        >
           <TabsList className="mb-4">
             <TabsTrigger value="team-hierarchy">Teams</TabsTrigger>
             <TabsTrigger value="stakeholders">Stakeholders</TabsTrigger>
@@ -169,5 +191,5 @@ export default function AdminPage() {
         </Tabs>
       )}
     </div>
-  )
-} 
+  );
+}

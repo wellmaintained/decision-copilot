@@ -1,5 +1,9 @@
-import { Decision, DecisionRelationshipType, DecisionRelationship } from '@/lib/domain/Decision'
-import { FirestoreDecisionsRepository } from '@/lib/infrastructure/firestoreDecisionsRepository'
+import {
+  Decision,
+  DecisionRelationshipType,
+  DecisionRelationship,
+} from "@/lib/domain/Decision";
+import { FirestoreDecisionsRepository } from "@/lib/infrastructure/firestoreDecisionsRepository";
 
 export interface SelectedDecisionDetails {
   toDecisionId: string;
@@ -9,54 +13,51 @@ export interface SelectedDecisionDetails {
 const decisionRepository = new FirestoreDecisionsRepository();
 
 export function useDecisionRelationships(sourceDecision: Decision) {
-  const addRelationship = async (targetDetails: SelectedDecisionDetails, type: DecisionRelationshipType) => {
+  const addRelationship = async (
+    targetDetails: SelectedDecisionDetails,
+    type: DecisionRelationshipType,
+  ) => {
     try {
-      const targetDecision = Decision.create({
-        id: targetDetails.toDecisionId,
-        title: '',
-        description: '',
-        cost: 'low',
-        createdAt: new Date(),
-        reversibility: 'hat',
-        stakeholders: [],
-        driverStakeholderId: '',
-        organisationId: targetDetails.organisationId,
-        teamIds: [],
-        projectIds: [],
-        supportingMaterials: []
-      });
+      // Fetch the actual target decision from Firestore
+      const targetDecision = await decisionRepository.getById(
+        targetDetails.toDecisionId,
+        { organisationId: targetDetails.organisationId },
+      );
+
+      if (!targetDecision) {
+        throw new Error(
+          `Target decision ${targetDetails.toDecisionId} not found`,
+        );
+      }
 
       // Create a DecisionRelationship object
       const relationship: DecisionRelationship = {
         targetDecision: targetDecision.toDocumentReference(),
-        targetDecisionTitle: targetDecision.title || 'Unknown Decision',
-        type: type
+        targetDecisionTitle: targetDecision.title,
+        type: type,
       };
 
-      await decisionRepository.addRelationship(
-        sourceDecision,
-        relationship
-      );
+      await decisionRepository.addRelationship(sourceDecision, relationship);
     } catch (error) {
-      console.error('Error adding relationship:', error);
+      console.error("Error adding relationship:", error);
       throw error;
     }
   };
 
-  const removeRelationship = async (type: DecisionRelationshipType, targetDecision: Decision) => {
+  const removeRelationship = async (
+    type: DecisionRelationshipType,
+    targetDecision: Decision,
+  ) => {
     try {
       // Create a DecisionRelationship object
       const relationship: DecisionRelationship = {
         targetDecision: targetDecision.toDocumentReference(),
         targetDecisionTitle: targetDecision.title,
-        type: type
+        type: type,
       };
-      await decisionRepository.removeRelationship(
-        sourceDecision,
-        relationship
-      );
+      await decisionRepository.removeRelationship(sourceDecision, relationship);
     } catch (error) {
-      console.error('Error removing relationship:', error);
+      console.error("Error removing relationship:", error);
       throw error;
     }
   };
