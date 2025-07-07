@@ -19,6 +19,9 @@ node_modules/
 
 # production
 /build
+build/
+lib/
+dist/
 /.firebase
 
 # misc
@@ -41,6 +44,9 @@ firebase-debug.log
 
 # vercel
 .vercel
+
+# turbo
+.turbo/
 
 # typescript
 *.tsbuildinfo

@@ -1,0 +1,9 @@
+{
+  "extends": "@decision-copilot/config-typescript/react-library.json",
+  "compilerOptions": {
+    "outDir": "lib",
+    "rootDir": "src"
+  },
+  "include": ["src/**/*.ts", "src/**/*.tsx"],
+  "exclude": ["lib", "node_modules", "**/*.test.ts", "**/*.test.tsx"]
+}

@@ -1,29 +1,31 @@
 {
   "compilerOptions": {
-    "target": "es5",
-    "lib": ["dom", "dom.iterable", "esnext"],
-    "allowJs": true,
-    "skipLibCheck": true,
-    "strict": true,
-    "noEmit": true,
-    "esModuleInterop": true,
-    "module": "esnext",
-    "moduleResolution": "bundler",
-    "resolveJsonModule": true,
-    "isolatedModules": true,
-    "jsx": "preserve",
-    "incremental": true,
-    "plugins": [
-      {
-        "name": "next"
-      }
-    ],
+    "baseUrl": ".",
     "paths": {
-      "@/*": ["./*"]
-    },
-    "experimentalDecorators": true,
-    "emitDecoratorMetadata": true
+      "@decision-copilot/domain": ["./packages/domain/src"],
+      "@decision-copilot/infrastructure": ["./packages/infrastructure/src"],
+      "@decision-copilot/ui": ["./packages/ui/src"],
+      "@decision-copilot/test-utils": ["./packages/test-utils/src"]
+    }
   },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
-  "exclude": ["node_modules"]
+  "references": [
+    {
+      "path": "./apps/webapp"
+    },
+    {
+      "path": "./apps/mcp-api"
+    },
+    {
+      "path": "./packages/domain"
+    },
+    {
+      "path": "./packages/infrastructure"
+    },
+    {
+      "path": "./packages/ui"
+    },
+    {
+      "path": "./packages/test-utils"
+    }
+  ]
 }
