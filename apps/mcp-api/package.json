@@ -1,0 +1,31 @@
+{
+  "name": "mcp-api",
+  "version": "0.5.0",
+  "private": true,
+  "type": "module",
+  "main": "lib/index.js",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsx watch src/index.ts",
+    "start": "node lib/index.js",
+    "lint": "eslint src",
+    "lint:fix": "eslint src --fix",
+    "test": "vitest --run",
+    "test:watch": "vitest --watch",
+    "test:unit": "vitest run --exclude '**/*.integration.test.ts'",
+    "test:unit:watch": "vitest --watch --exclude '**/*.integration.test.ts'",
+    "pre:push": "pnpm run lint && pnpm run test:unit && pnpm run build"
+  },
+  "dependencies": {
+    "@decision-copilot/domain": "workspace:*",
+    "@decision-copilot/infrastructure": "workspace:*",
+    "@modelcontextprotocol/sdk": "^0.6.0",
+    "firebase-admin": "^12.7.0",
+    "firebase-functions": "^6.3.2"
+  },
+  "devDependencies": {
+    "@decision-copilot/config-eslint": "workspace:*",
+    "@decision-copilot/config-typescript": "workspace:*",
+    "tsx": "^4.19.3"
+  }
+}

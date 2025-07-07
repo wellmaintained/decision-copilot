@@ -1,0 +1,10 @@
+{
+  "extends": "@decision-copilot/config-typescript/node.json",
+  "compilerOptions": {
+    "lib": ["ES2019"],
+    "outDir": "lib",
+    "rootDir": "src"
+  },
+  "include": ["src/**/*.ts"],
+  "exclude": ["lib", "node_modules"]
+}

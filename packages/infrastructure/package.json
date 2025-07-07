@@ -1,0 +1,36 @@
+{
+  "name": "@decision-copilot/infrastructure",
+  "version": "0.0.0", 
+  "private": true,
+  "description": "Firebase repository implementations supporting both client and admin SDKs",
+  "main": "lib/index.js",
+  "types": "lib/index.d.ts",
+  "exports": {
+    ".": "./lib/index.js",
+    "./client": "./lib/client/index.js",
+    "./admin": "./lib/admin/index.js"
+  },
+  "scripts": {
+    "build": "tsc --project tsconfig.build.json",
+    "build:watch": "tsc --project tsconfig.build.json --watch",
+    "dev": "tsc --watch",
+    "test": "vitest run",
+    "test:watch": "vitest --watch",
+    "test:unit": "vitest run --exclude '**/*.integration.test.ts'",
+    "test:unit:watch": "vitest --watch --exclude '**/*.integration.test.ts'",
+    "lint": "eslint src/",
+    "lint:fix": "eslint src/ --fix",
+    "clean": "rm -rf lib",
+    "pre:push": "pnpm run lint && pnpm run test:unit && pnpm run build"
+  },
+  "dependencies": {
+    "@decision-copilot/domain": "workspace:*",
+    "firebase": "^11.3.1",
+    "firebase-admin": "^12.7.0",
+    "reflect-metadata": "^0.2.2"
+  },
+  "devDependencies": {
+    "@decision-copilot/config-eslint": "workspace:*",
+    "@decision-copilot/config-typescript": "workspace:*"
+  }
+}
