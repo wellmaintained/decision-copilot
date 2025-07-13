@@ -1,0 +1,36 @@
+# Turborepo ignore file – prevents listed paths from affecting the task hash graph
+
+# ───────────────────────────────────────
+# Logs & debug output
+logs/
+**/*.log
+firebase-debug.log
+pnpm-debug.log
+
+# IDE / Editor configs
+.vscode/
+.idea/
+.DS_Store
+
+# Local caches & tooling artefacts
+.turbo/
+node_modules/
+
+# Test coverage & reports
+coverage/
+**/coverage/
+
+# Build outputs (already listed as task outputs, but ignore for hashing)
+dist/
+lib/
+.next/
+out/
+apps/**/.next/
+apps/**/dist/
+apps/**/lib/
+
+# Storybook static exports
+storybook-static/
+
+# Firebase emulator exports
+firebase_export/ 

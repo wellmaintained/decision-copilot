@@ -1,0 +1,29 @@
+{
+  "name": "@decision-copilot/admin-cli",
+  "version": "0.5.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "pre:push": "pnpm run lint && pnpm run build",
+    "lint": "eslint src/",
+    "build": "tsc",
+    "migrate": "tsx src/migrate.ts",
+    "copy-decisions": "tsx src/copy-decisions.ts",
+    "list-organisations": "tsx src/list-organisations.ts",
+    "create-test-stakeholders": "tsx src/create-test-stakeholders.ts"
+  },
+  "dependencies": {
+    "@decision-copilot/infrastructure": "workspace:*",
+    "firebase-admin": "^12.7.0",
+    "commander": "^12.1.0",
+    "dotenv": "^16.5.1",
+    "chalk": "^5.4.1",
+    "tsx": "^4.20.3",
+    "typescript": "^5.7.3"
+  },
+  "devDependencies": {
+    "@decision-copilot/config-eslint": "workspace:*",
+    "@decision-copilot/config-typescript": "workspace:*",
+    "@types/node": "24.0.13"
+  }
+}

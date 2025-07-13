@@ -1,0 +1,30 @@
+{
+  "name": "@decision-copilot/test-utils",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Shared testing utilities and fixtures",
+  "main": "lib/index.js",
+  "types": "lib/index.d.ts",
+  "exports": {
+    ".": "./lib/index.js",
+    "./*": "./lib/*.js"
+  },
+  "scripts": {
+    "build": "tsc --project tsconfig.build.json",
+    "build:watch": "tsc --project tsconfig.build.json --watch",
+    "dev": "tsc --watch",
+    "test": "vitest run",
+    "test:watch": "vitest --watch",
+    "test:unit": "vitest run --exclude '**/*.integration.test.ts'",
+    "test:unit:watch": "vitest --watch --exclude '**/*.integration.test.ts'",
+    "lint": "eslint src/",
+    "lint:fix": "eslint src/ --fix",
+    "clean": "rm -rf lib",
+    "pre:push": "pnpm run lint && pnpm run test:unit && pnpm run build"
+  },
+  "devDependencies": {
+    "@decision-copilot/config-eslint": "workspace:*",
+    "@decision-copilot/config-typescript": "workspace:*",
+    "vitest": "^3.2.4"
+  }
+}

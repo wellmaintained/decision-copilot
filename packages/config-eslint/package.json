@@ -1,0 +1,30 @@
+{
+  "name": "@decision-copilot/config-eslint",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+
+  "main": "index.js",
+  "files": [
+    "next.js",
+    "node.js",
+    "react-internal.js"
+  ],
+  "scripts": {
+    "build": "exit 0",
+    "clean": "rm -rf .turbo"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.21.0",
+    "@next/eslint-plugin-next": "^15.1.5",
+    "@typescript-eslint/eslint-plugin": "^8.20.0",
+    "@typescript-eslint/parser": "^8.20.0",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-import": "^2.31.0",
+    "eslint-plugin-jsx-a11y": "^6.10.2",
+    "eslint-plugin-only-warn": "^1.1.0",
+    "eslint-plugin-react": "^7.37.2",
+    "eslint-plugin-react-hooks": "^5.0.0",
+    "globals": "^15.14.0"
+  }
+}

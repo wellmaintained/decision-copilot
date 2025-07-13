@@ -1,0 +1,22 @@
+{
+  "name": "@decision-copilot/config-vitest",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Shared Vitest configuration for Decision Copilot packages",
+  "main": "base.js",
+  "exports": {
+    "./base": "./base.js",
+    "./node": "./node.js",
+    "./nextjs": "./nextjs.js"
+  },
+  "scripts": {
+    "build": "exit 0"
+  },
+  "devDependencies": {
+    "vitest": "^3.2.4"
+  },
+  "peerDependencies": {
+    "vitest": "^3.0.0"
+  }
+}

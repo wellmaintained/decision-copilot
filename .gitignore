@@ -12,14 +12,32 @@ node_modules/
 
 # testing
 /coverage
+coverage/
+*.lcov
+.nyc_output
 
 # next.js
 /.next/
 /out/
+**/.next/
 
 # production
 /build
+build/
+lib/
+dist/
 /.firebase
+
+# compiled output (specific to build directories)
+lib/**/*.js
+lib/**/*.js.map
+lib/**/*.d.ts
+dist/**/*.js
+dist/**/*.js.map
+dist/**/*.d.ts
+build/**/*.js
+build/**/*.js.map
+build/**/*.d.ts
 
 # misc
 .DS_Store
@@ -41,6 +59,9 @@ firebase-debug.log
 
 # vercel
 .vercel
+
+# turbo
+.turbo/
 
 # typescript
 *.tsbuildinfo
