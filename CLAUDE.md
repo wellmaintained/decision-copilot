@@ -2,6 +2,56 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Environment Setup
+
+**IMPORTANT: Use Latest LTS Versions**
+
+This project requires the latest LTS versions for optimal performance and security:
+
+- **Node.js**: v22.x (Current LTS)
+- **pnpm**: v10.13.1 (Latest version)
+
+**Install/Update pnpm:**
+```bash
+# Update to latest version
+pnpm self-update
+
+# Or install globally
+npm install -g pnpm@latest
+```
+
+The project will enforce these versions through:
+- `engines` field in package.json
+- `engine-strict=true` in .npmrc
+
+**IMPORTANT: Configure Firebase Environment Variables**
+
+1. Copy the environment template:
+   ```bash
+   cp .env.example .env.local
+   ```
+
+2. Fill in your Firebase project configuration in `.env.local`:
+   ```bash
+   NEXT_PUBLIC_FIREBASE_API_KEY=your_api_key_here
+   NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=your_project_id.firebaseapp.com
+   NEXT_PUBLIC_FIREBASE_PROJECT_ID=your_project_id
+   NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=your_project_id.firebasestorage.app
+   NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=your_messaging_sender_id
+   NEXT_PUBLIC_FIREBASE_APP_ID=your_app_id
+   NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID=your_measurement_id
+   ```
+
+3. For webapp development, also copy environment to apps/webapp:
+   ```bash
+   cp .env.local apps/webapp/.env.local
+   ```
+
+**Get Firebase Configuration:**
+- Visit [Firebase Console](https://console.firebase.google.com/)
+- Select your project → Project Settings → General tab
+- Scroll to "Your apps" section and copy the config values
+
 ## Development Commands
 
 **Start development environment:**
@@ -21,6 +71,18 @@ Runs lint, unit tests, and build - required before pushing.
 pnpm run test:unit           # Unit tests only (excludes integration tests)
 pnpm run test:unit:watch     # Watch mode for unit tests
 pnpm run test                # All tests including integration
+```
+
+**Development Logs:**
+```bash
+# View latest development logs (timestamped, hourly rotation)
+ls -la logs/turbo-dev.*.log | tail -1        # Find latest log file
+tail -f logs/turbo-dev.$(date '+%Y-%m-%d-%H').log  # Follow current hour's log
+cat logs/turbo-dev.$(date '+%Y-%m-%d-%H').log       # Read current hour's log
+
+# Examples:
+tail -100 logs/turbo-dev.2025-07-13-14.log   # Last 100 lines from 2 PM session
+grep -i error logs/turbo-dev.*.log           # Search for errors across all logs
 ```
 
 **Linting:**
@@ -106,3 +168,49 @@ import { useDecisions } from '@/hooks/useDecisions'
 - Integration tests require Firebase emulators
 - Domain objects have comprehensive validation tests
 - Repository pattern enables easy mocking for tests
+
+## Development Best Practices
+
+### Using sed for Code Transformations
+
+**CRITICAL: Always test sed patterns thoroughly before applying to multiple files**
+
+Common pitfalls and solutions:
+
+1. **Quote Type Handling**: When replacing import paths, account for both single and double quotes:
+   ```bash
+   # ❌ WRONG: Only handles double quotes
+   sed 's|@old-package/[^"]*|@new-package|g'
+   
+   # ✅ CORRECT: Handles both quote types
+   sed "s#@old-package/[^'\"]*#@new-package#g"
+   ```
+
+2. **Delimiter Choice**: Use `#` delimiter when pattern contains `/` or `|`:
+   ```bash
+   # ❌ WRONG: Conflicts with path separators
+   sed 's|@package/[^"]*|@new|g'
+   
+   # ✅ CORRECT: Use # to avoid conflicts
+   sed 's#@package/[^"]*#@new#g'
+   ```
+
+3. **Always Test First**: Test patterns on sample text before applying to files:
+   ```bash
+   # Test your pattern first
+   echo 'import { Test } from "@old-package/module";' | sed 's#pattern#replacement#g'
+   
+   # Then apply to files
+   find . -name "*.ts" -exec sed -i 's#pattern#replacement#g' {} \;
+   ```
+
+4. **Character Class Escaping**: When matching until quotes, escape properly:
+   ```bash
+   # ✅ CORRECT: Escape quotes in character class
+   sed "s#@package/[^'\"]*#@new#g"
+   ```
+
+## Testing Notes
+
+- **Vitest Best Practices**:
+  - Use pnpm rather than npx when running vitest
