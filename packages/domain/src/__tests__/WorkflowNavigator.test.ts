@@ -15,7 +15,7 @@ describe('WorkflowNavigator', () => {
     });
 
     it('should throw error for invalid step', () => {
-      const invalidStep = { key: 'invalid', label: 'Invalid' } as { key: string; label: string };
+      const invalidStep = { key: 'invalid', label: 'Invalid' } as any;
       expect(() => WorkflowNavigator.getStepIndex(invalidStep)).toThrow('Invalid workflow step: invalid');
     });
   });

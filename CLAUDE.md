@@ -28,10 +28,10 @@ The project will enforce these versions through:
 
 1. Copy the environment template:
    ```bash
-   cp .env.example .env.local
+   cp .env.example .env.development
    ```
 
-2. Fill in your Firebase project configuration in `.env.local`:
+2. Fill in your Firebase project configuration in `.env.development`:
    ```bash
    NEXT_PUBLIC_FIREBASE_API_KEY=your_api_key_here
    NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=your_project_id.firebaseapp.com
@@ -44,7 +44,7 @@ The project will enforce these versions through:
 
 3. For webapp development, also copy environment to apps/webapp:
    ```bash
-   cp .env.local apps/webapp/.env.local
+   cp .env.development apps/webapp/.env.development
    ```
 
 **Get Firebase Configuration:**
