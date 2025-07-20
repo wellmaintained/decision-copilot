@@ -1,4 +1,5 @@
 import { db as adminDb } from '@decision-copilot/infrastructure/admin'
+import type { QueryDocumentSnapshot, DocumentData } from 'firebase-admin/firestore'
 
 async function listOrganisations() {
   try {
@@ -8,7 +9,7 @@ async function listOrganisations() {
     console.log(`Found ${orgsSnapshot.size} organisations:\n`)
     
     const table: {ID: string, Name: string}[] = []
-    orgsSnapshot.forEach((doc) => {
+    orgsSnapshot.forEach((doc: QueryDocumentSnapshot<DocumentData>) => {
       const data = doc.data()
       table.push({'ID':doc.id, 'Name':data.name})
     })
