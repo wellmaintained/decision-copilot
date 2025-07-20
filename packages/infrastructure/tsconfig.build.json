@@ -1,9 +1,10 @@
 {
   "extends": "./tsconfig.json",
-  "exclude": ["lib", "node_modules", "**/*.test.ts", "**/__tests__", "src/admin/**/*.ts"],
+  "exclude": ["lib", "node_modules", "**/*.test.ts", "**/__tests__"],
   "include": ["src/**/*.ts"],
   "compilerOptions": {
     "rootDir": "src",
-    "outDir": "lib"
+    "outDir": "lib",
+    "tsBuildInfoFile": ".turbo/infrastructure.tsbuildinfo"
   }
 }

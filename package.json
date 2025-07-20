@@ -9,14 +9,16 @@
   ],
   "scripts": {
     "build": "turbo build",
-    "dev": "FORCE_COLOR=1 turbo dev --color 2>&1 | tee >(while IFS= read -r line; do echo \"[$(date '+%Y-%m-%d %H:%M:%S')] $line\"; done > logs/turbo-dev.$(date '+%Y-%m-%d-%H').log)",
+    "dev": "mkdir -p logs && FORCE_COLOR=1 turbo dev --color 2>&1 | tee >(while IFS= read -r line; do echo \"[$(date '+%Y-%m-%d %H:%M:%S')] $line\"; done > logs/turbo-dev.$(date '+%Y-%m-%d-%H').log)",
     "lint": "turbo lint",
     "lint:fix": "turbo lint:fix",
     "test": "turbo test",
     "test:unit": "turbo test:unit",
     "test:unit:watch": "turbo test:unit:watch",
     "test:watch": "turbo test:watch",
-    "clean": "turbo clean",
+    "clean": "pnpm run clean:tsc && pnpm run clean:packages",
+    "clean:tsc": "tsc -b --clean",
+    "clean:packages": "turbo run clean && pnpm exec rimraf --glob **/.turbo",
     "pre:push": "turbo pre:push",
     "dev:emulators:with-data": "cd apps/webapp && pnpm run dev:emulators:with-data",
     "emulators:export": "cd apps/webapp && pnpm run emulators:export"
@@ -27,6 +29,7 @@
     "dotenv": "^17.2.0",
     "eslint": "^9.31.0",
     "firebase-tools": "^14.10.1",
+    "rimraf": "^6.0.1",
     "turbo": "^2.5.4",
     "typescript": "^5.8.3",
     "vitest": "^3.2.4"

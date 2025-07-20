@@ -12,6 +12,7 @@
     "check:emulators": "wait-on -l tcp:4400 -t 5000 && echo 'Emulator Hub is available!'",
     "build": "next build",
     "build:profile": "next build --profile",
+    "clean": "rm -rf .next",
     "start": "next start",
     "lint": "next lint --strict",
     "lint:fix": "next lint --strict --fix",

@@ -2,9 +2,7 @@
   "extends": "@decision-copilot/config-typescript/base.json",
   "compilerOptions": {
     "outDir": "lib",
-    "composite": true,
-    "declaration": true,
-    "declarationMap": true
+    "rootDir": "src"
   },
   "include": ["src"],
   "exclude": ["node_modules", "lib"]

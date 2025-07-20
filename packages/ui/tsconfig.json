@@ -2,6 +2,7 @@
   "extends": "@decision-copilot/config-typescript/react-library.json",
   "compilerOptions": {
     "outDir": "lib",
+    "rootDir": "src",
     "composite": true,
     "declaration": true,
     "declarationMap": true

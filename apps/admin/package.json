@@ -4,9 +4,13 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "pre:push": "pnpm run lint && pnpm run build",
+    "pre:push": "pnpm run lint && pnpm run test:unit && pnpm run build",
     "lint": "eslint src/",
     "build": "tsc",
+    "clean": "rm -rf lib",
+    "test": "vitest run",
+    "test:unit": "vitest run --exclude '**/*.integration.test.ts'",
+    "test:watch": "vitest --watch",
     "migrate": "tsx src/migrate.ts",
     "copy-decisions": "tsx src/copy-decisions.ts",
     "list-organisations": "tsx src/list-organisations.ts",
@@ -24,6 +28,7 @@
   "devDependencies": {
     "@decision-copilot/config-eslint": "workspace:*",
     "@decision-copilot/config-typescript": "workspace:*",
+    "@decision-copilot/config-vitest": "workspace:*",
     "@types/node": "24.0.13"
   }
 }

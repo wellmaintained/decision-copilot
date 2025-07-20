@@ -5,6 +5,7 @@
   "compilerOptions": {
     "plugins": [{ "name": "next" }],
     "allowJs": true,
+    "composite": false,
     "declaration": false,
     "declarationMap": false,
     "incremental": true,

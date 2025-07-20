@@ -1,4 +1,7 @@
 {
   "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "tsBuildInfoFile": ".turbo/test-utils.tsbuildinfo"
+  },
   "exclude": ["lib", "node_modules", "src/**/*.test.ts", "src/**/__tests__/**"]
 } 

@@ -3,7 +3,7 @@
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
-      "outputs": ["dist/**", ".next/**", "lib/**"],
+      "outputs": ["dist/**", ".next/**", "lib/**", "!lib/**/__tests__/**", ".turbo/*.tsbuildinfo", "packages/*/.turbo/*.tsbuildinfo", "apps/*/.turbo/*.tsbuildinfo"],
       "inputs": ["src/**", "*.ts", "*.tsx", "*.js", "*.jsx", "tsconfig.json", "package.json"]
     },
     "@decision-copilot/config-eslint#build": {
@@ -44,17 +44,17 @@
     },
     "dev": {
       "cache": false,
-      "persistent": true
+      "persistent": true,
+      "inputs": ["src/**", "package.json", "tsconfig.json"]
     },
     "clean": {
-      "cache": false,
-      "outputs": []
+      "cache": false
     },
     "pre:push": {
       "dependsOn": ["lint", "test:unit", "build"],
       "outputs": []
     }
   },
-  "globalDependencies": ["package.json", "pnpm-lock.yaml", "turbo.json"],
+  "globalDependencies": ["package.json", "pnpm-lock.yaml", "turbo.json", ".npmrc"],
   "globalEnv": ["NODE_ENV"]
 }

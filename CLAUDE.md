@@ -54,6 +54,22 @@ The project will enforce these versions through:
 
 ## Development Commands
 
+**IMPORTANT: Initial Setup**
+
+After cloning or installing dependencies, you must build packages first:
+```bash
+pnpm run build
+```
+This builds all workspace packages in dependency order. Required before first `pnpm run dev` to generate package outputs that other packages import.
+
+**When to rebuild:**
+- ✅ **Not needed** for regular code changes (watch mode handles this)
+- ❌ **Required** after:
+  - Fresh clone/install
+  - Adding/removing dependencies
+  - Changing package.json exports
+  - Modifying TypeScript configs
+
 **Start development environment:**
 ```bash
 pnpm run dev
@@ -95,6 +111,33 @@ pnpm run lint:fix    # Auto-fix lint errors
 ```bash
 pnpm run dev:emulators:with-data    # Start emulators with imported data
 pnpm run emulators:export           # Export emulator data
+```
+
+## Troubleshooting Build Issues
+
+**TypeScript Declaration Files Missing:**
+If you see "Cannot find module" errors for workspace packages, or .d.ts files are missing:
+```bash
+# Clear corrupted TypeScript build cache
+find . -name "*.tsbuildinfo" -exec rm {} \;
+pnpm run build
+```
+
+**Turbo Cache Issues:**
+If builds are inconsistent or failing unexpectedly:
+```bash
+# Full clean including all caches
+pnpm run clean
+pnpm run build
+```
+
+**Module Import Failures:**
+If workspace packages can't import each other:
+```bash
+# Ensure all packages are built first
+pnpm run build
+# Check that lib/ directories contain .d.ts files
+ls packages/domain/lib/*.d.ts
 ```
 
 ## Architecture Overview
@@ -209,6 +252,35 @@ Common pitfalls and solutions:
    # ✅ CORRECT: Escape quotes in character class
    sed "s#@package/[^'\"]*#@new#g"
    ```
+
+### Using pnpm vs npx
+
+**CRITICAL: Always use pnpm exec instead of npx for project tools**
+
+This project uses pnpm workspaces and specific tool versions. Always use `pnpm exec` to ensure you're using the project's installed versions:
+
+```bash
+# ❌ WRONG: Uses global or system version
+npx tsc --project tsconfig.build.json
+npx vitest run
+npx eslint src/
+
+# ✅ CORRECT: Uses project's installed version
+pnpm exec tsc --project tsconfig.build.json
+pnpm exec vitest run
+pnpm exec eslint src/
+
+# ✅ EVEN BETTER: Use package.json scripts when available
+pnpm run build
+pnpm run test
+pnpm run lint
+```
+
+**Why this matters:**
+- Ensures consistent tool versions across the team
+- Uses the exact TypeScript/ESLint/Vitest versions specified in package.json
+- Avoids version conflicts and unexpected behavior
+- Respects workspace dependencies and configurations
 
 ## Testing Notes
 

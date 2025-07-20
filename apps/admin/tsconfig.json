@@ -2,10 +2,10 @@
   "extends": "@decision-copilot/config-typescript/node.json",
   "compilerOptions": {
     "outDir": "lib",
+    "rootDir": "src",
     "composite": true,
     "declaration": true,
     "declarationMap": true,
-    "rootDir": "src",
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
@@ -22,7 +22,8 @@
     "baseUrl": ".",
     "paths": {
       "@/*": ["src/*"]
-    }
+    },
+    "tsBuildInfoFile": ".turbo/admin.tsbuildinfo"
   },
   "include": [
     "src/**/*"
