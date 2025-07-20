@@ -5,9 +5,7 @@
   "type": "module",
   "scripts": {
     "pre:push": "pnpm run lint && pnpm run test:unit && pnpm run build",
-    "dev": "concurrently -n \"emulators,next\" \"pnpm run dev:emulators:with-data\" \"wait-on -l tcp:4400 -t 30000 && pnpm run dev:next\"",
-    "dev:next": "next dev --turbopack",
-    "dev:emulators:with-data": "firebase emulators:start --import=../../.data/emulators/firebase-data --only auth,firestore",
+    "dev": "next dev --turbopack",
     "emulators:export": "firebase emulators:export ../../.data/emulators/firebase-data",
     "check:emulators": "wait-on -l tcp:4400 -t 5000 && echo 'Emulator Hub is available!'",
     "build": "next build",
