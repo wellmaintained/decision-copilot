@@ -3,11 +3,11 @@
   "version": "0.0.0",
   "private": true,
   "description": "Framework-agnostic domain models and business logic",
-  "main": "lib/index.js",
-  "types": "lib/index.d.ts",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "exports": {
-    ".": "./lib/index.js",
-    "./*": "./lib/*.js"
+    ".": "./dist/index.js",
+    "./*": "./dist/*.js"
   },
   "scripts": {
     "build": "tsc --project tsconfig.build.json",
@@ -19,7 +19,7 @@
     "test:unit:watch": "vitest --watch --exclude '**/*.integration.test.ts'",
     "lint": "eslint src/",
     "lint:fix": "eslint src/ --fix",
-    "clean": "rm -rf lib",
+    "clean": "rm -rf dist",
     "pre:push": "pnpm run lint && pnpm run test:unit && pnpm run build"
   },
   "dependencies": {

@@ -3,7 +3,7 @@
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
-      "outputs": ["dist/**", ".next/**", "lib/**", "!lib/**/__tests__/**", ".turbo/*.tsbuildinfo", "packages/*/.turbo/*.tsbuildinfo", "apps/*/.turbo/*.tsbuildinfo"],
+      "outputs": ["dist/**", ".next/**", "!dist/**/__tests__/**", ".turbo/*.tsbuildinfo", "packages/*/.turbo/*.tsbuildinfo", "apps/*/.turbo/*.tsbuildinfo"],
       "inputs": ["src/**", "*.ts", "*.tsx", "*.js", "*.jsx", "tsconfig.json", "package.json"]
     },
     "@decision-copilot/config-eslint#build": {

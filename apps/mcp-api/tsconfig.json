@@ -1,7 +1,7 @@
 {
   "extends": "@decision-copilot/config-typescript/node.json",
   "compilerOptions": {
-    "outDir": "lib",
+    "outDir": "dist",
     "rootDir": "src",
     "composite": true,
     "declaration": true,
@@ -9,7 +9,7 @@
     "tsBuildInfoFile": ".turbo/mcp-api.tsbuildinfo"
   },
   "include": ["src"],
-  "exclude": ["node_modules", "lib"],
+  "exclude": ["node_modules", "dist"],
   "references": [
     {
       "path": "../../packages/domain"

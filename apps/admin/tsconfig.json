@@ -1,7 +1,7 @@
 {
   "extends": "@decision-copilot/config-typescript/node.json",
   "compilerOptions": {
-    "outDir": "lib",
+    "outDir": "dist",
     "rootDir": "src",
     "composite": true,
     "declaration": true,
@@ -30,7 +30,7 @@
   ],
   "exclude": [
     "node_modules",
-    "lib"
+    "dist"
   ],
   "references": [
     {

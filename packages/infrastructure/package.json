@@ -3,12 +3,12 @@
   "version": "0.0.0", 
   "private": true,
   "description": "Firebase repository implementations supporting both client and admin SDKs",
-  "main": "lib/index.js",
-  "types": "lib/index.d.ts",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "exports": {
-    ".": "./lib/index.js",
-    "./client": "./lib/client/index.js",
-    "./admin": "./lib/admin/index.js"
+    ".": "./dist/index.js",
+    "./client": "./dist/client/index.js",
+    "./admin": "./dist/admin/index.js"
   },
   "scripts": {
     "build": "tsc --project tsconfig.build.json",
@@ -20,7 +20,7 @@
     "test:unit:watch": "vitest --watch --exclude '**/*.integration.test.ts'",
     "lint": "eslint src/",
     "lint:fix": "eslint src/ --fix",
-    "clean": "rm -rf lib",
+    "clean": "rm -rf dist",
     "pre:push": "pnpm run lint && pnpm run test:unit && pnpm run build"
   },
   "dependencies": {

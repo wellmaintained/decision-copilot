@@ -24,17 +24,10 @@ coverage/
 # production
 /build
 build/
-lib/
-dist/
 /.firebase
 
-# compiled output (specific to build directories)
-lib/**/*.js
-lib/**/*.js.map
-lib/**/*.d.ts
-dist/**/*.js
-dist/**/*.js.map
-dist/**/*.d.ts
+# compiled output 
+dist/
 build/**/*.js
 build/**/*.js.map
 build/**/*.d.ts

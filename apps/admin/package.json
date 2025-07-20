@@ -7,7 +7,7 @@
     "pre:push": "pnpm run lint && pnpm run test:unit && pnpm run build",
     "lint": "eslint src/",
     "build": "tsc",
-    "clean": "rm -rf lib",
+    "clean": "rm -rf dist",
     "test": "vitest run",
     "test:unit": "vitest run --exclude '**/*.integration.test.ts'",
     "test:watch": "vitest --watch",
