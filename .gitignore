@@ -43,11 +43,10 @@ yarn-error.log*
 .pnpm-debug.log*
 firebase-debug.log
 
-# env files (can opt-in for committing if needed)
-# .env should be committed.  .env.{development,production} should not be committed.
-!.env
+# env files  
+# Ignore .env.* except .env.development
 .env.*
-.env.*.local
+!.env.development
 .local/
 
 # vercel
