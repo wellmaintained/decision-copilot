@@ -364,15 +364,6 @@ importers:
       class-validator:
         specifier: ^0.14.1
         version: 0.14.2
-      dotenv:
-        specifier: ^17.2.0
-        version: 17.2.0
-      dotenv-safe:
-        specifier: ^9.1.0
-        version: 9.1.0(dotenv@17.2.0)
-      env-var:
-        specifier: ^7.5.0
-        version: 7.5.0
       reflect-metadata:
         specifier: ^0.2.2
         version: 0.2.2
@@ -3479,11 +3470,6 @@ packages:
     resolution: {integrity: sha512-QM8q3zDe58hqUqjraQOmzZ1LIH9SWQJTlEKCH4kJ2oQvLZk7RbQXvtDM2XEq3fwkV9CCvvH4LA0AV+ogFsBM2Q==}
     engines: {node: '>=8'}
 
-  dotenv-safe@9.1.0:
-    resolution: {integrity: sha512-2qwVAnUN+EDpu41pIK1XiJpHXKHV9Dnti3cE1EnUXT1/BV5+B7xuSZtgZ/4LExkCpp5F6BGikraezQL+8hKCOA==}
-    peerDependencies:
-      dotenv: '>= 8.2.0'
-
   dotenv@16.6.1:
     resolution: {integrity: sha512-uBq4egWHTcTt33a72vpSG0z3HnPuIl6NqYcTrKEg2azoEyl2hpW0zqlxysq2pK9HlDIHyHyakeYaYnSAwd8bow==}
     engines: {node: '>=12'}
@@ -3545,10 +3531,6 @@ packages:
   env-paths@2.2.1:
     resolution: {integrity: sha512-+h1lkLKhZMTYjog1VEpJNG7NZJWcuc2DDk/qsqSTRRCOXiLjeQ1d1/udrUGhqMxUgAlwKNZ0cf2uqan5GLuS2A==}
     engines: {node: '>=6'}
-
-  env-var@7.5.0:
-    resolution: {integrity: sha512-mKZOzLRN0ETzau2W2QXefbFjo5EF4yWq28OyKb9ICdeNhHJlOE/pHHnz4hdYJ9cNZXcJHo5xN4OT4pzuSHSNvA==}
-    engines: {node: '>=10'}
 
   environment@1.1.0:
     resolution: {integrity: sha512-xUtoPkMggbz0MPyPiIWr1Kp4aeWJjDZ6SMvURhimjdZgsRuDplF5/s9hcgGhyXMhs+6vpnuoiZ2kFiu3FMnS8Q==}
@@ -9863,10 +9845,6 @@ snapshots:
     dependencies:
       is-obj: 2.0.0
 
-  dotenv-safe@9.1.0(dotenv@17.2.0):
-    dependencies:
-      dotenv: 17.2.0
-
   dotenv@16.6.1: {}
 
   dotenv@17.2.0: {}
@@ -9919,8 +9897,6 @@ snapshots:
 
   env-paths@2.2.1:
     optional: true
-
-  env-var@7.5.0: {}
 
   environment@1.1.0: {}
 
