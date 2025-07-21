@@ -5,6 +5,7 @@ import "./globals.css";
 import { Toaster } from "@/components/ui/toaster";
 import { ErrorBoundary } from "@/components/error/ErrorBoundary";
 import { ErrorProvider, setupGlobalErrorHandling } from "@/components/error/ErrorProvider";
+import { EnvironmentLogger } from "@/components/debug/EnvironmentLogger";
 
 // Set up global error handling and performance monitoring
 if (typeof window !== 'undefined') {
@@ -48,6 +49,7 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${geistSans.variable} ${geistMono.variable}`}>
       <body className="min-h-screen bg-background font-sans antialiased">
+        <EnvironmentLogger enabled={process.env.NODE_ENV === 'development'} />
         <ErrorBoundary showError={process.env.NODE_ENV === 'development'}>
           <ErrorProvider>
             {children}
