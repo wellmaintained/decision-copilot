@@ -60,6 +60,9 @@ firestore-debug.log
 *.tsbuildinfo
 next-env.d.ts
 
+# direnv
+.direnv/
+
 # misc
 firestore-debug.log
 redirect-to-wellmaintained/.firebase/hosting.cHVibGlj.cache

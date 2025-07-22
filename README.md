@@ -53,6 +53,23 @@ https://decision-copilot.wellmaintained.org/
 
 ## Development
 
+### Prerequisites
+
+The project uses Nix for reproducible development environments. You have two options:
+
+**Option 1: With Nix + direnv (Recommended)**
+```bash
+# Install nix and direnv, then:
+direnv allow
+pnpm run dev
+```
+
+**Option 2: Without Nix**
+Ensure you have:
+- Node.js 22 LTS
+- pnpm
+- OpenJDK (for Firebase emulators)
+
 ### Quick Start
 
 ```bash
