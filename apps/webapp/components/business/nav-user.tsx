@@ -27,7 +27,7 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar"
 import { signOut } from "firebase/auth"
-import { auth } from "@decision-copilot/infrastructure"
+import { auth } from "@/lib/env"
 import { useState } from "react"
 
 export function NavUser({

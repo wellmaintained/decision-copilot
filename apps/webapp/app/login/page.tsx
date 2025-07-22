@@ -4,6 +4,7 @@ import { Button } from "@decision-copilot/ui"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import Link from 'next/link'
 import { signInWithGoogle, signInWithMicrosoft } from '@decision-copilot/infrastructure'
+import { auth } from '@/lib/env'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/hooks/useAuth'
 import { useEffect } from 'react'
@@ -61,7 +62,7 @@ export default function LoginPage() {
 
   const handleGoogleSignIn = async () => {
     try {
-      await signInWithGoogle()
+      await signInWithGoogle(auth)
       router.push('/organisation')
     } catch (error) {
       console.error('Error signing in with Google:', error)
@@ -70,7 +71,7 @@ export default function LoginPage() {
 
   const handleMicrosoftSignIn = async () => {
     try {
-      await signInWithMicrosoft()
+      await signInWithMicrosoft(auth)
       router.push('/organisation')
     } catch (error) {
       console.error('Error signing in with Microsoft:', error)

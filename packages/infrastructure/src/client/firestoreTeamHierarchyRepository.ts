@@ -1,5 +1,5 @@
 import { doc, getDoc, setDoc } from 'firebase/firestore'
-import { db } from '../firebase-client'
+import type { Firestore } from '../firebase-client'
 import { TeamHierarchy, TeamHierarchyNode } from '@decision-copilot/domain'
 import { TeamHierarchyRepository } from '@decision-copilot/domain'
 
@@ -14,6 +14,7 @@ interface HierarchicalTeamNode {
 }
 
 export class FirestoreTeamHierarchyRepository implements TeamHierarchyRepository {
+  constructor(private db: Firestore) {}
   /**
    * Get the team hierarchy for an organisation
    * @param organisationId The ID of the organisation
@@ -21,7 +22,7 @@ export class FirestoreTeamHierarchyRepository implements TeamHierarchyRepository
    */
   async getByOrganisationId(organisationId: string): Promise<TeamHierarchy | null> {
     try {
-      const docRef = doc(db, 'organisations', organisationId, 'teamHierarchies', 'hierarchy')
+      const docRef = doc(this.db, 'organisations', organisationId, 'teamHierarchies', 'hierarchy')
       const docSnap = await getDoc(docRef)
 
       if (docSnap.exists()) {
@@ -49,7 +50,7 @@ export class FirestoreTeamHierarchyRepository implements TeamHierarchyRepository
    */
   async save(organisationId: string, hierarchy: TeamHierarchy): Promise<void> {
     try {
-      const docRef = doc(db, 'organisations', organisationId, 'teamHierarchies', 'hierarchy')
+      const docRef = doc(this.db, 'organisations', organisationId, 'teamHierarchies', 'hierarchy')
 
       // Transform to a pure hierarchical structure
       const rootTeams = this.convertFlatToHierarchical(hierarchy.teams)

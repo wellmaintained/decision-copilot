@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react'
 import { doc, onSnapshot } from 'firebase/firestore'
-import { db } from '@decision-copilot/infrastructure'
+import { db } from '@/lib/env'
 import { TeamHierarchy, TeamHierarchyNode } from '@decision-copilot/domain/TeamHierarchy'
 import { FirestoreTeamHierarchyRepository } from '@decision-copilot/infrastructure'
 
@@ -24,7 +24,7 @@ export function useTeamHierarchy(organisationId: string): UseTeamHierarchyResult
   const [loading, setLoading] = useState<boolean>(true)
   const [error, setError] = useState<Error | null>(null)
 
-  const repository = useMemo(() => new FirestoreTeamHierarchyRepository(), [])
+  const repository = useMemo(() => new FirestoreTeamHierarchyRepository(db), [])
 
   useEffect(() => {
     if (!organisationId) {

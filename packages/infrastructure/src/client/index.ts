@@ -6,6 +6,3 @@ export * from './firestoreStakeholderTeamsRepository';
 export * from './firestoreItemsRepository';
 export * from './firestoreProjectDecisionsRepository';
 export * from './firestoreTeamHierarchyRepository';
-
-// Re-export Firebase config for client usage
-export { auth, db, functions } from '../firebase-client';

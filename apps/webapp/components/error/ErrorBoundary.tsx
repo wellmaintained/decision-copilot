@@ -4,6 +4,7 @@ import React, { Component, ReactNode, ErrorInfo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { AlertTriangle, RefreshCw, Home } from 'lucide-react';
+import { env } from '@/lib/env';
 
 interface ErrorBoundaryProps {
   children: ReactNode;
@@ -42,7 +43,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
     });
 
     // Log error to console in development
-    if (process.env.NODE_ENV === 'development') {
+    if (env.NODE_ENV === 'development') {
       console.error('ErrorBoundary caught an error:', error, errorInfo);
     }
 
@@ -89,7 +90,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
                 We encountered an unexpected error. Please try refreshing the page or contact support if the problem persists.
               </p>
               
-              {this.props.showError && process.env.NODE_ENV === 'development' && this.state.error && (
+              {this.props.showError && env.NODE_ENV === 'development' && this.state.error && (
                 <details className="text-xs bg-muted p-3 rounded border">
                   <summary className="cursor-pointer font-medium mb-2">Error Details</summary>
                   <pre className="whitespace-pre-wrap">{this.state.error.toString()}</pre>

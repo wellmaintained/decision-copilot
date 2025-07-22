@@ -3,7 +3,7 @@ import { ItemsRepository } from '@decision-copilot/domain'
 import { Item } from '@decision-copilot/domain'
 import { Name } from '@decision-copilot/domain'
 
-import { db } from '../firebase-client';
+import type { Firestore } from '../firebase-client';
 import {
   collection,
   query,
@@ -22,7 +22,7 @@ import {
 export class FirestoreItemsRepository implements ItemsRepository {
   private collectionPath: string;
 
-  constructor(collectionPath = 'items') {
+  constructor(private db: Firestore, collectionPath = 'items') {
     this.collectionPath = collectionPath;
   }
 
@@ -30,7 +30,7 @@ export class FirestoreItemsRepository implements ItemsRepository {
     onData: (items: Item[]) => void,
     onError: (error: Error) => void
   ): () => void {
-    const colRef = collection(db, this.collectionPath);
+    const colRef = collection(this.db, this.collectionPath);
     const q = query(colRef, orderBy('name')); // or whatever field
 
     // Subscribe to snapshot updates
@@ -59,7 +59,7 @@ export class FirestoreItemsRepository implements ItemsRepository {
     const name = Name.create(newName);
 
     // If no error thrown, proceed to update Firestore
-    const docRef = doc(db, this.collectionPath, id);
+    const docRef = doc(this.db, this.collectionPath, id);
     await updateDoc(docRef, { name: name.value });
   }
 
@@ -68,7 +68,7 @@ export class FirestoreItemsRepository implements ItemsRepository {
     const nameObj = Name.create(name);
 
     // If no error thrown, proceed to create in Firestore
-    const colRef = collection(db, this.collectionPath);
+    const colRef = collection(this.db, this.collectionPath);
     await addDoc(colRef, { name: nameObj.value });
   }
 }

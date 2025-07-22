@@ -1,3 +1,4 @@
+import { db } from "@/lib/env";
 import { useState, useEffect } from "react";
 import {
   Decision,
@@ -10,7 +11,7 @@ import { SupportingMaterial } from "@decision-copilot/domain/SupportingMaterial"
 import { FirestoreDecisionsRepository } from "@decision-copilot/infrastructure";
 import { DecisionScope } from "@decision-copilot/domain/decisionsRepository";
 
-const decisionsRepository = new FirestoreDecisionsRepository();
+const decisionsRepository = new FirestoreDecisionsRepository(db);
 
 export function useDecision(decisionId: string, organisationId: string) {
   const [decision, setDecision] = useState<Decision | null>(null);

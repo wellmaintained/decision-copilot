@@ -9,7 +9,7 @@ import {
   SupportingMaterial,
   DecisionRelationshipError,
 } from "@decision-copilot/domain";
-import { db } from "../firebase-client";
+import type { Firestore } from "../firebase-client";
 import {
   collection,
   onSnapshot,
@@ -31,6 +31,8 @@ import {
 // Removed duplicate import - already imported above
 
 export class FirestoreDecisionsRepository implements DecisionsRepository {
+  constructor(private db: Firestore) {}
+
   private getDecisionPath(scope: DecisionScope) {
     if (!scope.organisationId) {
       throw new Error("Cannot get decision path: organisationId is required");
@@ -76,14 +78,14 @@ export class FirestoreDecisionsRepository implements DecisionsRepository {
   }
 
   async getAll(scope: DecisionScope): Promise<Decision[]> {
-    const q = collection(db, this.getDecisionPath(scope));
+    const q = collection(this.db, this.getDecisionPath(scope));
     const querySnapshot = await getDocs(q);
     return querySnapshot.docs.map((doc) => this.decisionFromFirestore(doc));
   }
 
   async getByTeam(teamId: string, scope: DecisionScope): Promise<Decision[]> {
     const q = query(
-      collection(db, this.getDecisionPath(scope)),
+      collection(this.db, this.getDecisionPath(scope)),
       where("teamIds", "array-contains", teamId),
     );
     const querySnapshot = await getDocs(q);
@@ -95,7 +97,7 @@ export class FirestoreDecisionsRepository implements DecisionsRepository {
     scope: DecisionScope,
   ): Promise<Decision[]> {
     const q = query(
-      collection(db, this.getDecisionPath(scope)),
+      collection(this.db, this.getDecisionPath(scope)),
       where("projectIds", "array-contains", projectId),
     );
     const querySnapshot = await getDocs(q);
@@ -103,7 +105,7 @@ export class FirestoreDecisionsRepository implements DecisionsRepository {
   }
 
   async getById(id: string, scope: DecisionScope): Promise<Decision> {
-    const docRef = doc(db, this.getDecisionPath(scope), id);
+    const docRef = doc(this.db, this.getDecisionPath(scope), id);
     const docSnap = await getDoc(docRef);
 
     if (!docSnap.exists()) {
@@ -117,7 +119,7 @@ export class FirestoreDecisionsRepository implements DecisionsRepository {
     initialData: Partial<DecisionProps> = {},
     scope: DecisionScope,
   ): Promise<Decision> {
-    const docRef = doc(collection(db, this.getDecisionPath(scope)));
+    const docRef = doc(collection(this.db, this.getDecisionPath(scope)));
 
     const data: Record<
       string,
@@ -161,7 +163,7 @@ export class FirestoreDecisionsRepository implements DecisionsRepository {
       organisationId: decision.organisationId,
     };
 
-    const docRef = doc(db, this.getDecisionPath(scope), decision.id);
+    const docRef = doc(this.db, this.getDecisionPath(scope), decision.id);
 
     const data: Record<string, FieldValue | Partial<unknown> | undefined> = {
       title: decision.title,
@@ -190,7 +192,7 @@ export class FirestoreDecisionsRepository implements DecisionsRepository {
   }
 
   async delete(id: string, scope: DecisionScope): Promise<void> {
-    const docRef = doc(db, this.getDecisionPath(scope), id);
+    const docRef = doc(this.db, this.getDecisionPath(scope), id);
     await deleteDoc(docRef);
   }
 
@@ -199,7 +201,7 @@ export class FirestoreDecisionsRepository implements DecisionsRepository {
     onError: (error: Error) => void,
     scope: DecisionScope,
   ): () => void {
-    const q = collection(db, this.getDecisionPath(scope));
+    const q = collection(this.db, this.getDecisionPath(scope));
 
     return onSnapshot(
       q,
@@ -222,7 +224,7 @@ export class FirestoreDecisionsRepository implements DecisionsRepository {
       organisationId: decision.organisationId,
     };
 
-    const docRef = doc(db, this.getDecisionPath(scope), decision.id);
+    const docRef = doc(this.db, this.getDecisionPath(scope), decision.id);
 
     return onSnapshot(
       docRef,
@@ -247,7 +249,7 @@ export class FirestoreDecisionsRepository implements DecisionsRepository {
       );
     const targetDecisionDoc = await getDoc(
       doc(
-        db,
+        this.db,
         "organisations",
         organisationId,
         "decisions",
@@ -270,7 +272,7 @@ export class FirestoreDecisionsRepository implements DecisionsRepository {
     relationships: Record<string, unknown> | undefined,
   ): void {
     const decisionRef = doc(
-      db,
+      this.db,
       this.getDecisionCollectionPathFromDecision(decision),
       decision.id,
     );
@@ -316,7 +318,7 @@ export class FirestoreDecisionsRepository implements DecisionsRepository {
     );
 
     // Create a batch write
-    const batch = writeBatch(db);
+    const batch = writeBatch(this.db);
 
     // Update source decision relationships
     const updatedSourceDecision =
@@ -398,7 +400,7 @@ export class FirestoreDecisionsRepository implements DecisionsRepository {
     await this.update(publishedDecision);
 
     // 5. Update all the target decisions that were previously blocked
-    const batch = writeBatch(db);
+    const batch = writeBatch(this.db);
 
     for (const relationship of blocksRelationships) {
       try {
@@ -448,7 +450,7 @@ export class FirestoreDecisionsRepository implements DecisionsRepository {
     });
 
     // Start a batch write
-    const batch = writeBatch(db);
+    const batch = writeBatch(this.db);
 
     // Get all the decisions that this decision blocks
     const blocksRelationships = freshDecision.getRelationshipsByType("blocks");
@@ -475,7 +477,7 @@ export class FirestoreDecisionsRepository implements DecisionsRepository {
     }
 
     const decisionRef = doc(
-      db,
+      this.db,
       this.getDecisionCollectionPathFromDecision(freshDecision),
       freshDecision.id,
     );
@@ -510,7 +512,7 @@ export class FirestoreDecisionsRepository implements DecisionsRepository {
 
       if (inverseKeys.length > 0) {
         const targetRef = doc(
-          db,
+          this.db,
           this.getDecisionCollectionPathFromDecision(targetDecision),
           targetDecision.id,
         );

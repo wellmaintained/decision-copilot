@@ -1,13 +1,15 @@
 import { StakeholderTeam, StakeholderTeamProps } from '@decision-copilot/domain'
 import { StakeholderTeamsRepository } from '@decision-copilot/domain'
-import { db } from '../firebase-client'
+import type { Firestore } from '../firebase-client'
 import { collection, deleteDoc, doc, getDoc, getDocs, query, setDoc, where } from 'firebase/firestore'
 
 export class FirestoreStakeholderTeamsRepository implements StakeholderTeamsRepository {
   private readonly collectionName = 'stakeholderTeams'
 
+  constructor(private db: Firestore) {}
+
   async create(props: Omit<StakeholderTeamProps, 'id'>): Promise<StakeholderTeam> {
-    const docRef = doc(collection(db, this.collectionName))
+    const docRef = doc(collection(this.db, this.collectionName))
     const stakeholderTeam = StakeholderTeam.create({ ...props, id: docRef.id })
     await setDoc(docRef, {
       stakeholderId: stakeholderTeam.stakeholderId,
@@ -18,7 +20,7 @@ export class FirestoreStakeholderTeamsRepository implements StakeholderTeamsRepo
   }
 
   async getById(id: string): Promise<StakeholderTeam | null> {
-    const docRef = doc(db, this.collectionName, id)
+    const docRef = doc(this.db, this.collectionName, id)
     const docSnap = await getDoc(docRef)
     if (!docSnap.exists()) return null
     return StakeholderTeam.create({ id: docSnap.id, ...docSnap.data() } as StakeholderTeamProps)
@@ -26,7 +28,7 @@ export class FirestoreStakeholderTeamsRepository implements StakeholderTeamsRepo
 
   async getByStakeholderId(stakeholderId: string): Promise<StakeholderTeam[]> {
     const q = query(
-      collection(db, this.collectionName),
+      collection(this.db, this.collectionName),
       where('stakeholderId', '==', stakeholderId)
     )
     const querySnapshot = await getDocs(q)
@@ -37,7 +39,7 @@ export class FirestoreStakeholderTeamsRepository implements StakeholderTeamsRepo
 
   async getByTeamId(teamId: string): Promise<StakeholderTeam[]> {
     const q = query(
-      collection(db, this.collectionName),
+      collection(this.db, this.collectionName),
       where('teamId', '==', teamId)
     )
     const querySnapshot = await getDocs(q)
@@ -48,7 +50,7 @@ export class FirestoreStakeholderTeamsRepository implements StakeholderTeamsRepo
 
   async getByOrganisationId(organisationId: string): Promise<StakeholderTeam[]> {
     const q = query(
-      collection(db, this.collectionName),
+      collection(this.db, this.collectionName),
       where('organisationId', '==', organisationId)
     )
     const querySnapshot = await getDocs(q)
@@ -65,7 +67,7 @@ export class FirestoreStakeholderTeamsRepository implements StakeholderTeamsRepo
 
   async getByStakeholderAndTeam(stakeholderId: string, teamId: string): Promise<StakeholderTeam | null> {
     const q = query(
-      collection(db, this.collectionName),
+      collection(this.db, this.collectionName),
       where('stakeholderId', '==', stakeholderId),
       where('teamId', '==', teamId)
     )
@@ -76,6 +78,6 @@ export class FirestoreStakeholderTeamsRepository implements StakeholderTeamsRepo
   }
 
   async delete(id: string): Promise<void> {
-    await deleteDoc(doc(db, this.collectionName, id))
+    await deleteDoc(doc(this.db, this.collectionName, id))
   }
 }

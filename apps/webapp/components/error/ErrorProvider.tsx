@@ -2,6 +2,7 @@
 
 import React, { createContext, useContext, ReactNode, useCallback } from 'react';
 import { useToast } from '@/components/ui/use-toast';
+import { env } from '@/lib/env';
 
 interface ErrorContextType {
   reportError: (error: Error, context?: string) => void;
@@ -29,7 +30,7 @@ export function ErrorProvider({ children }: ErrorProviderProps) {
     });
 
     // In production, send to error monitoring service
-    if (process.env.NODE_ENV === 'production') {
+    if (env.NODE_ENV === 'production') {
       // Example with Sentry:
       // Sentry.captureException(error, {
       //   tags: { context },
@@ -111,7 +112,7 @@ export function setupGlobalErrorHandling() {
       event.preventDefault();
       
       // Report to error service
-      if (process.env.NODE_ENV === 'production') {
+      if (env.NODE_ENV === 'production') {
         // Example: Sentry.captureException(event.reason);
       }
     });
@@ -127,7 +128,7 @@ export function setupGlobalErrorHandling() {
       });
 
       // Report to error service
-      if (process.env.NODE_ENV === 'production') {
+      if (env.NODE_ENV === 'production') {
         // Example: Sentry.captureException(event.error || new Error(event.message));
       }
     });

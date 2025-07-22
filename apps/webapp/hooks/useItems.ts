@@ -1,3 +1,4 @@
+import { db } from "@/lib/env";
 // hooks/useItems.ts
 import { useEffect, useState } from 'react';
 import { FirestoreItemsRepository } from '@decision-copilot/infrastructure'
@@ -9,7 +10,7 @@ export function useItems() {
   const [error, setError] = useState<Error | null>(null);
 
   // The repository that handles Firestore
-  const repository = new FirestoreItemsRepository();
+  const repository = new FirestoreItemsRepository(db);
 
   useEffect(() => {
     const unsubscribe = repository.subscribeToAll(

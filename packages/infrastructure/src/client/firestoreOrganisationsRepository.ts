@@ -9,7 +9,7 @@ import {
   query,
   where,
 } from "firebase/firestore";
-import { db } from "../firebase-client";
+import type { Firestore } from "../firebase-client";
 import { Organisation, OrganisationProps } from "@decision-copilot/domain";
 import { OrganisationsRepository } from "@decision-copilot/domain";
 import { Team } from "@decision-copilot/domain";
@@ -24,14 +24,14 @@ export class FirestoreOrganisationsRepository
   private stakeholdersRepository: FirestoreStakeholdersRepository;
   private teamHierarchyRepository: FirestoreTeamHierarchyRepository;
 
-  constructor() {
-    this.stakeholdersRepository = new FirestoreStakeholdersRepository();
-    this.teamHierarchyRepository = new FirestoreTeamHierarchyRepository();
+  constructor(private db: Firestore) {
+    this.stakeholdersRepository = new FirestoreStakeholdersRepository(this.db);
+    this.teamHierarchyRepository = new FirestoreTeamHierarchyRepository(this.db);
   }
 
   async create(props: Omit<OrganisationProps, "id">): Promise<Organisation> {
     // Create the main organisation document
-    const orgDoc = await addDoc(collection(db, "organisations"), {
+    const orgDoc = await addDoc(collection(this.db, "organisations"), {
       name: props.name,
       createdAt: new Date(),
     });
@@ -57,7 +57,7 @@ export class FirestoreOrganisationsRepository
       // Add projects to a subcollection within the organisation
       await Promise.all(
         team.projects.map(async (project) => {
-          await addDoc(collection(db, "organisations", orgDoc.id, "projects"), {
+          await addDoc(collection(this.db, "organisations", orgDoc.id, "projects"), {
             name: project.name,
             description: project.description,
             teamId: team.id,
@@ -87,7 +87,7 @@ export class FirestoreOrganisationsRepository
   }
 
   async getById(id: string): Promise<Organisation> {
-    const docRef = doc(db, "organisations", id);
+    const docRef = doc(this.db, "organisations", id);
     const docSnap = await getDoc(docRef);
 
     if (!docSnap.exists()) {
@@ -115,7 +115,7 @@ export class FirestoreOrganisationsRepository
 
     // Get projects from the projects subcollection
     const projectsSnap = await getDocs(
-      collection(db, "organisations", id, "projects"),
+      collection(this.db, "organisations", id, "projects"),
     );
     const projectsByTeam: Record<string, Project[]> = {};
 
@@ -171,7 +171,7 @@ export class FirestoreOrganisationsRepository
 
     // Then get all stakeholderTeams for this stakeholder
     const stakeholderTeamsQuery = query(
-      collection(db, "stakeholderTeams"),
+      collection(this.db, "stakeholderTeams"),
       where("stakeholderId", "==", stakeholder.id),
     );
     const stakeholderTeamsSnap = await getDocs(stakeholderTeamsQuery);
@@ -190,7 +190,7 @@ export class FirestoreOrganisationsRepository
   }
 
   async update(organisation: Organisation): Promise<void> {
-    const docRef = doc(db, "organisations", organisation.id);
+    const docRef = doc(this.db, "organisations", organisation.id);
     await updateDoc(docRef, {
       name: organisation.name,
     });
@@ -220,7 +220,7 @@ export class FirestoreOrganisationsRepository
       for (const project of team.projects) {
         // Check if project exists
         const projectRef = doc(
-          db,
+          this.db,
           "organisations",
           organisation.id,
           "projects",
@@ -238,7 +238,7 @@ export class FirestoreOrganisationsRepository
         } else {
           // Add new project
           await addDoc(
-            collection(db, "organisations", organisation.id, "projects"),
+            collection(this.db, "organisations", organisation.id, "projects"),
             {
               name: project.name,
               description: project.description,
@@ -258,14 +258,14 @@ export class FirestoreOrganisationsRepository
   async delete(id: string): Promise<void> {
     // Delete all projects in the organisation
     const projectsSnap = await getDocs(
-      collection(db, "organisations", id, "projects"),
+      collection(this.db, "organisations", id, "projects"),
     );
     for (const projectDoc of projectsSnap.docs) {
       // Delete decisions for this project if they exist
       try {
         const decisionsSnap = await getDocs(
           collection(
-            db,
+            this.db,
             "organisations",
             id,
             "projects",
@@ -293,7 +293,7 @@ export class FirestoreOrganisationsRepository
         await this.teamHierarchyRepository.getByOrganisationId(id);
       if (teamHierarchy) {
         await deleteDoc(
-          doc(db, "organisations", id, "teamHierarchies", "hierarchy"),
+          doc(this.db, "organisations", id, "teamHierarchies", "hierarchy"),
         );
       }
     } catch (error) {
@@ -304,12 +304,12 @@ export class FirestoreOrganisationsRepository
     }
 
     // Delete the organisation document
-    const docRef = doc(db, "organisations", id);
+    const docRef = doc(this.db, "organisations", id);
     await deleteDoc(docRef);
   }
 
   async getAll(): Promise<Organisation[]> {
-    const orgsSnap = await getDocs(collection(db, "organisations"));
+    const orgsSnap = await getDocs(collection(this.db, "organisations"));
     const organisations = await Promise.all(
       orgsSnap.docs.map(async (doc) => {
         try {

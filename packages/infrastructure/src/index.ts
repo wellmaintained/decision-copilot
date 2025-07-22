@@ -10,5 +10,5 @@ export * from './authFunctions';
 // Re-export reflection utilities
 export * from './reflection';
 
-// Re-export Firebase configuration utilities
+// Re-export Firebase server-side configuration utilities
 export * from './config/firebase';

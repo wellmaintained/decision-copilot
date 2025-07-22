@@ -4,7 +4,7 @@ import {
   StakeholderWithRole,
 } from "@decision-copilot/domain";
 import { Stakeholder, StakeholderProps } from "@decision-copilot/domain";
-import { db } from "../firebase-client";
+import type { Firestore } from "../firebase-client";
 import { User } from "firebase/auth";
 import { Decision } from "@decision-copilot/domain";
 import {
@@ -30,7 +30,7 @@ import {
 export class FirestoreStakeholdersRepository implements StakeholdersRepository {
   private collectionPath: string;
 
-  constructor(collectionPath = "stakeholders") {
+  constructor(private db: Firestore, collectionPath = "stakeholders") {
     this.collectionPath = collectionPath;
   }
 
@@ -63,7 +63,7 @@ export class FirestoreStakeholdersRepository implements StakeholdersRepository {
     }
 
     // Create new stakeholder
-    const docRef = await addDoc(collection(db, this.collectionPath), {
+    const docRef = await addDoc(collection(this.db, this.collectionPath), {
       email: props.email,
       displayName: props.displayName,
       photoURL: props.photoURL,
@@ -78,7 +78,7 @@ export class FirestoreStakeholdersRepository implements StakeholdersRepository {
   }
 
   async getById(id: string): Promise<Stakeholder | null> {
-    const docRef = doc(db, this.collectionPath, id);
+    const docRef = doc(this.db, this.collectionPath, id);
     const docSnap = await getDoc(docRef);
 
     if (!docSnap.exists()) {
@@ -96,7 +96,7 @@ export class FirestoreStakeholdersRepository implements StakeholdersRepository {
 
   async getByEmail(email: string): Promise<Stakeholder | null> {
     const q = query(
-      collection(db, this.collectionPath),
+      collection(this.db, this.collectionPath),
       where("email", "==", email),
       limit(1),
     );
@@ -123,7 +123,7 @@ export class FirestoreStakeholdersRepository implements StakeholdersRepository {
       throw new EmailAlreadyExistsError(stakeholder.email);
     }
 
-    const docRef = doc(db, this.collectionPath, stakeholder.id);
+    const docRef = doc(this.db, this.collectionPath, stakeholder.id);
     await updateDoc(docRef, {
       displayName: stakeholder.displayName,
       email: stakeholder.email,
@@ -132,7 +132,7 @@ export class FirestoreStakeholdersRepository implements StakeholdersRepository {
   }
 
   async delete(id: string): Promise<void> {
-    const docRef = doc(db, this.collectionPath, id);
+    const docRef = doc(this.db, this.collectionPath, id);
     await deleteDoc(docRef);
   }
 
@@ -159,7 +159,7 @@ export class FirestoreStakeholdersRepository implements StakeholdersRepository {
     onData: (stakeholders: Stakeholder[]) => void,
     onError: (error: Error) => void,
   ): () => void {
-    const colRef = collection(db, this.collectionPath);
+    const colRef = collection(this.db, this.collectionPath);
     const q = query(colRef, orderBy("displayName", "asc"));
 
     // Subscribe to snapshot updates

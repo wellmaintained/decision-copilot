@@ -1,3 +1,4 @@
+import { db } from "@/lib/env";
 import { useState, useEffect } from "react";
 import { Decision } from "@decision-copilot/domain/Decision";
 import { FirestoreDecisionsRepository } from "@decision-copilot/infrastructure";
@@ -5,7 +6,7 @@ import { DecisionScope } from "@decision-copilot/domain/decisionsRepository";
 import { useAuth } from "@/hooks/useAuth";
 import { FirestoreStakeholdersRepository } from "@decision-copilot/infrastructure";
 
-const decisionsRepository = new FirestoreDecisionsRepository();
+const decisionsRepository = new FirestoreDecisionsRepository(db);
 
 export function useOrganisationDecisions(organisationId: string) {
   const [decisions, setDecisions] = useState<Decision[]>([]);
@@ -42,7 +43,7 @@ export function useOrganisationDecisions(organisationId: string) {
       if (!user || !user.email) {
         throw new Error("Unable to create new decision for currently logged in user: User not found or email not found");
       }
-      const stakeholdersRepository = new FirestoreStakeholdersRepository();
+      const stakeholdersRepository = new FirestoreStakeholdersRepository(db);
       const userStakeholder = await stakeholdersRepository.getByEmail(user.email);
       if (!userStakeholder) {
         throw new Error("Unable to create new decision - cannot find stakeholder with same email as user");

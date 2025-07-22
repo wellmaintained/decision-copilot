@@ -1,3 +1,4 @@
+import { db } from "@/lib/env";
 import {
   Decision,
   DecisionRelationshipType,
@@ -10,7 +11,7 @@ export interface SelectedDecisionDetails {
   organisationId: string;
 }
 
-const decisionRepository = new FirestoreDecisionsRepository();
+const decisionRepository = new FirestoreDecisionsRepository(db);
 
 export function useDecisionRelationships(sourceDecision: Decision) {
   const addRelationship = async (

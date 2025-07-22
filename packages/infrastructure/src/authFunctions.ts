@@ -4,16 +4,16 @@ import {
   signInWithPopup,
   signOut,
 } from "firebase/auth";
-import { auth } from "./firebase-client";
+import type { Auth } from "./firebase-client";
 
 // Single Responsibility: this function triggers a Google sign-in flow
-export async function signInWithGoogle(): Promise<void> {
+export async function signInWithGoogle(auth: Auth): Promise<void> {
   const provider = new GoogleAuthProvider();
   await signInWithPopup(auth, provider);
 }
 
 // Single Responsibility: this function triggers a Microsoft sign-in flow
-export async function signInWithMicrosoft(): Promise<void> {
+export async function signInWithMicrosoft(auth: Auth): Promise<void> {
   const provider = new OAuthProvider("microsoft.com");
   // Configure Microsoft provider with necessary scopes
   provider.addScope("user.read");
@@ -33,6 +33,6 @@ export async function signInWithMicrosoft(): Promise<void> {
 }
 
 // Single Responsibility: sign out the current user
-export async function signOutUser(): Promise<void> {
+export async function signOutUser(auth: Auth): Promise<void> {
   await signOut(auth);
 }

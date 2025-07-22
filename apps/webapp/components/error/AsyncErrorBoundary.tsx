@@ -5,6 +5,7 @@ import { ErrorBoundary } from './ErrorBoundary';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Wifi, RefreshCw } from 'lucide-react';
+import { env } from '@/lib/env';
 
 interface AsyncErrorBoundaryProps {
   children: ReactNode;
@@ -81,7 +82,7 @@ export function useErrorHandler() {
     console.error(`Error in ${context || 'component'}:`, error);
     
     // In production, send to error reporting service
-    if (process.env.NODE_ENV === 'production') {
+    if (env.NODE_ENV === 'production') {
       // Example: Sentry.captureException(error, { tags: { context } });
     }
   }, []);

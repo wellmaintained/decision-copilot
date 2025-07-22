@@ -1,10 +1,11 @@
+import { db } from "@/lib/env";
 import { useState, useEffect } from 'react';
 import { Stakeholder, StakeholderProps } from '@decision-copilot/domain/Stakeholder';
 import { FirestoreStakeholdersRepository } from '@decision-copilot/infrastructure'
 import { Decision } from '@decision-copilot/domain/Decision';
 import { StakeholderWithRole } from '@decision-copilot/domain/stakeholdersRepository';
 
-const stakeholdersRepository = new FirestoreStakeholdersRepository();
+const stakeholdersRepository = new FirestoreStakeholdersRepository(db);
 
 export function useStakeholders() {
   const [stakeholders, setStakeholders] = useState<Stakeholder[]>([]);
@@ -12,20 +13,20 @@ export function useStakeholders() {
   const [error, setError] = useState<Error | null>(null);
 
   const addStakeholder = async (stakeholder: StakeholderProps) => {
-    const repository = new FirestoreStakeholdersRepository()
+    const repository = new FirestoreStakeholdersRepository(db)
     const newStakeholder = await repository.create(stakeholder)
     console.log('newStakeholder', newStakeholder);
     setStakeholders([...stakeholders, newStakeholder])
   }
 
   const updateStakeholder = async (stakeholder: Stakeholder) => {
-    const repository = new FirestoreStakeholdersRepository();
+    const repository = new FirestoreStakeholdersRepository(db);
     await repository.update(stakeholder);
     setStakeholders(stakeholders.map(s => s.id === stakeholder.id ? stakeholder : s))
   }
 
   const removeStakeholder = async (id: string) => {
-    const repository = new FirestoreStakeholdersRepository();
+    const repository = new FirestoreStakeholdersRepository(db);
     await repository.delete(id);
     setStakeholders(stakeholders.filter(s => s.id !== id));
   }

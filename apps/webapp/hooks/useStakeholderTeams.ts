@@ -1,3 +1,4 @@
+import { db } from "@/lib/env";
 import { useState, useEffect } from 'react'
 import { StakeholderTeam, StakeholderTeamProps } from '@decision-copilot/domain/StakeholderTeam'
 import { FirestoreStakeholderTeamsRepository } from '@decision-copilot/infrastructure'
@@ -19,8 +20,8 @@ export function useStakeholderTeams() {
         if (!user?.email) {
           throw new Error('User email is required')
         }
-        const stakeholderTeamsRepository = new FirestoreStakeholderTeamsRepository();
-        const orgRepository = new FirestoreOrganisationsRepository();
+        const stakeholderTeamsRepository = new FirestoreStakeholderTeamsRepository(db);
+        const orgRepository = new FirestoreOrganisationsRepository(db);
         const stakeholderOrgs = await orgRepository.getForStakeholder(user.email);
         const teams = await stakeholderTeamsRepository.getByOrganisation(stakeholderOrgs);
         setStakeholderTeams(teams)
@@ -46,7 +47,7 @@ export function useStakeholderTeams() {
   }, [user?.email])
 
   const addStakeholderTeam = async (props: Omit<StakeholderTeamProps, 'id'>) => {
-    const repository = new FirestoreStakeholderTeamsRepository()
+    const repository = new FirestoreStakeholderTeamsRepository(db)
     const newTeam = await repository.create(props)
     setStakeholderTeams([...stakeholderTeams, newTeam])
     setStakeholderTeamsMap(prev => {
@@ -60,7 +61,7 @@ export function useStakeholderTeams() {
   }
 
   const removeStakeholderTeam = async (stakeholderId: string, teamId: string) => {
-    const repository = new FirestoreStakeholderTeamsRepository()
+    const repository = new FirestoreStakeholderTeamsRepository(db)
     const existingTeam = await repository.getByStakeholderAndTeam(stakeholderId, teamId)
     if (existingTeam) {
       await repository.delete(existingTeam.id)

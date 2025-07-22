@@ -1,3 +1,4 @@
+import { db } from "@/lib/env";
 import { useState, useEffect, useCallback } from "react";
 import {
   Decision,
@@ -12,7 +13,7 @@ import { DecisionScope } from "@decision-copilot/domain/decisionsRepository";
 import { useErrorHandling, useAsyncOperation } from './useErrorHandling';
 import { useErrorReporting } from '@/components/error/ErrorProvider';
 
-const decisionsRepository = new FirestoreDecisionsRepository();
+const decisionsRepository = new FirestoreDecisionsRepository(db);
 
 export function useDecisionWithErrorHandling(decisionId: string, organisationId: string) {
   const [decision, setDecision] = useState<Decision | null>(null);

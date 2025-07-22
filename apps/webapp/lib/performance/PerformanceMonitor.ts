@@ -3,6 +3,8 @@
  */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
+import { env } from '@/lib/env';
+
 interface PerformanceMetric {
   name: string;
   value: number;
@@ -32,7 +34,7 @@ class PerformanceMonitor {
     });
 
     // Log to console in development
-    if (process.env.NODE_ENV === 'development') {
+    if (env.NODE_ENV === 'development') {
       console.log(`Performance metric: ${name} = ${value}ms`, labels);
     }
   }
