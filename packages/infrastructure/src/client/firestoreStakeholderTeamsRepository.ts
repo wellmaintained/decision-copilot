@@ -1,6 +1,6 @@
 import { StakeholderTeam, StakeholderTeamProps } from '@decision-copilot/domain'
 import { StakeholderTeamsRepository } from '@decision-copilot/domain'
-import type { Firestore } from '../firebase-client'
+import type { Firestore } from 'firebase/firestore'
 import { collection, deleteDoc, doc, getDoc, getDocs, query, setDoc, where } from 'firebase/firestore'
 
 export class FirestoreStakeholderTeamsRepository implements StakeholderTeamsRepository {

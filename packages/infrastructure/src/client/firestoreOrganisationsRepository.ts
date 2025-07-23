@@ -9,7 +9,7 @@ import {
   query,
   where,
 } from "firebase/firestore";
-import type { Firestore } from "../firebase-client";
+import type { Firestore } from "firebase/firestore";
 import { Organisation, OrganisationProps } from "@decision-copilot/domain";
 import { OrganisationsRepository } from "@decision-copilot/domain";
 import { Team } from "@decision-copilot/domain";

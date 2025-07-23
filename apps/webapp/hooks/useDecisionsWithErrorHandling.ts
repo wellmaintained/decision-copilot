@@ -1,4 +1,3 @@
-import { db } from "@/lib/env";
 import { useState, useEffect, useCallback } from "react";
 import {
   Decision,
@@ -8,12 +7,10 @@ import {
   DecisionMethod,
 } from "@decision-copilot/domain/Decision";
 import { SupportingMaterial } from "@decision-copilot/domain/SupportingMaterial";
-import { FirestoreDecisionsRepository } from "@decision-copilot/infrastructure";
 import { DecisionScope } from "@decision-copilot/domain/decisionsRepository";
 import { useErrorHandling, useAsyncOperation } from './useErrorHandling';
 import { useErrorReporting } from '@/components/error/ErrorProvider';
-
-const decisionsRepository = new FirestoreDecisionsRepository(db);
+import { decisionsRepository } from "@/lib/repositories";
 
 export function useDecisionWithErrorHandling(decisionId: string, organisationId: string) {
   const [decision, setDecision] = useState<Decision | null>(null);

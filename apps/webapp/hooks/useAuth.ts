@@ -1,8 +1,8 @@
 // hooks/useAuth.ts
 import { useState, useEffect } from 'react';
 import { User, onAuthStateChanged } from 'firebase/auth';
-import { auth, db } from '@/lib/env';
-import { FirestoreStakeholdersRepository } from '@decision-copilot/infrastructure';
+import { auth } from '@/lib/env';
+import { stakeholdersRepository } from '@/lib/repositories';
 
 // List of admin emails
 const ADMIN_EMAILS = [
@@ -21,10 +21,8 @@ export function useAuth() {
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
-      const stakeholderRepository = new FirestoreStakeholdersRepository(db);
-
       if (firebaseUser) {
-        await stakeholderRepository.updateStakeholderForUser(firebaseUser);
+        await stakeholdersRepository.updateStakeholderForUser(firebaseUser);
         
         // Check if the user is an admin
         const isUserAdmin = firebaseUser.email ? ADMIN_EMAILS.includes(firebaseUser.email) : false;

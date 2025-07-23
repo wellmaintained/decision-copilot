@@ -1,17 +1,14 @@
-import { db } from "@/lib/env";
 import {
   Decision,
   DecisionRelationshipType,
   DecisionRelationship,
 } from "@decision-copilot/domain/Decision";
-import { FirestoreDecisionsRepository } from "@decision-copilot/infrastructure";
+import { decisionsRepository } from "@/lib/repositories";
 
 export interface SelectedDecisionDetails {
   toDecisionId: string;
   organisationId: string;
 }
-
-const decisionRepository = new FirestoreDecisionsRepository(db);
 
 export function useDecisionRelationships(sourceDecision: Decision) {
   const addRelationship = async (
@@ -20,7 +17,7 @@ export function useDecisionRelationships(sourceDecision: Decision) {
   ) => {
     try {
       // Fetch the actual target decision from Firestore
-      const targetDecision = await decisionRepository.getById(
+      const targetDecision = await decisionsRepository.getById(
         targetDetails.toDecisionId,
         { organisationId: targetDetails.organisationId },
       );
@@ -38,7 +35,7 @@ export function useDecisionRelationships(sourceDecision: Decision) {
         type: type,
       };
 
-      await decisionRepository.addRelationship(sourceDecision, relationship);
+      await decisionsRepository.addRelationship(sourceDecision, relationship);
     } catch (error) {
       console.error("Error adding relationship:", error);
       throw error;
@@ -56,7 +53,7 @@ export function useDecisionRelationships(sourceDecision: Decision) {
         targetDecisionTitle: targetDecision.title,
         type: type,
       };
-      await decisionRepository.removeRelationship(sourceDecision, relationship);
+      await decisionsRepository.removeRelationship(sourceDecision, relationship);
     } catch (error) {
       console.error("Error removing relationship:", error);
       throw error;

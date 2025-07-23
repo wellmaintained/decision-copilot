@@ -1,9 +1,7 @@
-import { db } from "@/lib/env";
 import { useState, useEffect } from 'react'
 import { StakeholderTeam, StakeholderTeamProps } from '@decision-copilot/domain/StakeholderTeam'
-import { FirestoreStakeholderTeamsRepository } from '@decision-copilot/infrastructure'
 import { useAuth } from '@/hooks/useAuth'
-import { FirestoreOrganisationsRepository } from '@decision-copilot/infrastructure'
+import { stakeholderTeamsRepository, organisationsRepository } from '@/lib/repositories'
 
 export function useStakeholderTeams() {
   const [stakeholderTeams, setStakeholderTeams] = useState<StakeholderTeam[]>([])
@@ -20,9 +18,7 @@ export function useStakeholderTeams() {
         if (!user?.email) {
           throw new Error('User email is required')
         }
-        const stakeholderTeamsRepository = new FirestoreStakeholderTeamsRepository(db);
-        const orgRepository = new FirestoreOrganisationsRepository(db);
-        const stakeholderOrgs = await orgRepository.getForStakeholder(user.email);
+        const stakeholderOrgs = await organisationsRepository.getForStakeholder(user.email);
         const teams = await stakeholderTeamsRepository.getByOrganisation(stakeholderOrgs);
         setStakeholderTeams(teams)
         
@@ -47,8 +43,7 @@ export function useStakeholderTeams() {
   }, [user?.email])
 
   const addStakeholderTeam = async (props: Omit<StakeholderTeamProps, 'id'>) => {
-    const repository = new FirestoreStakeholderTeamsRepository(db)
-    const newTeam = await repository.create(props)
+    const newTeam = await stakeholderTeamsRepository.create(props)
     setStakeholderTeams([...stakeholderTeams, newTeam])
     setStakeholderTeamsMap(prev => {
       const newMap = { ...prev };
@@ -61,10 +56,9 @@ export function useStakeholderTeams() {
   }
 
   const removeStakeholderTeam = async (stakeholderId: string, teamId: string) => {
-    const repository = new FirestoreStakeholderTeamsRepository(db)
-    const existingTeam = await repository.getByStakeholderAndTeam(stakeholderId, teamId)
+    const existingTeam = await stakeholderTeamsRepository.getByStakeholderAndTeam(stakeholderId, teamId)
     if (existingTeam) {
-      await repository.delete(existingTeam.id)
+      await stakeholderTeamsRepository.delete(existingTeam.id)
       setStakeholderTeams(stakeholderTeams.filter(st => st.id !== existingTeam.id))
       setStakeholderTeamsMap(prev => {
         const newMap = { ...prev };

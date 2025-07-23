@@ -1,8 +1,7 @@
-import { db } from "@/lib/env";
 import { useEffect, useState } from 'react'
 import { Organisation, OrganisationProps } from '@decision-copilot/domain/Organisation'
-import { FirestoreOrganisationsRepository } from '@decision-copilot/infrastructure'
 import { useAuth } from '@/hooks/useAuth'
+import { organisationsRepository } from '@/lib/repositories'
 
 export function useOrganisations() {
   const [organisations, setOrganisations] = useState<Organisation[]>([])
@@ -11,8 +10,7 @@ export function useOrganisations() {
   const { user, isAdmin } = useAuth()
 
   const addOrganisation = async (organisation: OrganisationProps) => {
-    const repository = new FirestoreOrganisationsRepository(db)
-    const newOrg = await repository.create(organisation)
+    const newOrg = await organisationsRepository.create(organisation)
     setOrganisations([...organisations, newOrg])
   }
 
@@ -22,8 +20,7 @@ export function useOrganisations() {
     }
 
     try {
-      const repository = new FirestoreOrganisationsRepository(db)
-      const allOrgs = await repository.getAll()
+      const allOrgs = await organisationsRepository.getAll()
       setOrganisations(allOrgs)
     } catch (err) {
       console.error(err)
@@ -38,8 +35,7 @@ export function useOrganisations() {
       if (!user?.email) return
 
       try {
-        const repository = new FirestoreOrganisationsRepository(db)
-        const stakeholderOrgs = await repository.getForStakeholder(user.email)
+        const stakeholderOrgs = await organisationsRepository.getForStakeholder(user.email)
         setOrganisations(stakeholderOrgs)
       } catch (err) {
         console.error(err);

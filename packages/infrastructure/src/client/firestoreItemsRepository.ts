@@ -3,7 +3,7 @@ import { ItemsRepository } from '@decision-copilot/domain'
 import { Item } from '@decision-copilot/domain'
 import { Name } from '@decision-copilot/domain'
 
-import type { Firestore } from '../firebase-client';
+import type { Firestore } from 'firebase/firestore';
 import {
   collection,
   query,

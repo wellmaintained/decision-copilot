@@ -1,5 +1,5 @@
 import { doc, getDoc, setDoc } from 'firebase/firestore'
-import type { Firestore } from '../firebase-client'
+import type { Firestore } from 'firebase/firestore'
 import { TeamHierarchy, TeamHierarchyNode } from '@decision-copilot/domain'
 import { TeamHierarchyRepository } from '@decision-copilot/domain'
 

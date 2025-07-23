@@ -1,8 +1,8 @@
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect } from 'react'
 import { doc, onSnapshot } from 'firebase/firestore'
 import { db } from '@/lib/env'
 import { TeamHierarchy, TeamHierarchyNode } from '@decision-copilot/domain/TeamHierarchy'
-import { FirestoreTeamHierarchyRepository } from '@decision-copilot/infrastructure'
+import { teamHierarchyRepository } from '@/lib/repositories'
 
 interface UseTeamHierarchyResult {
   hierarchy: TeamHierarchy | null
@@ -24,7 +24,6 @@ export function useTeamHierarchy(organisationId: string): UseTeamHierarchyResult
   const [loading, setLoading] = useState<boolean>(true)
   const [error, setError] = useState<Error | null>(null)
 
-  const repository = useMemo(() => new FirestoreTeamHierarchyRepository(db), [])
 
   useEffect(() => {
     if (!organisationId) {
@@ -43,7 +42,7 @@ export function useTeamHierarchy(organisationId: string): UseTeamHierarchyResult
         try {
           if (snapshot.exists()) {
             // Use the repository to handle the conversion from hierarchical to flat structure
-            const hierarchyFromRepo = await repository.getByOrganisationId(organisationId)
+            const hierarchyFromRepo = await teamHierarchyRepository.getByOrganisationId(organisationId)
             if (hierarchyFromRepo) {
               setHierarchy(hierarchyFromRepo)
             } else {
@@ -69,7 +68,7 @@ export function useTeamHierarchy(organisationId: string): UseTeamHierarchyResult
     )
 
     return () => unsubscribe()
-  }, [organisationId, repository])
+  }, [organisationId])
 
   const addTeam = async (team: Omit<TeamHierarchyNode, 'children'>): Promise<void> => {
     if (!hierarchy) {
@@ -77,7 +76,7 @@ export function useTeamHierarchy(organisationId: string): UseTeamHierarchyResult
     }
     
     const updatedHierarchy = hierarchy.addTeam(team)
-    await repository.save(organisationId, updatedHierarchy)
+    await teamHierarchyRepository.save(organisationId, updatedHierarchy)
   }
 
   const updateTeam = async (team: Omit<TeamHierarchyNode, 'children'>): Promise<void> => {
@@ -86,7 +85,7 @@ export function useTeamHierarchy(organisationId: string): UseTeamHierarchyResult
     }
     
     const updatedHierarchy = hierarchy.updateTeam(team)
-    await repository.save(organisationId, updatedHierarchy)
+    await teamHierarchyRepository.save(organisationId, updatedHierarchy)
   }
 
   const moveTeam = async (teamId: string, newParentId: string | null): Promise<void> => {
@@ -95,7 +94,7 @@ export function useTeamHierarchy(organisationId: string): UseTeamHierarchyResult
     }
     
     const updatedHierarchy = hierarchy.moveTeam(teamId, newParentId)
-    await repository.save(organisationId, updatedHierarchy)
+    await teamHierarchyRepository.save(organisationId, updatedHierarchy)
   }
 
   const removeTeam = async (teamId: string): Promise<void> => {
@@ -104,7 +103,7 @@ export function useTeamHierarchy(organisationId: string): UseTeamHierarchyResult
     }
     
     const updatedHierarchy = hierarchy.removeTeam(teamId)
-    await repository.save(organisationId, updatedHierarchy)
+    await teamHierarchyRepository.save(organisationId, updatedHierarchy)
   }
 
   return {

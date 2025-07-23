@@ -9,7 +9,7 @@ import {
   SupportingMaterial,
   DecisionRelationshipError,
 } from "@decision-copilot/domain";
-import type { Firestore } from "../firebase-client";
+import type { Firestore } from "firebase/firestore";
 import {
   collection,
   onSnapshot,

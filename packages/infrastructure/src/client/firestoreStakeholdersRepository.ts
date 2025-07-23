@@ -4,7 +4,7 @@ import {
   StakeholderWithRole,
 } from "@decision-copilot/domain";
 import { Stakeholder, StakeholderProps } from "@decision-copilot/domain";
-import type { Firestore } from "../firebase-client";
+import type { Firestore } from "firebase/firestore";
 import { User } from "firebase/auth";
 import { Decision } from "@decision-copilot/domain";
 import {

@@ -4,11 +4,21 @@ import {
   signInWithPopup,
   signOut,
 } from "firebase/auth";
-import type { Auth } from "./firebase-client";
+import type { Auth } from "firebase/auth";
 
 // Single Responsibility: this function triggers a Google sign-in flow
 export async function signInWithGoogle(auth: Auth): Promise<void> {
   const provider = new GoogleAuthProvider();
+  
+  // Configure provider for emulator compatibility
+  provider.addScope('profile');
+  provider.addScope('email');
+  
+  // Set custom parameters that work well with Firebase Auth emulator
+  provider.setCustomParameters({
+    prompt: 'select_account'
+  });
+  
   await signInWithPopup(auth, provider);
 }
 
