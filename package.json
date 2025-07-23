@@ -8,7 +8,7 @@
     "packages/*"
   ],
   "scripts": {
-    "dev:webapp": "mkdir -p logs && cd apps/webapp && FORCE_COLOR=1 pnpm dev 2>&1 | tee >(while IFS= read -r line; do echo \"[$(date '+%Y-%m-%d %H:%M:%S')] $line\"; done > ../../logs/webapp-dev.$(date '+%Y-%m-%dT%H').log)",
+    "dev:webapp": "mkdir -p logs && FORCE_COLOR=1 pnpm turbo dev --filter=webapp... 2>&1 | tee >(while IFS= read -r line; do echo \"[$(date '+%Y-%m-%d %H:%M:%S')] $line\"; done > logs/webapp-dev.$(date '+%Y-%m-%dT%H').log)",
     "dev:mcp-api": "mkdir -p logs && cd apps/mcp-api && FORCE_COLOR=1 pnpm dev 2>&1 | tee >(while IFS= read -r line; do echo \"[$(date '+%Y-%m-%d %H:%M:%S')] $line\"; done > ../../logs/mcp-api-dev.$(date '+%Y-%m-%dT%H').log)",
     "dev:emulators:with-data": "mkdir -p logs && firebase emulators:start --import=.data/emulators/firebase-data --only auth,firestore 2>&1 | tee logs/firebase-emulators.$(date '+%Y-%m-%dT%H').log",
     "build": "turbo build",
