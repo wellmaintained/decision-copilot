@@ -32,7 +32,7 @@
     },
     "test:unit": {
       "dependsOn": [],
-      "outputs": ["coverage/**"],
+      "outputs": [],
       "inputs": ["src/**", "*.test.ts", "*.test.tsx", "vitest.config.ts", "tsconfig.json"]
     },
     "test:watch": {

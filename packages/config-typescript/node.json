@@ -3,7 +3,6 @@
   "display": "Node.js",
   "extends": "./base.json",
   "compilerOptions": {
-    "outDir": "lib",
     "target": "es2019"
   },
   "include": ["src"]

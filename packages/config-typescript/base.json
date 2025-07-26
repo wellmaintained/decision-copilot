@@ -1,8 +1,12 @@
 {
   "$schema": "https://json.schemastore.org/tsconfig",
   "display": "Default",
+  // Base TypeScript configuration for all packages in the monorepo
+  // NOTE: outDir is centralized here to ensure consistent build output
+  // WARNING: rootDir cannot be centralized due to absolute path resolution
   "compilerOptions": {
     "target": "ES2020",
+    // Centralized TypeScript project compilation settings
     "composite": true,
     "declaration": true,
     "declarationMap": true,
@@ -21,7 +25,8 @@
     "emitDecoratorMetadata": true,
     "useDefineForClassFields": false,
     "resolveJsonModule": true,
-    "incremental": true
+    "incremental": true,
+    // NOTE: outDir and rootDir cannot be centralised in base.json because TypeScript resolves paths from this file location
   },
   "exclude": ["node_modules"]
 }

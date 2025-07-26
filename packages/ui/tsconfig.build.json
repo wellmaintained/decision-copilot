@@ -1,6 +1,9 @@
 {
   "extends": "./tsconfig.json",
   "compilerOptions": {
+    // Cannot be centralised in base.json because TypeScript resolves paths from this file location
+    "outDir": "dist",
+    "rootDir": "src",
     "tsBuildInfoFile": ".turbo/ui.tsbuildinfo"
   },
   "exclude": ["dist", "node_modules", "**/*.test.ts", "**/*.test.tsx", "src/__tests__"]

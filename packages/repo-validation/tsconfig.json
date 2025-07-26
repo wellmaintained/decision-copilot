@@ -1,5 +1,10 @@
 {
   "extends": "@decision-copilot/config-typescript/node.json",
+  "compilerOptions": {
+    // Cannot be centralised in base.json because TypeScript resolves paths from this file location
+    "outDir": "dist",
+    "rootDir": "src"
+  },
   "include": ["src"],
   "exclude": ["vitest.config.ts", "eslint.config.js"],
   "references": []

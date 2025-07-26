@@ -2,7 +2,9 @@
   "extends": "./tsconfig.json",
   "exclude": ["src/**/*.test.ts", "src/**/*.spec.ts", "src/__tests__/**/*"],
   "compilerOptions": {
+    // Cannot be centralised in base.json because TypeScript resolves paths from this file location
     "outDir": "dist",
-    "rootDir": "src"
+    "rootDir": "src",
+    "tsBuildInfoFile": ".turbo/repo-validation.tsbuildinfo"
   }
 }

@@ -1,6 +1,7 @@
 {
   "extends": "@decision-copilot/config-typescript/base.json",
   "compilerOptions": {
+    // Cannot be centralised in base.json because TypeScript resolves paths from this file location
     "outDir": "dist",
     "rootDir": "src"
   },

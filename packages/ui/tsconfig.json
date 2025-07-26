@@ -1,11 +1,9 @@
 {
   "extends": "@decision-copilot/config-typescript/react-library.json",
   "compilerOptions": {
+    // Cannot be centralised in base.json because TypeScript resolves paths from this file location
     "outDir": "dist",
-    "rootDir": "src",
-    "composite": true,
-    "declaration": true,
-    "declarationMap": true
+    "rootDir": "src"
   },
   "include": ["src"],
   "exclude": ["node_modules", "dist"]
