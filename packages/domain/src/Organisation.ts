@@ -1,8 +1,8 @@
 import './reflect'
-import { IsString, MinLength, ValidateNested, validateSync } from 'class-validator'
 import { Type } from 'class-transformer'
-import { Team } from './Team'
+import { IsString, MinLength, ValidateNested, validateSync } from 'class-validator'
 import { DomainValidationError } from './DomainValidationError'
+import { Team } from './Team'
 
 export interface OrganisationProps {
   id: string

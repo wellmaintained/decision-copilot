@@ -13,7 +13,6 @@
  * - Maintains consistent database connection across the application
  */
 
-import { db } from '@/lib/env';
 import {
   FirestoreDecisionsRepository,
   FirestoreStakeholdersRepository,
@@ -22,6 +21,7 @@ import {
   FirestoreTeamHierarchyRepository,
   FirestoreItemsRepository,
 } from '@decision-copilot/infrastructure';
+import { db } from '@/lib/env';
 
 /**
  * Singleton repository instances

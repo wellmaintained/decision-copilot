@@ -1,14 +1,14 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
-import { Checkbox } from "@/components/ui/checkbox";
+import { Stakeholder } from "@decision-copilot/domain/Stakeholder";
+import { TeamHierarchyNode } from "@decision-copilot/domain/TeamHierarchy";
 import { ChevronRight, Minus } from "lucide-react";
-import { useTeamHierarchy } from "@/hooks/useTeamHierarchy";
+import React, { useState, useEffect, useCallback } from "react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Checkbox } from "@/components/ui/checkbox";
 import { useStakeholders } from "@/hooks/useStakeholders";
 import { useStakeholderTeams } from "@/hooks/useStakeholderTeams";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { TeamHierarchyNode } from "@decision-copilot/domain/TeamHierarchy";
-import { Stakeholder } from "@decision-copilot/domain/Stakeholder";
+import { useTeamHierarchy } from "@/hooks/useTeamHierarchy";
 
 interface ExtendedTeamHierarchyNode extends TeamHierarchyNode {
   stakeholders: Array<Stakeholder>;

@@ -1,8 +1,5 @@
 // infrastructure/firestoreItemsRepository.ts
-import { ItemsRepository } from '@decision-copilot/domain'
-import { Item } from '@decision-copilot/domain'
-import { Name } from '@decision-copilot/domain'
-
+import { ItemsRepository, Item, Name } from '@decision-copilot/domain'
 import type { Firestore } from 'firebase/firestore';
 import {
   collection,

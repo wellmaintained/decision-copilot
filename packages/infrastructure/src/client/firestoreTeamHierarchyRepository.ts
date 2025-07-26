@@ -1,7 +1,6 @@
+import { TeamHierarchy, TeamHierarchyNode , TeamHierarchyRepository } from '@decision-copilot/domain'
 import { doc, getDoc, setDoc } from 'firebase/firestore'
 import type { Firestore } from 'firebase/firestore'
-import { TeamHierarchy, TeamHierarchyNode } from '@decision-copilot/domain'
-import { TeamHierarchyRepository } from '@decision-copilot/domain'
 
 // Define types for the hierarchical structure
 interface HierarchicalTeamNode {

@@ -1,3 +1,5 @@
+import { Organisation, OrganisationProps , OrganisationsRepository , Team , Project , TeamHierarchy, TeamHierarchyNode } from "@decision-copilot/domain";
+import type { Firestore } from "firebase/firestore";
 import {
   collection,
   doc,
@@ -9,14 +11,8 @@ import {
   query,
   where,
 } from "firebase/firestore";
-import type { Firestore } from "firebase/firestore";
-import { Organisation, OrganisationProps } from "@decision-copilot/domain";
-import { OrganisationsRepository } from "@decision-copilot/domain";
-import { Team } from "@decision-copilot/domain";
-import { Project } from "@decision-copilot/domain";
 import { FirestoreStakeholdersRepository } from "./firestoreStakeholdersRepository";
 import { FirestoreTeamHierarchyRepository } from "./firestoreTeamHierarchyRepository";
-import { TeamHierarchy, TeamHierarchyNode } from "@decision-copilot/domain";
 
 export class FirestoreOrganisationsRepository
   implements OrganisationsRepository

@@ -1,7 +1,7 @@
+import { Name } from '@decision-copilot/domain';
+import { validate } from 'class-validator';
 import React from 'react';
 import { useForm } from 'react-hook-form';
-import { validate } from 'class-validator';
-import { Name } from '@decision-copilot/domain';
 
 interface FormData {
   name: string;

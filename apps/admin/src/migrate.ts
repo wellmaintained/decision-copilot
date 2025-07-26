@@ -1,12 +1,12 @@
 #!/usr/bin/env ts-node
 
-import { initializeApp, cert, App, ServiceAccount } from 'firebase-admin/app';
-import { getFirestore, Firestore, FieldValue, DocumentData } from 'firebase-admin/firestore';
+import * as fs from 'fs';
+import * as path from 'path';
+import chalk from 'chalk';
 import { Command } from 'commander';
 import * as dotenv from 'dotenv';
-import * as path from 'path';
-import * as fs from 'fs';
-import chalk from 'chalk';
+import { initializeApp, cert, App, ServiceAccount } from 'firebase-admin/app';
+import { getFirestore, Firestore, FieldValue, DocumentData } from 'firebase-admin/firestore';
 
 // Load environment variables
 dotenv.config();

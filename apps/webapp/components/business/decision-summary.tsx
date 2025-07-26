@@ -1,8 +1,7 @@
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card"
-import { Decision } from "@decision-copilot/domain"
-import { Stakeholder } from "@decision-copilot/domain"
-import { StakeholderRoleGroups } from "@/components/stakeholders/StakeholderRoleGroups"
+import { Decision , Stakeholder } from "@decision-copilot/domain"
 import { TipTapView } from '@/components/business/tiptap-view'
+import { StakeholderRoleGroups } from "@/components/stakeholders/StakeholderRoleGroups"
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card"
 
 interface DecisionSummaryProps {
   decision: Decision

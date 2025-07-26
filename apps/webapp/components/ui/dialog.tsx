@@ -1,10 +1,9 @@
 "use client"
 
-import * as React from "react"
+import { cn } from "@decision-copilot/ui"
 import * as DialogPrimitive from "@radix-ui/react-dialog"
 import { X } from "lucide-react"
-
-import { cn } from "@decision-copilot/ui"
+import * as React from "react"
 
 const Dialog = DialogPrimitive.Root
 

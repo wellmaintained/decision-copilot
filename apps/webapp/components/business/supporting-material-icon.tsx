@@ -1,5 +1,5 @@
-import { FileText, Globe, FileSpreadsheet, Presentation } from 'lucide-react'
 import { SupportingMaterialMimeType } from '@decision-copilot/domain'
+import { FileText, Globe, FileSpreadsheet, Presentation } from 'lucide-react'
 
 interface SupportingMaterialIconProps {
   mimeType: SupportingMaterialMimeType

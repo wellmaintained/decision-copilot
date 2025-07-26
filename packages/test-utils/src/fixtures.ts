@@ -34,7 +34,7 @@ export interface TestDecisionProps {
   reversibility: 'hat' | 'haircut' | 'tattoo';
   stakeholders: Array<{ stakeholder_id: string; role: string }>;
   driverStakeholderId: string;
-  supportingMaterials: any[];
+  supportingMaterials: unknown[];
   organisationId: string;
   teamIds: string[];
   projectIds: string[];

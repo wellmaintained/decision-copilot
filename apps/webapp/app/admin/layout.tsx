@@ -1,15 +1,15 @@
 'use client'
 
+import { redirect } from 'next/navigation'
 import { AppSidebar } from "@/components/business/app-sidebar"
+import { OrganisationProvider } from '@/components/business/organisation-switcher'
+import { Separator } from "@/components/ui/separator"
 import {
   SidebarInset,
   SidebarProvider,
   SidebarTrigger,
 } from "@/components/ui/sidebar"
 import { useAuth } from '@/hooks/useAuth'
-import { OrganisationProvider } from '@/components/business/organisation-switcher'
-import { redirect } from 'next/navigation'
-import { Separator } from "@/components/ui/separator"
 
 export default function AdminLayout({
   children,

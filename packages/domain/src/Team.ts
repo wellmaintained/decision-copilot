@@ -1,8 +1,8 @@
 import './reflect'
-import { IsString, MinLength, ValidateNested, validateSync } from 'class-validator'
 import { Type } from 'class-transformer'
-import { Project } from './Project'
+import { IsString, MinLength, ValidateNested, validateSync } from 'class-validator'
 import { DomainValidationError } from './DomainValidationError'
+import { Project } from './Project'
 
 // Minimal interface to avoid circular dependency
 interface OrganisationReference {

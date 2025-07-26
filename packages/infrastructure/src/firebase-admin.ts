@@ -1,5 +1,5 @@
-import { config } from 'dotenv'
 import { resolve } from 'path'
+import { config } from 'dotenv'
 import { initializeApp, getApps, cert, getApp } from 'firebase-admin/app'
 import { getFirestore } from 'firebase-admin/firestore'
 import { getFirebaseAdminConfig, getFirebaseAdminDatabaseId } from './config/firebase'

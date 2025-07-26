@@ -6,6 +6,7 @@
   "scripts": {
     "pre:push": "pnpm run lint && pnpm run test:unit && pnpm run build",
     "lint": "eslint src/",
+    "lint:fix": "eslint src/ --fix",
     "build": "tsc",
     "clean": "rm -rf dist",
     "test": "vitest run",

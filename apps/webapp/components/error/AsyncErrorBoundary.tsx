@@ -1,11 +1,11 @@
 'use client';
 
+import { Wifi, RefreshCw } from 'lucide-react';
 import React, { ReactNode } from 'react';
-import { ErrorBoundary } from './ErrorBoundary';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Wifi, RefreshCw } from 'lucide-react';
 import { env } from '@/lib/env';
+import { ErrorBoundary } from './ErrorBoundary';
 
 interface AsyncErrorBoundaryProps {
   children: ReactNode;

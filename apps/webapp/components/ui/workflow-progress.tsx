@@ -1,6 +1,6 @@
-import * as React from "react"
-import { cn } from "@decision-copilot/ui"
 import { DecisionWorkflowStepsSequence } from "@decision-copilot/domain/Decision"
+import { cn } from "@decision-copilot/ui"
+import * as React from "react"
 
 export function WorkflowProgress({ currentStep }: { currentStep: number }) {
   return (

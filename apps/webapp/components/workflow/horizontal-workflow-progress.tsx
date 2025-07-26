@@ -1,8 +1,5 @@
 "use client";
 
-import React from "react";
-import { Card } from "@/components/ui/card";
-import { ChevronRight, Search, Users, Target, CheckCircle, Send } from "lucide-react";
 import {
   DecisionWorkflowSteps,
   DecisionWorkflowStep,
@@ -12,6 +9,9 @@ import {
   StepRoles,
 } from "@decision-copilot/domain/Decision";
 import { cn } from "@decision-copilot/ui";
+import { ChevronRight, Search, Users, Target, CheckCircle, Send } from "lucide-react";
+import React from "react";
+import { Card } from "@/components/ui/card";
 
 // Icon mapping for workflow steps
 const STEP_ICONS = {

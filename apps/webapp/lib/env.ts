@@ -4,7 +4,48 @@
  */
 
 import { createEnv } from "@t3-oss/env-nextjs";
+import { initializeApp, getApps } from 'firebase/app';
+import { getAuth, connectAuthEmulator } from 'firebase/auth';
+import { getFirestore, connectFirestoreEmulator } from 'firebase/firestore';
+import { getFunctions, connectFunctionsEmulator } from 'firebase/functions';
 import { z } from "zod";
+
+/**
+ * Firebase client initialization
+ * 
+ * Initialize Firebase with validated environment variables and export services.
+ * This approach keeps Firebase client-side initialization in the webapp where
+ * Next.js can properly access NEXT_PUBLIC_* environment variables.
+ * 
+ * ## Emulator Configuration
+ * 
+ * Firebase emulators can be configured via environment variables for flexibility:
+ * 
+ * - `FIREBASE_AUTH_EMULATOR_HOST`: Auth emulator URL (e.g., 'localhost:9099' or 'http://localhost:9099')
+ * - `FIREBASE_FIRESTORE_EMULATOR_HOST`: Firestore emulator host:port (e.g., 'localhost:8080')
+ * - `FIREBASE_FUNCTIONS_EMULATOR_HOST`: Functions emulator host:port (e.g., 'localhost:5001')
+ * 
+ * ## Default Values
+ * 
+ * If environment variables are not set, the following defaults are used:
+ * - Auth: `http://127.0.0.1:9099`
+ * - Firestore: `127.0.0.1:8080`
+ * - Functions: `127.0.0.1:5001`
+ * 
+ * ## URL Formats
+ * 
+ * - Auth emulator accepts full URLs with protocol (automatically added if missing)
+ * - Firestore and Functions emulators accept host:port format (parsed automatically)
+ * - Both formats work with all emulators: `localhost:8080` or `http://localhost:8080`
+ * 
+ * @example Environment Configuration
+ * ```bash
+ * # .env.development
+ * FIREBASE_AUTH_EMULATOR_HOST=localhost:9099
+ * FIREBASE_FIRESTORE_EMULATOR_HOST=localhost:8080
+ * FIREBASE_FUNCTIONS_EMULATOR_HOST=localhost:5001
+ * ```
+ */
 
 export const env = createEnv({
   /**
@@ -98,48 +139,6 @@ export const env = createEnv({
    */
   emptyStringAsUndefined: true,
 });
-
-/**
- * Firebase client initialization
- * 
- * Initialize Firebase with validated environment variables and export services.
- * This approach keeps Firebase client-side initialization in the webapp where
- * Next.js can properly access NEXT_PUBLIC_* environment variables.
- * 
- * ## Emulator Configuration
- * 
- * Firebase emulators can be configured via environment variables for flexibility:
- * 
- * - `FIREBASE_AUTH_EMULATOR_HOST`: Auth emulator URL (e.g., 'localhost:9099' or 'http://localhost:9099')
- * - `FIREBASE_FIRESTORE_EMULATOR_HOST`: Firestore emulator host:port (e.g., 'localhost:8080')
- * - `FIREBASE_FUNCTIONS_EMULATOR_HOST`: Functions emulator host:port (e.g., 'localhost:5001')
- * 
- * ## Default Values
- * 
- * If environment variables are not set, the following defaults are used:
- * - Auth: `http://127.0.0.1:9099`
- * - Firestore: `127.0.0.1:8080`
- * - Functions: `127.0.0.1:5001`
- * 
- * ## URL Formats
- * 
- * - Auth emulator accepts full URLs with protocol (automatically added if missing)
- * - Firestore and Functions emulators accept host:port format (parsed automatically)
- * - Both formats work with all emulators: `localhost:8080` or `http://localhost:8080`
- * 
- * @example Environment Configuration
- * ```bash
- * # .env.development
- * FIREBASE_AUTH_EMULATOR_HOST=localhost:9099
- * FIREBASE_FIRESTORE_EMULATOR_HOST=localhost:8080
- * FIREBASE_FUNCTIONS_EMULATOR_HOST=localhost:5001
- * ```
- */
-
-import { initializeApp, getApps } from 'firebase/app';
-import { getAuth, connectAuthEmulator } from 'firebase/auth';
-import { getFirestore, connectFirestoreEmulator } from 'firebase/firestore';
-import { getFunctions, connectFunctionsEmulator } from 'firebase/functions';
 
 const firebaseConfig = {
   apiKey: env.NEXT_PUBLIC_FIREBASE_API_KEY,

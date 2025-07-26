@@ -1,13 +1,13 @@
 import { Decision, DecisionRelationshipType } from "@decision-copilot/domain";
-import { Button } from "@/components/ui/button";
+import { cn } from "@decision-copilot/ui";
+import { Plus, X } from "lucide-react";
+import Link from "next/link";
 import { AddDecisionRelationshipDialog } from "@/components/business/add-decision-relationship-dialog";
+import { Button } from "@/components/ui/button";
 import {
   useDecisionRelationships,
   SelectedDecisionDetails,
 } from "@/hooks/useDecisionRelationships";
-import { Plus, X } from "lucide-react";
-import Link from "next/link";
-import { cn } from "@decision-copilot/ui";
 
 interface DecisionRelationshipItemProps {
   targetDecision: Decision;

@@ -1,7 +1,8 @@
 "use client";
 
+import Link from "next/link";
+import { redirect } from "next/navigation";
 import * as React from "react";
-import { useOrganisations } from "@/hooks/useOrganisations";
 import {
   Card,
   CardContent,
@@ -9,8 +10,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import Link from "next/link";
-import { redirect } from "next/navigation";
+import { useOrganisations } from "@/hooks/useOrganisations";
 
 export default function OrganisationPage() {
   const { organisations, loading, error } = useOrganisations();

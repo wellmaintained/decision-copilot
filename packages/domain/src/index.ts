@@ -1,4 +1,7 @@
 // Domain models
+// Reflection setup
+import './reflect'
+
 export * from './Decision'
 export * from './Organisation'
 export * from './Team'
@@ -22,6 +25,3 @@ export * from './TeamHierarchyRepository'
 // Error types
 export * from './DecisionError'
 export * from './DomainValidationError'
-
-// Reflection setup
-import './reflect'

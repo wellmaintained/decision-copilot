@@ -1,9 +1,9 @@
-import { SupportingMaterial } from "./SupportingMaterial";
 import { IsArray, IsDate, IsEnum, IsOptional, IsString } from "class-validator";
 import {
   StakeholderError,
   DecisionStateError,
 } from "./DecisionError";
+import { SupportingMaterial } from "./SupportingMaterial";
 
 /**
  * Represents a step in the decision workflow process.

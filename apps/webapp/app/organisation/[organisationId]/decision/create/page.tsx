@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect, useRef } from "react";
 import { useRouter, useParams } from "next/navigation";
-import { useOrganisationDecisions } from "@/hooks/useOrganisationDecisions";
+import { useEffect, useRef } from "react";
 import { useAuth } from "@/hooks/useAuth";
+import { useOrganisationDecisions } from "@/hooks/useOrganisationDecisions";
 
 export default function DecisionPage() {
   const router = useRouter();

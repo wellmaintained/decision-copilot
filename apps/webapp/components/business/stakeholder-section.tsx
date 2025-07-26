@@ -1,6 +1,13 @@
 "use client"
 
+
+import { Stakeholder , StakeholderTeam, StakeholderTeamProps , Organisation } from "@decision-copilot/domain"
+import { Check, X, Trash2 } from 'lucide-react'
 import { useState } from "react"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Button } from "@/components/ui/button"
+import { Checkbox } from "@/components/ui/checkbox"
+import { Input } from "@/components/ui/input"
 import {
   Table,
   TableBody,
@@ -9,15 +16,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-import { Checkbox } from "@/components/ui/checkbox"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Check, X, Trash2 } from 'lucide-react'
-
-import { Stakeholder } from "@decision-copilot/domain"
-import { StakeholderTeam, StakeholderTeamProps } from "@decision-copilot/domain"
-import { Organisation } from "@decision-copilot/domain"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 
 interface StakeholderSectionProps {
   stakeholders: Stakeholder[]

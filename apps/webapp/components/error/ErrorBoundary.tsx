@@ -1,9 +1,9 @@
 'use client';
 
+import { AlertTriangle, RefreshCw, Home } from 'lucide-react';
 import React, { Component, ReactNode, ErrorInfo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { AlertTriangle, RefreshCw, Home } from 'lucide-react';
 import { env } from '@/lib/env';
 
 interface ErrorBoundaryProps {

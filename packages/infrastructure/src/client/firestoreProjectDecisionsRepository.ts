@@ -1,5 +1,4 @@
-import { Project, ProjectProps } from '@decision-copilot/domain'
-import { ProjectDecisionsRepository } from '@decision-copilot/domain'
+import { Project, ProjectProps , ProjectDecisionsRepository } from '@decision-copilot/domain'
 import { getFirestore, doc, getDoc, setDoc, deleteDoc } from 'firebase/firestore'
 
 export class FirestoreProjectDecisionsRepository implements ProjectDecisionsRepository {

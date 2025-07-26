@@ -1,12 +1,5 @@
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react'
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion"
 import {
   DecisionWorkflowStep,
   DecisionWorkflowSteps,
@@ -16,18 +9,25 @@ import {
   Reversibility,
   DecisionMethod,
 } from '@decision-copilot/domain/Decision'
-import { cn } from '@decision-copilot/ui'
+import { cn , Button } from '@decision-copilot/ui'
 import { ChevronRight } from 'lucide-react'
-import { Label } from "@/components/ui/label"
-import { Input } from "@/components/ui/input"
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
-import { Button } from "@decision-copilot/ui"
+import { useRouter } from 'next/navigation'
+import React, { useState, useEffect, useCallback } from 'react'
+import { DecisionMethodCard } from "@/components/business/decision-method-card"
 import { DecisionRelationshipsList } from '@/components/business/decision-relationships-list'
+import { DecisionSummary } from '@/components/business/decision-summary'
+import { RoleAssignment } from "@/components/business/role-assignment"
+import { SupportingMaterialsList } from '@/components/business/supporting-materials-list'
+import { TipTapEditor } from '@/components/business/tiptap-editor'
 import { StakeholderSelectionView } from "@/components/stakeholders/StakeholderSelectionView"
-import { useDecision } from "@/hooks/useDecisions"
-import { useStakeholders } from "@/hooks/useStakeholders"
-import { useStakeholderTeams } from "@/hooks/useStakeholderTeams"
-import { useOrganisations } from "@/hooks/useOrganisations"
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import {
   Command,
   CommandEmpty,
@@ -35,22 +35,21 @@ import {
   CommandInput,
   CommandItem,
 } from "@/components/ui/command"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
-import { RoleAssignment } from "@/components/business/role-assignment"
-import { DecisionMethodCard } from "@/components/business/decision-method-card"
-import { TipTapEditor } from '@/components/business/tiptap-editor'
-import { SupportingMaterialsList } from '@/components/business/supporting-materials-list'
-import { STYLE_CLASSES } from './WorkflowAccordionConstants'
-import { StepHeader, ProgressBar, NextButton } from './WorkflowAccordionComponents'
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { useToast } from "@/components/ui/use-toast"
-import { DecisionSummary } from '@/components/business/decision-summary'
-import { useRouter } from 'next/navigation'
+import { useDecision } from "@/hooks/useDecisions"
+import { useOrganisations } from "@/hooks/useOrganisations"
+import { useStakeholders } from "@/hooks/useStakeholders"
+import { useStakeholderTeams } from "@/hooks/useStakeholderTeams"
+import { StepHeader, ProgressBar, NextButton } from './WorkflowAccordionComponents'
+import { STYLE_CLASSES } from './WorkflowAccordionConstants'
 
 interface WorkflowAccordionProps {
   currentStep?: DecisionWorkflowStep

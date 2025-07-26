@@ -1,13 +1,11 @@
 "use client"
 
-import * as React from "react"
+
+import { cn , Button } from "@decision-copilot/ui"
 import { Slot } from "@radix-ui/react-slot"
 import { VariantProps, cva } from "class-variance-authority"
 import { PanelLeft } from "lucide-react"
-
-import { useIsMobile } from "@/hooks/use-mobile"
-import { cn } from "@decision-copilot/ui"
-import { Button } from "@decision-copilot/ui"
+import * as React from "react"
 import { Input } from "@/components/ui/input"
 import { Separator } from "@/components/ui/separator"
 import { Sheet, SheetContent } from "@/components/ui/sheet"
@@ -18,6 +16,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
+import { useIsMobile } from "@/hooks/use-mobile"
 
 const SIDEBAR_COOKIE_NAME = "sidebar:state"
 const SIDEBAR_COOKIE_MAX_AGE = 60 * 60 * 24 * 7

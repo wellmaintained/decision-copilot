@@ -1,6 +1,6 @@
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Decision, StakeholderRole } from "@decision-copilot/domain/Decision"
 import { Stakeholder } from "@decision-copilot/domain/Stakeholder"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 
 interface StakeholderRoleGroupsProps {
   decision: Decision

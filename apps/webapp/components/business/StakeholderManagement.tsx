@@ -1,12 +1,12 @@
 'use client'
 
+import { Stakeholder , TeamHierarchyNode } from '@decision-copilot/domain'
+import { Pencil, Trash2, UserPlus, ChevronDown, ChevronRight } from 'lucide-react'
 import { useState, useEffect } from 'react'
-import { useForm } from 'react-hook-form'
-import { Stakeholder } from '@decision-copilot/domain'
-import { useStakeholders } from '@/hooks/useStakeholders'
-import { useTeamHierarchy } from '@/hooks/useTeamHierarchy'
-import { useStakeholderTeams } from '@/hooks/useStakeholderTeams'
+import { useForm , ControllerRenderProps } from 'react-hook-form'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
+import { Checkbox } from '@/components/ui/checkbox'
 import {
   Dialog,
   DialogContent,
@@ -17,14 +17,6 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog'
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table'
-import {
   Form,
   FormControl,
   FormField,
@@ -33,12 +25,18 @@ import {
   FormMessage,
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
-import { Pencil, Trash2, UserPlus, ChevronDown, ChevronRight } from 'lucide-react'
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { ControllerRenderProps } from 'react-hook-form'
-import { Checkbox } from '@/components/ui/checkbox'
 import { Label } from '@/components/ui/label'
-import { TeamHierarchyNode } from '@decision-copilot/domain'
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table'
+import { useStakeholders } from '@/hooks/useStakeholders'
+import { useStakeholderTeams } from '@/hooks/useStakeholderTeams'
+import { useTeamHierarchy } from '@/hooks/useTeamHierarchy'
 
 interface StakeholderFormData {
   displayName: string

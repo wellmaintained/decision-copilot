@@ -1,10 +1,11 @@
 'use client'
 
-import * as React from 'react'
+import { cn } from "@decision-copilot/ui"
 import { useEditor, EditorContent } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
-import { Markdown } from 'tiptap-markdown'
 import { Bold, Italic, List, ListOrdered, Code, Heading1, Heading2, Heading3 } from 'lucide-react'
+import * as React from 'react'
+import { Markdown } from 'tiptap-markdown'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Textarea } from '@/components/ui/textarea'
@@ -14,7 +15,6 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip'
-import { cn } from "@decision-copilot/ui"
 
 interface TipTapEditorProps {
   content: string

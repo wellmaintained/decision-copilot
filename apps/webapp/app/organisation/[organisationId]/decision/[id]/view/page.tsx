@@ -1,11 +1,11 @@
 "use client";
 
+import { DecisionRelationshipTools } from "@decision-copilot/domain";
+import Link from "next/link";
 import { useParams } from "next/navigation";
+import { DecisionSummary } from "@/components/business/decision-summary";
 import { useDecision } from "@/hooks/useDecisions";
 import { useStakeholders } from "@/hooks/useStakeholders";
-import { DecisionSummary } from "@/components/business/decision-summary";
-import Link from "next/link";
-import { DecisionRelationshipTools } from "@decision-copilot/domain";
 
 function PublishedBanner() {
   return (

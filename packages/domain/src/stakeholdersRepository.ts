@@ -1,5 +1,5 @@
-import { Stakeholder, StakeholderProps } from './Stakeholder';
 import { Decision, StakeholderRole } from './Decision';
+import { Stakeholder, StakeholderProps } from './Stakeholder';
 
 export class EmailAlreadyExistsError extends Error {
   constructor(email: string) {

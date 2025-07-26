@@ -2,9 +2,9 @@ import '@decision-copilot/infrastructure'
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import { Toaster } from "@/components/ui/toaster";
 import { ErrorBoundary } from "@/components/error/ErrorBoundary";
 import { ErrorProvider, setupGlobalErrorHandling } from "@/components/error/ErrorProvider";
+import { Toaster } from "@/components/ui/toaster";
 import { env } from '@/lib/env';
 
 // Set up global error handling and performance monitoring

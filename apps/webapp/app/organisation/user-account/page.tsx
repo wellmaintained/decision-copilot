@@ -1,11 +1,11 @@
 'use client'
 
+import { Badge } from "@decision-copilot/ui"
+import { Github, Mail, Slack } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Badge } from "@decision-copilot/ui"
 import { Separator } from "@/components/ui/separator"
-import { Github, Mail, Slack } from 'lucide-react'
 
 export default function UserAccountPage() {
   return (

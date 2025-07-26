@@ -1,7 +1,7 @@
-import React from 'react'
-import { Search, Settings, Lightbulb, Zap, BookOpen } from 'lucide-react'
-import { Card } from "@/components/ui/card"
 import { cn } from "@decision-copilot/ui"
+import { Search, Settings, Lightbulb, Zap, BookOpen } from 'lucide-react'
+import React from 'react'
+import { Card } from "@/components/ui/card"
 
 interface Step {
   title: string

@@ -1,7 +1,9 @@
 "use client"
 
-import * as React from "react"
+import { cn } from "@decision-copilot/ui"
+import { formatDistanceToNow } from "date-fns"
 import { Check, ChevronsUpDown } from 'lucide-react'
+import * as React from "react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Card, CardHeader, CardContent, CardTitle } from "@/components/ui/card"
@@ -26,8 +28,6 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { WorkflowProgress } from "@/components/ui/workflow-progress"
-import { cn } from "@decision-copilot/ui"
-import { formatDistanceToNow } from "date-fns"
 
 const projects = [
   { value: "all", label: "All Projects" },

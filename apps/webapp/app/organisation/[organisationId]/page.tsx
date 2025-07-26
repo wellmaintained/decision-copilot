@@ -1,8 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useMemo, useCallback } from "react";
-import { useOrganisation } from "@/components/business/organisation-switcher";
-import { useOrganisationDecisions } from "@/hooks/useOrganisationDecisions";
+import { Decision, WorkflowNavigator } from "@decision-copilot/domain/Decision";
 import { Button } from "@decision-copilot/ui";
 import {
   Pencil,
@@ -15,8 +13,8 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { WorkflowProgress } from "@/components/ui/workflow-progress";
-import { Decision, WorkflowNavigator } from "@decision-copilot/domain/Decision";
+import React, { useState, useEffect, useMemo, useCallback } from "react";
+import { useOrganisation } from "@/components/business/organisation-switcher";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -25,6 +23,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { WorkflowProgress } from "@/components/ui/workflow-progress";
+import { useOrganisationDecisions } from "@/hooks/useOrganisationDecisions";
 
 interface DecisionCardProps {
   decision: Decision;

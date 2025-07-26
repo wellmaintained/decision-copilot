@@ -1,11 +1,9 @@
 "use client"
 
-import * as React from "react"
-import { ChevronsUpDown, Building2 } from 'lucide-react'
 import { Organisation } from '@decision-copilot/domain'
-import { useOrganisations } from '@/hooks/useOrganisations'
+import { ChevronsUpDown, Building2 } from 'lucide-react'
 import { useRouter, usePathname } from 'next/navigation'
-
+import * as React from "react"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -19,6 +17,7 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar"
+import { useOrganisations } from '@/hooks/useOrganisations'
 
 type OrganisationContextType = {
   selectedOrganisation: Organisation | null;

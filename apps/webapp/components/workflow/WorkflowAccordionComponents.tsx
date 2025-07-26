@@ -1,8 +1,8 @@
 'use client';
 
+import { DecisionWorkflowStep, DecisionWorkflowStepKey, StepRoles } from '@decision-copilot/domain/Decision'
 import { cn } from '@decision-copilot/ui'
 import { ArrowDown, Search, Users, Target, CheckCircle, Send } from 'lucide-react'
-import { DecisionWorkflowStep, DecisionWorkflowStepKey, StepRoles } from '@decision-copilot/domain/Decision'
 import { STEP_DESCRIPTIONS, STYLE_CLASSES, StepKey } from './WorkflowAccordionConstants'
 
 // Icon mapping for workflow steps

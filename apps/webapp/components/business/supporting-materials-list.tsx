@@ -1,8 +1,8 @@
-import { Button } from '@/components/ui/button'
 import { SupportingMaterial } from '@decision-copilot/domain'
 import { X, Plus } from 'lucide-react'
 import { AddSupportingMaterialDialog } from '@/components/business/add-supporting-material-dialog'
 import { SupportingMaterialIcon } from '@/components/business/supporting-material-icon'
+import { Button } from '@/components/ui/button'
 
 interface SupportingMaterialItemProps {
   material: SupportingMaterial

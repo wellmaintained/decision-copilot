@@ -1,6 +1,9 @@
 'use client'
 
+import { Building2, Users2, FolderKanban } from 'lucide-react'
+import { usePathname , redirect } from 'next/navigation'
 import { AppSidebar } from "@/components/business/app-sidebar"
+import { useOrganisation, OrganisationProvider } from '@/components/business/organisation-switcher'
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -16,10 +19,6 @@ import {
   SidebarTrigger,
 } from "@/components/ui/sidebar"
 import { useAuth } from '@/hooks/useAuth'
-import { useOrganisation, OrganisationProvider } from '@/components/business/organisation-switcher'
-import { usePathname } from 'next/navigation'
-import { redirect } from 'next/navigation'
-import { Building2, Users2, FolderKanban } from 'lucide-react'
 
 function BreadcrumbNav() {
   const { selectedOrganisation } = useOrganisation()

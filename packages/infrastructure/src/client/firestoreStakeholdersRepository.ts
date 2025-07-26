@@ -2,11 +2,9 @@ import {
   StakeholdersRepository,
   EmailAlreadyExistsError,
   StakeholderWithRole,
-} from "@decision-copilot/domain";
-import { Stakeholder, StakeholderProps } from "@decision-copilot/domain";
-import type { Firestore } from "firebase/firestore";
+ Stakeholder, StakeholderProps , Decision } from "@decision-copilot/domain";
 import { User } from "firebase/auth";
-import { Decision } from "@decision-copilot/domain";
+import type { Firestore } from "firebase/firestore";
 import {
   collection,
   query,

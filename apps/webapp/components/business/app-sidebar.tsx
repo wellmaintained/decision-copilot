@@ -1,11 +1,9 @@
 "use client";
 
-import * as React from "react";
 import { Sparkles, ListTodo, Users } from "lucide-react";
-import { useParams } from "next/navigation";
 import Link from "next/link";
-
-import { NavUser } from "./nav-user";
+import { useParams } from "next/navigation";
+import * as React from "react";
 import {
   OrganisationSwitcher,
   useOrganisation,
@@ -24,6 +22,7 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 import { useAuth } from "@/hooks/useAuth";
+import { NavUser } from "./nav-user";
 
 export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
   const { user, isAdmin } = useAuth();

@@ -1,14 +1,13 @@
 "use client"
 
+import { Decision, DecisionStakeholderRole , StakeholderWithRole } from "@decision-copilot/domain"
 import { useEffect, useState } from "react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
-import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Decision, DecisionStakeholderRole } from "@decision-copilot/domain"
-import { useStakeholders } from "@/hooks/useStakeholders"
+import { Label } from "@/components/ui/label"
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { useDecision } from "@/hooks/useDecisions"
-import { StakeholderWithRole } from "@decision-copilot/domain"
+import { useStakeholders } from "@/hooks/useStakeholders"
 
 interface RoleAssignmentProps {
   decision: Decision

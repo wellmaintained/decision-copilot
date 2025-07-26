@@ -1,11 +1,12 @@
 "use client"
 
+import { signOut } from "firebase/auth"
 import {
   BadgeCheck,
   ChevronsUpDown,
   LogOut,
 } from "lucide-react"
-
+import { useState } from "react"
 import {
   Avatar,
   AvatarFallback,
@@ -26,9 +27,7 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar"
-import { signOut } from "firebase/auth"
 import { auth } from "@/lib/env"
-import { useState } from "react"
 
 export function NavUser({
   user,

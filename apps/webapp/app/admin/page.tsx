@@ -1,9 +1,11 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { TeamHierarchyTree } from "@/components/business/TeamHierarchyTree";
-import { useAuth } from "@/hooks/useAuth";
+import { Building2 } from "lucide-react";
 import { redirect, useSearchParams } from "next/navigation";
+import { useState, useEffect } from "react";
+import { useOrganisation } from "@/components/business/organisation-switcher";
+import { StakeholderManagement } from "@/components/business/StakeholderManagement";
+import { TeamHierarchyTree } from "@/components/business/TeamHierarchyTree";
 import {
   Card,
   CardContent,
@@ -11,11 +13,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useOrganisation } from "@/components/business/organisation-switcher";
-import { Building2 } from "lucide-react";
-import { useOrganisations } from "@/hooks/useOrganisations";
-import { StakeholderManagement } from "@/components/business/StakeholderManagement";
 import {
   Select,
   SelectContent,
@@ -23,6 +20,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useAuth } from "@/hooks/useAuth";
+import { useOrganisations } from "@/hooks/useOrganisations";
 
 export default function AdminPage() {
   const { user, loading: authLoading, isAdmin } = useAuth();

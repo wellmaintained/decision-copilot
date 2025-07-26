@@ -1,15 +1,9 @@
+import { Decision } from '@decision-copilot/domain'
+import { cn } from '@decision-copilot/ui'
+import { Check, ChevronDown } from 'lucide-react'
 import { useState } from 'react'
-import { Button } from '@/components/ui/button'
-import { Label } from '@/components/ui/label'
-import {
-  Dialog,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '@/components/ui/dialog'
 import { Alert, AlertDescription } from '@/components/ui/alert'
+import { Button } from '@/components/ui/button'
 import {
   Command,
   CommandEmpty,
@@ -18,15 +12,21 @@ import {
   CommandItem,
 } from '@/components/ui/command'
 import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog'
+import { Label } from '@/components/ui/label'
+import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover'
-import { Check, ChevronDown } from 'lucide-react'
-import { cn } from '@decision-copilot/ui'
-import { useOrganisationDecisions } from '@/hooks/useOrganisationDecisions'
-import { Decision } from '@decision-copilot/domain'
 import { SelectedDecisionDetails } from '@/hooks/useDecisionRelationships'
+import { useOrganisationDecisions } from '@/hooks/useOrganisationDecisions'
 
 interface AddDecisionRelationshipDialogProps {
   onAdd: (details: SelectedDecisionDetails) => Promise<void>

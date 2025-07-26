@@ -1,12 +1,12 @@
-import React, { useState } from 'react'
-import { ChevronDown, ChevronRight, Plus, Edit, Trash, MoveVertical } from 'lucide-react'
-import { useTeamHierarchy } from '@/hooks/useTeamHierarchy'
 import { TeamHierarchyNode } from '@decision-copilot/domain'
+import { ChevronDown, ChevronRight, Plus, Edit, Trash, MoveVertical } from 'lucide-react'
+import React, { useState } from 'react'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/components/ui/dialog'
+import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { useTeamHierarchy } from '@/hooks/useTeamHierarchy'
 
 interface TeamHierarchyTreeProps {
   organisationId: string

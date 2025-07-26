@@ -1,6 +1,6 @@
+import { Decision } from '@decision-copilot/domain';
 import { describe, it, expect } from 'vitest';
 import { createSampleDecision } from '../index.js';
-import { Decision } from '@decision-copilot/domain';
 
 describe('MCP API', () => {
   it('should be a basic hello world app', () => {

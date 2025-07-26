@@ -1,10 +1,10 @@
 "use client";
 
-import { useState } from "react";
-import { TeamHierarchyTree } from "./TeamHierarchyTree";
-import { StakeholderListView } from "./StakeholderListView";
 import { Button } from "@decision-copilot/ui";
 import { List, Network } from "lucide-react";
+import { useState } from "react";
+import { StakeholderListView } from "./StakeholderListView";
+import { TeamHierarchyTree } from "./TeamHierarchyTree";
 
 export interface Stakeholder {
   id: string;

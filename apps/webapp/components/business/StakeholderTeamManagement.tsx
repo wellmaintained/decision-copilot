@@ -1,23 +1,11 @@
 'use client'
 
-import { useState } from 'react'
-import { useTeamHierarchy } from '@/hooks/useTeamHierarchy'
-import { useStakeholders } from '@/hooks/useStakeholders'
-import { useStakeholderTeams } from '@/hooks/useStakeholderTeams'
-import { Stakeholder } from '@decision-copilot/domain'
-import { TeamHierarchyNode } from '@decision-copilot/domain'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Checkbox } from '@/components/ui/checkbox'
+import { Stakeholder , TeamHierarchyNode } from '@decision-copilot/domain'
 import { ChevronDown, ChevronRight, Search } from 'lucide-react'
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table'
+import { useState } from 'react'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { Button } from '@/components/ui/button'
+import { Checkbox } from '@/components/ui/checkbox'
 import {
   Dialog,
   DialogContent,
@@ -26,8 +14,19 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table'
+import { useStakeholders } from '@/hooks/useStakeholders'
+import { useStakeholderTeams } from '@/hooks/useStakeholderTeams'
+import { useTeamHierarchy } from '@/hooks/useTeamHierarchy'
 
 interface StakeholderTeamManagementProps {
   organisationId: string

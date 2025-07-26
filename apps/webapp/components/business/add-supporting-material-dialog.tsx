@@ -1,7 +1,7 @@
+import { SupportingMaterial, SupportingMaterialFactory, SupportingMaterialValidator } from '@decision-copilot/domain'
 import { useState } from 'react'
+import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
 import {
   Dialog,
   DialogContent,
@@ -11,8 +11,8 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog'
-import { SupportingMaterial, SupportingMaterialFactory, SupportingMaterialValidator } from '@decision-copilot/domain'
-import { Alert, AlertDescription } from '@/components/ui/alert'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
 
 interface AddSupportingMaterialDialogProps {
   onAdd: (material: SupportingMaterial) => Promise<void>

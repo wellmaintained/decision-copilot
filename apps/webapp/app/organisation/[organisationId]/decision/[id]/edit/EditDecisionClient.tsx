@@ -1,12 +1,12 @@
 'use client'
 
-import WorkflowAccordion from '@/components/workflow/WorkflowAccordion'
-import HorizontalWorkflowProgress from '@/components/workflow/horizontal-workflow-progress'
+import { DecisionWorkflowStep, DecisionWorkflowSteps } from '@decision-copilot/domain/Decision'
 import { notFound, useRouter } from 'next/navigation'
 import { useState, useEffect } from 'react'
-import { DecisionWorkflowStep, DecisionWorkflowSteps } from '@decision-copilot/domain/Decision'
-import { useDecision } from '@/hooks/useDecisions'
 import { useToast } from "@/components/ui/use-toast"
+import HorizontalWorkflowProgress from '@/components/workflow/horizontal-workflow-progress'
+import WorkflowAccordion from '@/components/workflow/WorkflowAccordion'
+import { useDecision } from '@/hooks/useDecisions'
 
 interface EditDecisionClientProps {
   organisationId: string

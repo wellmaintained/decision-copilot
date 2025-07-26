@@ -1,6 +1,6 @@
+import { cn } from "@decision-copilot/ui"
 import * as React from "react"
 
-import { cn } from "@decision-copilot/ui"
 
 const Card = React.forwardRef<
   HTMLDivElement,

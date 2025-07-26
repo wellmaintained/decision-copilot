@@ -1,12 +1,12 @@
-import { useState } from "react";
-import { Search } from "lucide-react";
-import { Input } from "@/components/ui/input";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { useStakeholders } from "@/hooks/useStakeholders";
-import { useTeamHierarchy } from "@/hooks/useTeamHierarchy";
-import { useStakeholderTeams } from "@/hooks/useStakeholderTeams";
 import { motion, AnimatePresence } from "framer-motion";
+import { Search } from "lucide-react";
+import { useState } from "react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Input } from "@/components/ui/input";
+import { useStakeholders } from "@/hooks/useStakeholders";
+import { useStakeholderTeams } from "@/hooks/useStakeholderTeams";
+import { useTeamHierarchy } from "@/hooks/useTeamHierarchy";
 
 interface StakeholderListViewProps {
   organisationId: string;

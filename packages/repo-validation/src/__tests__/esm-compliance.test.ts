@@ -1,5 +1,6 @@
 import { readFileSync, readdirSync, statSync } from 'fs'
 import { join, resolve } from 'path'
+import { parse as parseJsonc } from 'jsonc-parser'
 import { describe, it, expect } from 'vitest'
 
 /**
@@ -23,12 +24,12 @@ const PACKAGES_PATH = join(MONOREPO_ROOT, 'packages')
 const APPS_PATH = join(MONOREPO_ROOT, 'apps')
 
 /**
- * Helper function to read and parse JSON files safely
+ * Helper function to read and parse JSON files safely (supports JSONC with comments)
  */
 function readJsonFile(filePath: string): Record<string, unknown> {
   try {
     const content = readFileSync(filePath, 'utf-8')
-    return JSON.parse(content)
+    return parseJsonc(content) as Record<string, unknown>
   } catch {
     throw new Error(`Failed to read JSON file ${filePath}`)
   }
