@@ -43,6 +43,7 @@ export function TipTapView({ content, className = '' }: TipTapViewProps) {
     ],
     content: typeof content === 'string' ? (content.startsWith('"') ? JSON.parse(content) : content) : '',
     editable: false,
+    immediatelyRender: false,
     editorProps: {
       attributes: {
         class: 'prose prose-sm dark:prose-invert focus:outline-none max-w-none p-4'

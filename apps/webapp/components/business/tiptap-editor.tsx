@@ -64,6 +64,7 @@ export const TipTapEditor = React.memo(function TipTapEditor({ content, onChange
       })
     ],
     content: rawMarkdown,
+    immediatelyRender: false,
     onUpdate: ({ editor }) => {
       const markdown = editor.storage.markdown.getMarkdown();
       console.log('markdown content:', markdown);
