@@ -36,6 +36,7 @@ export const env = createEnv({
     NEXT_PUBLIC_FIREBASE_APP_ID: z.string().min(1),
     NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID: z.string().min(1),
     NEXT_PUBLIC_BASE_URL: z.string().url().optional(),
+    NEXT_PUBLIC_AUTH_LOG_LEVEL: z.enum(['off', 'error', 'warn', 'info', 'debug']).optional(),
   },
 
   /**
@@ -68,6 +69,7 @@ export const env = createEnv({
     NEXT_PUBLIC_FIREBASE_APP_ID: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
     NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID,
     NEXT_PUBLIC_BASE_URL: process.env.NEXT_PUBLIC_BASE_URL,
+    NEXT_PUBLIC_AUTH_LOG_LEVEL: process.env.NEXT_PUBLIC_AUTH_LOG_LEVEL || (process.env.NODE_ENV === 'development' ? 'info' : 'off'),
     
     // Shared variables
     NODE_ENV: process.env.NODE_ENV,
@@ -139,7 +141,6 @@ import { getAuth, connectAuthEmulator } from 'firebase/auth';
 import { getFirestore, connectFirestoreEmulator } from 'firebase/firestore';
 import { getFunctions, connectFunctionsEmulator } from 'firebase/functions';
 
-// Firebase configuration using validated environment variables
 const firebaseConfig = {
   apiKey: env.NEXT_PUBLIC_FIREBASE_API_KEY,
   authDomain: env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
@@ -153,10 +154,10 @@ const firebaseConfig = {
 // Initialize Firebase app (only once)
 const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
 
-// Initialize Firebase services
 export const auth = getAuth(app);
 export const db = getFirestore(app);
 export const functions = getFunctions(app);
+
 
 /**
  * Track emulator connection state to prevent duplicate connections during HMR
@@ -297,57 +298,43 @@ function connectToEmulator(
     if (!emulatorConnectionState[emulatorType]) {
       connectFn();
       emulatorConnectionState[emulatorType] = true;
-      console.debug(`Connected to Firebase ${config.serviceName} emulator at ${config.url}`);
+      console.log(`✅ Connected to Firebase ${config.serviceName} emulator at ${config.url}`);
     }
   } catch (error) {
     // Emulator may already be connected - this is expected during HMR
     if (error instanceof Error && error.message.includes('already')) {
       emulatorConnectionState[emulatorType] = true;
-      console.debug(`Firebase ${config.serviceName} emulator already connected`);
     } else {
-      console.warn(`Failed to connect to Firebase ${config.serviceName} emulator:`, error);
+      console.error(`❌ Failed to connect to Firebase ${config.serviceName} emulator:`, error);
     }
   }
 }
 
 // Connect to emulators in development
-if (env.NODE_ENV === 'development') {
+if (process.env.NODE_ENV === 'development') {
   // Connect to Auth emulator
   // Uses FIREBASE_AUTH_EMULATOR_HOST environment variable or defaults to 127.0.0.1:9099
   const authUrl = getEmulatorUrl('auth', 'http://127.0.0.1:9099');
   connectToEmulator('auth', 
-    () => connectAuthEmulator(auth, authUrl, { disableWarnings: true }),
-    { 
-      serviceName: 'Auth', 
-      url: authUrl 
-    }
+    () => connectAuthEmulator(auth, authUrl),
+    { serviceName: 'Auth', url: authUrl }
   );
-
-  // Connect to Firestore emulator
+  
+  // Connect to Firestore emulator 
   // Uses FIREBASE_FIRESTORE_EMULATOR_HOST environment variable or defaults to 127.0.0.1:8080
   const firestoreUrl = getEmulatorUrl('firestore', '127.0.0.1:8080');
   const { host: firestoreHost, port: firestorePort } = parseEmulatorHostPort(firestoreUrl);
   connectToEmulator('firestore',
     () => connectFirestoreEmulator(db, firestoreHost, firestorePort),
-    { 
-      serviceName: 'Firestore', 
-      url: firestoreUrl,
-      host: firestoreHost,
-      port: firestorePort
-    }
+    { serviceName: 'Firestore', url: firestoreUrl, host: firestoreHost, port: firestorePort }
   );
-
+  
   // Connect to Functions emulator
   // Uses FIREBASE_FUNCTIONS_EMULATOR_HOST environment variable or defaults to 127.0.0.1:5001
   const functionsUrl = getEmulatorUrl('functions', '127.0.0.1:5001');
   const { host: functionsHost, port: functionsPort } = parseEmulatorHostPort(functionsUrl);
   connectToEmulator('functions',
     () => connectFunctionsEmulator(functions, functionsHost, functionsPort),
-    { 
-      serviceName: 'Functions', 
-      url: functionsUrl,
-      host: functionsHost,
-      port: functionsPort
-    }
+    { serviceName: 'Functions', url: functionsUrl, host: functionsHost, port: functionsPort }
   );
 }

@@ -1,0 +1,6 @@
+{
+  "extends": "@decision-copilot/config-typescript/node.json",
+  "include": ["src"],
+  "exclude": ["vitest.config.ts", "eslint.config.js"],
+  "references": []
+}

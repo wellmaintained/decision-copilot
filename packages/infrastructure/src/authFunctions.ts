@@ -6,15 +6,11 @@ import {
 } from "firebase/auth";
 import type { Auth } from "firebase/auth";
 
-// Single Responsibility: this function triggers a Google sign-in flow
 export async function signInWithGoogle(auth: Auth): Promise<void> {
   const provider = new GoogleAuthProvider();
   
-  // Configure provider for emulator compatibility
   provider.addScope('profile');
   provider.addScope('email');
-  
-  // Set custom parameters that work well with Firebase Auth emulator
   provider.setCustomParameters({
     prompt: 'select_account'
   });
@@ -22,7 +18,6 @@ export async function signInWithGoogle(auth: Auth): Promise<void> {
   await signInWithPopup(auth, provider);
 }
 
-// Single Responsibility: this function triggers a Microsoft sign-in flow
 export async function signInWithMicrosoft(auth: Auth): Promise<void> {
   const provider = new OAuthProvider("microsoft.com");
   // Configure Microsoft provider with necessary scopes
@@ -38,11 +33,9 @@ export async function signInWithMicrosoft(auth: Auth): Promise<void> {
     prompt: "select_account",
   });
 
-  const result = await signInWithPopup(auth, provider);
-  console.log("MS Sign in success: user:", result.user);
+  await signInWithPopup(auth, provider);
 }
 
-// Single Responsibility: sign out the current user
 export async function signOutUser(auth: Auth): Promise<void> {
   await signOut(auth);
 }

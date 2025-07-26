@@ -52,6 +52,115 @@ The project will enforce these versions through:
 - Select your project → Project Settings → General tab
 - Scroll to "Your apps" section and copy the config values
 
+## 🚨 **CRITICAL: ESM Module System**
+
+### **Why ESM is Required**
+
+This monorepo **REQUIRES** ESNext modules (`"module": "ESNext"`) throughout all TypeScript configurations. This is **not optional** and is critical for several reasons:
+
+1. **🔥 Firebase OAuth Authentication WILL BREAK** if compiled to CommonJS
+   - Firebase SDK requires direct object references for OAuth URL generation
+   - CommonJS compilation creates indirect references that corrupt the SDK's internal state  
+   - **Symptom**: OAuth URLs missing `&providerId=google.com` parameters, preventing successful authentication
+   - **Root Cause**: `require()` creates proxy objects that break Firebase's internal provider registration
+
+2. **🚀 Modern JavaScript Standard**: ESM is the official module system for modern JavaScript
+3. **📦 Better Tree Shaking**: Improved bundle optimization and smaller builds  
+4. **⚡ Performance**: Parallel module loading vs synchronous CommonJS
+
+### **ESM Migration Status**
+
+✅ **All packages successfully migrated to ESM**:
+- `packages/domain` - Core business logic with decorators ✅
+- `packages/ui` - React components ✅ 
+- `packages/test-utils` - Testing utilities ✅
+- `packages/infrastructure` - Firebase integration ✅
+- `packages/config-typescript` - TypeScript configurations ✅
+- All applications ✅
+
+### **⚠️ NEVER DO THIS (Will Break Firebase OAuth)**
+
+❌ **DON'T override module settings in TypeScript configs**:
+```json
+// DON'T DO THIS - Will break Firebase OAuth
+{
+  "compilerOptions": {
+    "module": "commonjs",        // ← BREAKS Firebase OAuth
+    "moduleResolution": "node"   // ← BREAKS Firebase OAuth  
+  }
+}
+```
+
+❌ **DON'T remove `"type": "module"`** from package.json files
+
+❌ **DON'T use `require()` or `module.exports`** in source code
+
+❌ **DON'T use CommonJS-style imports** anywhere in the codebase
+
+### **✅ ESM Requirements for New Code**
+
+When creating new packages or files, **always**:
+
+1. **Package.json MUST include**:
+   ```json
+   {
+     "type": "module"
+   }
+   ```
+
+2. **TypeScript configs MUST**:
+   - Extend from `@decision-copilot/config-typescript` configurations
+   - **Never override** `module` or `moduleResolution` settings from base config
+
+3. **Use ES6 imports/exports only**:
+   ```typescript
+   // ✅ Good - ES6 imports
+   import { something } from './module';
+   export { something };
+   export default MyComponent;
+   
+   // ❌ Bad - CommonJS (don't use)
+   const something = require('./module');
+   module.exports = something;
+   ```
+
+### **🔧 Regression Prevention**
+
+The monorepo includes multiple layers of protection against CommonJS regression:
+
+1. **Documentation**: This file and `packages/config-typescript/README.md` contain warnings
+2. **Automated Tests**: Config validation ensures `"module": "ESNext"` (coming in Phase 2)
+3. **Pre-commit Hooks**: Prevent CommonJS code from being committed (coming in Phase 3)
+4. **ESLint Rules**: Enforce ES6 import syntax (coming in Phase 3)
+
+### **🚑 Troubleshooting Firebase OAuth Issues**
+
+If you see Firebase OAuth errors such as:
+- OAuth URLs missing `&providerId=google.com` parameters
+- Authentication popup redirects but doesn't complete sign-in
+- Console errors about provider configuration
+
+**Check for CommonJS regression**:
+```bash
+# 1. Verify all TypeScript configs use ESNext
+grep -r '"module"' packages/config-typescript/
+# Should only show "ESNext", never "commonjs"
+
+# 2. Verify all packages have "type": "module"  
+find packages/ -name "package.json" -exec grep -l '"type": "module"' {} \;
+
+# 3. Check for CommonJS syntax in source code
+grep -r "require(" src/ packages/ apps/ || echo "No CommonJS found ✅"
+grep -r "module.exports" src/ packages/ apps/ || echo "No CommonJS found ✅"
+```
+
+**Emergency fix if CommonJS found**:
+1. Check `packages/config-typescript/base.json` has `"module": "ESNext"`
+2. Ensure no TypeScript config overrides this setting  
+3. Verify all package.json files have `"type": "module"`
+4. Replace any `require()` with ES6 `import` statements
+5. Run `pnpm run build` to recompile with ESM
+
 ## Development Commands
 
 **IMPORTANT: Initial Setup**

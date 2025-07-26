@@ -2,6 +2,7 @@
   "name": "@decision-copilot/test-utils",
   "version": "0.0.0",
   "private": true,
+  "type": "module",
   "description": "Shared testing utilities and fixtures",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",

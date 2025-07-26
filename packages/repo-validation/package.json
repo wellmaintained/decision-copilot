@@ -1,0 +1,30 @@
+{
+  "name": "@decision-copilot/repo-validation",
+  "version": "0.1.0",
+  "description": "Repository-level validation tests for monorepo configuration, setup, and standards",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:unit": "vitest run",
+    "test:unit:watch": "vitest",
+    "build": "tsc --project tsconfig.build.json",
+    "clean": "rimraf dist .turbo tsconfig.tsbuildinfo",
+    "lint": "eslint . --max-warnings 0",
+    "lint:fix": "eslint . --fix"
+  },
+  "devDependencies": {
+    "@decision-copilot/config-eslint": "workspace:*",
+    "@decision-copilot/config-typescript": "workspace:*",
+    "@decision-copilot/config-vitest": "workspace:*",
+    "vitest": "^3.2.4",
+    "typescript": "^5.8.3",
+    "eslint": "^9.31.0",
+    "rimraf": "^6.0.1"
+  },
+  "files": [
+    "dist"
+  ]
+}
