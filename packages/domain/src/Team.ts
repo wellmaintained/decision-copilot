@@ -29,7 +29,6 @@ export class Team {
   @Type(() => Project)
   readonly projects: Project[]
 
-  @ValidateNested()
   readonly organisation: OrganisationReference
 
   private constructor(props: TeamProps) {
