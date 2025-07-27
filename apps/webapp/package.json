@@ -20,7 +20,7 @@
     "test:unit:watch": "vitest --watch --exclude '**/*.integration.test.ts'"
   },
   "dependencies": {
-    "@babel/runtime": "^7.26.10",
+    "@babel/runtime": "^7.28.2",
     "@decision-copilot/domain": "workspace:*",
     "@decision-copilot/infrastructure": "workspace:*",
     "@decision-copilot/ui": "workspace:*",
@@ -62,14 +62,14 @@
     "cookie": "^1.0.2",
     "date-fns": "^4.1.0",
     "firebase": "^11.10.0",
-    "firebase-frameworks": "^0.11.6",
+    "firebase-frameworks": "^0.11.8",
     "firebase-functions": "^6.4.0",
-    "framer-motion": "^12.4.7",
-    "lucide-react": "^0.473.0",
+    "framer-motion": "^12.23.9",
+    "lucide-react": "^0.526.0",
     "next": "15.2.4",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
-    "react-hook-form": "^7.54.2",
+    "react-hook-form": "^7.61.1",
     "react-markdown": "^10.1.0",
     "recharts": "^2.15.1",
     "reflect-metadata": "^0.2.2",
@@ -85,14 +85,14 @@
     "@decision-copilot/config-vitest": "workspace:*",
     "@decision-copilot/test-utils": "workspace:*",
     "@eslint/eslintrc": "^3.3.0",
-    "@types/node": "24.0.13",
+    "@types/node": "24.1.0",
     "@types/uuid": "^10.0.0",
-    "@typescript-eslint/parser": "^8.20.0",
+    "@typescript-eslint/parser": "^8.38.0",
     "concurrently": "^9.1.2",
     "eslint-config-next": "15.1.5",
     "eslint-plugin-only-warn": "^1.1.0",
     "postcss": "^8.5.3",
     "tailwindcss": "^3.4.17",
-    "wait-on": "^8.0.3"
+    "wait-on": "^8.0.4"
   }
 }

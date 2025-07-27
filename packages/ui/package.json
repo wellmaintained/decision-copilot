@@ -3,7 +3,6 @@
   "version": "0.0.0",
   "private": true,
   "type": "module",
-
   "description": "Reusable React components and design system",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -45,8 +44,8 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "cmdk": "^1.0.4",
-    "lucide-react": "^0.473.0",
-    "react-hook-form": "^7.54.2",
+    "lucide-react": "^0.526.0",
+    "react-hook-form": "^7.61.1",
     "recharts": "^2.15.1",
     "tailwind-merge": "^2.6.0",
     "tailwindcss-animate": "^1.0.7"
