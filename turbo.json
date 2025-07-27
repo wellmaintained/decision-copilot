@@ -54,6 +54,7 @@
       "inputs": ["src/**", "*.ts", "*.tsx", "*.js", "*.jsx", "eslint.config.js", ".eslintrc.js", "tsconfig.json"]
     },
     "dev": {
+      "dependsOn": ["^build"],
       "cache": false,
       "persistent": true,
       "inputs": ["src/**", "package.json", "tsconfig.json"]

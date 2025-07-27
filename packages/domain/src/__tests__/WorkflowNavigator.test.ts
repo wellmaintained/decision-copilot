@@ -1,6 +1,7 @@
 import { describe, it, expect} from 'vitest'
 import { 
   DecisionWorkflowSteps,
+  DecisionWorkflowStep,
   WorkflowNavigator,
 } from '../Decision';
 
@@ -15,7 +16,7 @@ describe('WorkflowNavigator', () => {
     });
 
     it('should throw error for invalid step', () => {
-      const invalidStep = { key: 'invalid', label: 'Invalid' } as unknown;
+      const invalidStep = { key: 'invalid', label: 'Invalid' } as unknown as DecisionWorkflowStep;
       expect(() => WorkflowNavigator.getStepIndex(invalidStep)).toThrow('Invalid workflow step: invalid');
     });
   });
