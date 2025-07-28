@@ -24,33 +24,29 @@ The project will enforce these versions through:
 - `engines` field in package.json
 - `engine-strict=true` in .npmrc
 
-**IMPORTANT: Configure Firebase Environment Variables**
+**Firebase Configuration**
 
-1. Copy the environment template:
-   ```bash
-   cp .env.example .env.development
-   ```
+The project includes a committed development environment configuration at `apps/webapp/.env.development` with safe test values that work out of the box with Firebase emulators. No additional setup is required for local development.
 
-2. Fill in your Firebase project configuration in `.env.development`:
-   ```bash
-   NEXT_PUBLIC_FIREBASE_API_KEY=your_api_key_here
-   NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=your_project_id.firebaseapp.com
-   NEXT_PUBLIC_FIREBASE_PROJECT_ID=your_project_id
-   NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=your_project_id.firebasestorage.app
-   NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=your_messaging_sender_id
-   NEXT_PUBLIC_FIREBASE_APP_ID=your_app_id
-   NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID=your_measurement_id
-   ```
-
-3. For webapp development, also copy environment to apps/webapp:
-   ```bash
-   cp .env.development apps/webapp/.env.development
-   ```
+**For production deployments:**
+- Firebase App Hosting configurations are defined in `apphosting.yaml` (base), `apphosting.staging.yaml` (staging overrides), and `apphosting.prod.yaml` (production overrides)
+- The automatically generated `FIREBASE_WEBAPP_CONFIG` is not used - the app uses individual `NEXT_PUBLIC_FIREBASE_*` variables - as defined in apphosting.yaml - for better control and debugging.
 
 **Get Firebase Configuration:**
 - Visit [Firebase Console](https://console.firebase.google.com/)
 - Select your project → Project Settings → General tab
 - Scroll to "Your apps" section and copy the config values
+
+**Environment File Structure:**
+
+The project uses a two-tier environment configuration:
+
+- **`.env`**: Base configuration with safe defaults for all Firebase variables. These values are used during builds and as fallbacks.
+- **`.env.development`**: Development-specific overrides containing only:
+  - Firebase emulator configuration (`FIREBASE_*_EMULATOR_HOST`)
+  - Debug logging level (`NEXT_PUBLIC_AUTH_LOG_LEVEL=debug`)
+
+This eliminates duplication while maintaining clear separation between base defaults and development-specific settings.
 
 ## 🚨 **CRITICAL: ESM Module System**
 

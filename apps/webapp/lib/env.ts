@@ -77,13 +77,10 @@ export const env = createEnv({
     NEXT_PUBLIC_FIREBASE_APP_ID: z.string().min(1),
     NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID: z.string().min(1),
     NEXT_PUBLIC_BASE_URL: z.string().url().optional(),
+    NEXT_PUBLIC_FIREBASE_FIRESTORE_DATABASE_ID: z.string().optional(),
     NEXT_PUBLIC_AUTH_LOG_LEVEL: z.enum(['off', 'error', 'warn', 'info', 'debug']).optional(),
   },
 
-  /**
-   * Shared environment variables
-   * Available on both server and client sides
-   */
   shared: {
     NODE_ENV: z.enum(["development", "test", "production"]).optional(),
   },
@@ -110,6 +107,7 @@ export const env = createEnv({
     NEXT_PUBLIC_FIREBASE_APP_ID: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
     NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID,
     NEXT_PUBLIC_BASE_URL: process.env.NEXT_PUBLIC_BASE_URL,
+    NEXT_PUBLIC_FIREBASE_FIRESTORE_DATABASE_ID: process.env.NEXT_PUBLIC_FIREBASE_FIRESTORE_DATABASE_ID,
     NEXT_PUBLIC_AUTH_LOG_LEVEL: process.env.NEXT_PUBLIC_AUTH_LOG_LEVEL || (process.env.NODE_ENV === 'development' ? 'info' : 'off'),
     
     // Shared variables
