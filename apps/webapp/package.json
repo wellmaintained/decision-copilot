@@ -8,7 +8,7 @@
     "dev": "next dev --turbopack",
     "emulators:export": "firebase emulators:export ../../.data/emulators/firebase-data",
     "check:emulators": "wait-on -l tcp:4400 -t 5000 && echo 'Emulator Hub is available!'",
-    "build": "pnpm install && next build",
+    "build": "next build",
     "build:profile": "next build --profile",
     "clean": "rm -rf .next",
     "start": "next start --port ${PORT:-8080}",
