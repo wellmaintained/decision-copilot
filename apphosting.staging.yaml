@@ -33,6 +33,16 @@ env:
       - BUILD
       - RUNTIME
 
+  # Buildpack environment variables for build-time configuration
+  - variable: GOOGLE_NODE_RUN_SCRIPTS
+    value: build:webapp
+    availability:
+      - BUILD
+
+  - variable: GOOGLE_NODE_START_SCRIPT
+    value: start:webapp
+    availability:
+      - RUNTIME
 
   # Set NODE_ENV to production for optimized builds
   # Firebase App Hosting is purely for building deployable assets
