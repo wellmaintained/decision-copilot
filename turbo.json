@@ -17,6 +17,11 @@
         "FIREBASE_SERVICE_ACCOUNT_JSON"
       ]
     },
+    "start": {
+      "dependsOn": ["build"],
+      "cache": false,
+      "persistent": true
+    },
     "@decision-copilot/config-eslint#build": {
       "outputs": []
     },

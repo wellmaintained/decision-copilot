@@ -4,6 +4,7 @@
 # Settings for Backend (on Cloud Run).
 # See https://firebase.google.com/docs/app-hosting/configure#cloud-run
 runConfig:
+  runCommand: pnpm start:webapp
   minInstances: 0
   # maxInstances: 100
   # concurrency: 80
@@ -27,9 +28,9 @@ env:
       - BUILD
       - RUNTIME
 
-  # Override the default `pnpm build` command run during the build process
+  # Override the default build command to use our monorepo build script
   - variable: GOOGLE_NODE_RUN_SCRIPTS
-    value: --filter=webapp build
+    value: build:webapp
     availability:
       - BUILD
 
