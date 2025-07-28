@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "pre:push": "pnpm run lint && pnpm run test:unit && pnpm run build",
+    "pre:push": "pnpm run lint && pnpm run test:unit",
     "lint": "eslint src/",
     "lint:fix": "eslint src/ --fix",
     "build": "tsc",

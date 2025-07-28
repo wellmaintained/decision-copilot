@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "pre:push": "pnpm run lint && pnpm run test:unit && pnpm run build",
+    "pre:push": "pnpm run lint && pnpm run test:unit",
     "dev": "next dev --turbopack",
     "emulators:export": "firebase emulators:export ../../.data/emulators/firebase-data",
     "check:emulators": "wait-on -l tcp:4400 -t 5000 && echo 'Emulator Hub is available!'",

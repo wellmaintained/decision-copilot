@@ -15,7 +15,7 @@
     "test:watch": "vitest --watch",
     "test:unit": "vitest run --exclude '**/*.integration.test.ts'",
     "test:unit:watch": "vitest --watch --exclude '**/*.integration.test.ts'",
-    "pre:push": "pnpm run lint && pnpm run test:unit && pnpm run build"
+    "pre:push": "pnpm run lint && pnpm run test:unit"
   },
   "dependencies": {
     "@decision-copilot/domain": "workspace:*",

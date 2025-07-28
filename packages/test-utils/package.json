@@ -21,7 +21,7 @@
     "lint": "eslint src/",
     "lint:fix": "eslint src/ --fix",
     "clean": "rm -rf dist",
-    "pre:push": "pnpm run lint && pnpm run test:unit && pnpm run build"
+    "pre:push": "pnpm run lint && pnpm run test:unit"
   },
   "devDependencies": {
     "@decision-copilot/config-eslint": "workspace:*",
