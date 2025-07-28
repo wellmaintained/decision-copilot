@@ -27,9 +27,9 @@ env:
       - BUILD
       - RUNTIME
 
-  # Override the default build command to use custom script for monorepo
+  # Override the default `pnpm build` command run during the build process
   - variable: GOOGLE_NODE_RUN_SCRIPTS
-    value: "./firebase-build.sh"
+    value: build:profile
     availability:
       - BUILD
 

@@ -21,9 +21,9 @@
   },
   "dependencies": {
     "@babel/runtime": "^7.28.2",
-    "@decision-copilot/domain": "file:../../packages/domain",
-    "@decision-copilot/infrastructure": "file:../../packages/infrastructure",
-    "@decision-copilot/ui": "file:../../packages/ui",
+    "@decision-copilot/domain": "workspace:*",
+    "@decision-copilot/infrastructure": "workspace:*",
+    "@decision-copilot/ui": "workspace:*",
     "@google-cloud/functions-framework": "^4.0.0",
     "@hookform/resolvers": "^5.2.0",
     "@radix-ui/react-accordion": "^1.2.11",
