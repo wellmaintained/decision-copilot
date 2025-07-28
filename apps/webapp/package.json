@@ -11,7 +11,7 @@
     "build": "pnpm install && next build",
     "build:profile": "next build --profile",
     "clean": "rm -rf .next",
-    "start": "next start --port 8080",
+    "start": "next start --port ${PORT:-8080}",
     "lint": "next lint --strict",
     "lint:fix": "next lint --strict --fix",
     "test": "vitest --run",
