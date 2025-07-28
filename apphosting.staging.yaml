@@ -4,47 +4,10 @@
 # Settings for Backend (on Cloud Run).
 # See https://firebase.google.com/docs/app-hosting/configure#cloud-run
 
-# Custom run script for monorepo (keeps framework optimizations)
-scripts:
-  runCommand: pnpm start:webapp
-
-runConfig:
-  minInstances: 0
-  # maxInstances: 100
-  # concurrency: 80
-  # cpu: 1
-  # memoryMiB: 512
-
-# Environment variables and secrets.
 env:
-  # Configure environment variables.
-  # See https://firebase.google.com/docs/app-hosting/configure#user-defined-environment
-  - variable: ENVIRONMENT
-    value: staging
-    availability:
-      - BUILD
-      - RUNTIME
-
   # Specify which Firestore database to use
   - variable: NEXT_PUBLIC_FIREBASE_FIRESTORE_DATABASE_ID
     value: decision-copilot-prod
-    availability:
-      - BUILD
-      - RUNTIME
-
-  # Buildpack environment variables for build-time configuration
-  - variable: GOOGLE_NODE_RUN_SCRIPTS
-    value: build:webapp
-    availability:
-      - BUILD
-
-
-  # Set NODE_ENV to production for optimized builds
-  # Firebase App Hosting is purely for building deployable assets
-  # Testing and linting are handled in separate CI pipeline (GitHub Actions)
-  # so we don't need devDependencies during build/runtime
-  - variable: NODE_ENV
-    value: production
     availability:
       - BUILD
       - RUNTIME
