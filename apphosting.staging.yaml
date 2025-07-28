@@ -29,7 +29,7 @@ env:
 
   # Override the default `pnpm build` command run during the build process
   - variable: GOOGLE_NODE_RUN_SCRIPTS
-    value: build:profile
+    value: --filter=webapp build
     availability:
       - BUILD
 

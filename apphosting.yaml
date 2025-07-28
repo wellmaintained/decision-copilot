@@ -12,9 +12,9 @@ env:
   # Configure environment variables.
   # See https://firebase.google.com/docs/app-hosting/configure#user-defined-environment
   
-  # Override the default build command to use custom script for monorepo
+  # Override the default build command to run webapp build from monorepo root
   - variable: GOOGLE_NODE_RUN_SCRIPTS
-    value: "./firebase-build.sh"
+    value: --filter=webapp build
     availability:
       - BUILD
 
