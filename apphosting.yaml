@@ -5,6 +5,23 @@
 scripts:
   runCommand: sh -c "cd apps/webapp && pnpm start"
 
+# Optimize runtime container by including only essential files
+outputFiles:
+  serverApp:
+    include: [
+      "apps/webapp/.next",           # Compiled Next.js build
+      "apps/webapp/public",          # Static assets  
+      "apps/webapp/package.json",    # Runtime dependencies & scripts
+      "apps/webapp/node_modules",    # Symlinks to dependencies & workspace packages
+      "node_modules",                # Root pnpm store with actual packages
+      "packages/domain/dist",        # Compiled workspace packages
+      "packages/infrastructure/dist",
+      "packages/ui/dist", 
+      "packages/*/package.json",     # Package metadata for workspace packages
+      "package.json",                # Root workspace config
+      "pnpm-lock.yaml"              # Dependency resolution
+    ]
+
 runConfig:
   minInstances: 0
   # maxInstances: 100
