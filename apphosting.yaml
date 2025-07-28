@@ -25,6 +25,16 @@ env:
     availability:
       - RUNTIME
 
+  # Set NODE_ENV to production for optimized builds
+  # Firebase App Hosting is purely for building deployable assets
+  # Testing and linting are handled in separate CI pipeline (GitHub Actions)
+  # so we don't need devDependencies during build/runtime
+  - variable: NODE_ENV
+    value: production
+    availability:
+      - BUILD
+      - RUNTIME
+
   # Grant access to secrets in Cloud Secret Manager.
   # See https://firebase.google.com/docs/app-hosting/configure#secret-parameters
   # - variable: MY_SECRET
