@@ -1,0 +1,91 @@
+lockfileVersion: '9.0'
+
+settings:
+  autoInstallPeers: false
+  excludeLinksFromLockfile: false
+
+overrides:
+  cookie: ^0.7.0
+
+importers:
+
+  .:
+    dependencies:
+      class-transformer:
+        specifier: ^0.5.1
+        version: 0.5.1
+      class-validator:
+        specifier: ^0.14.1
+        version: 0.14.2
+      reflect-metadata:
+        specifier: ^0.2.2
+        version: 0.2.2
+      uuid:
+        specifier: ^11.1.0
+        version: 11.1.0
+    devDependencies:
+      '@decision-copilot/config-eslint':
+        specifier: workspace:*
+        version: link:../config-eslint
+      '@decision-copilot/config-typescript':
+        specifier: workspace:*
+        version: link:../config-typescript
+      '@decision-copilot/config-vitest':
+        specifier: workspace:*
+        version: link:../config-vitest
+      '@decision-copilot/test-utils':
+        specifier: workspace:*
+        version: link:../test-utils
+      '@types/uuid':
+        specifier: ^10.0.0
+        version: 10.0.0
+
+packages:
+
+  '@types/uuid@10.0.0':
+    resolution: {integrity: sha512-7gqG38EyHgyP1S+7+xomFtL+ZNHcKv6DwNaCZmJmo1vgMugyF3TCnXVg4t1uk89mLNwnLtnY3TpOpCOyp1/xHQ==}
+
+  '@types/validator@13.15.2':
+    resolution: {integrity: sha512-y7pa/oEJJ4iGYBxOpfAKn5b9+xuihvzDVnC/OSvlVnGxVg0pOqmjiMafiJ1KVNQEaPZf9HsEp5icEwGg8uIe5Q==}
+
+  class-transformer@0.5.1:
+    resolution: {integrity: sha512-SQa1Ws6hUbfC98vKGxZH3KFY0Y1lm5Zm0SY8XX9zbK7FJCyVEac3ATW0RIpwzW+oOfmHE5PMPufDG9hCfoEOMw==}
+
+  class-validator@0.14.2:
+    resolution: {integrity: sha512-3kMVRF2io8N8pY1IFIXlho9r8IPUUIfHe2hYVtiebvAzU2XeQFXTv+XI4WX+TnXmtwXMDcjngcpkiPM0O9PvLw==}
+
+  libphonenumber-js@1.12.10:
+    resolution: {integrity: sha512-E91vHJD61jekHHR/RF/E83T/CMoaLXT7cwYA75T4gim4FZjnM6hbJjVIGg7chqlSqRsSvQ3izGmOjHy1SQzcGQ==}
+
+  reflect-metadata@0.2.2:
+    resolution: {integrity: sha512-urBwgfrvVP/eAyXx4hluJivBKzuEbSQs9rKWCrCkbSxNv8mxPcUZKeuoF3Uy4mJl3Lwprp6yy5/39VWigZ4K6Q==}
+
+  uuid@11.1.0:
+    resolution: {integrity: sha512-0/A9rDy9P7cJ+8w1c9WD9V//9Wj15Ce2MPz8Ri6032usz+NfePxx5AcN3bN+r6ZL6jEo066/yNYB3tn4pQEx+A==}
+    hasBin: true
+
+  validator@13.15.15:
+    resolution: {integrity: sha512-BgWVbCI72aIQy937xbawcs+hrVaN/CZ2UwutgaJ36hGqRrLNM+f5LUT/YPRbo8IV/ASeFzXszezV+y2+rq3l8A==}
+    engines: {node: '>= 0.10'}
+
+snapshots:
+
+  '@types/uuid@10.0.0': {}
+
+  '@types/validator@13.15.2': {}
+
+  class-transformer@0.5.1: {}
+
+  class-validator@0.14.2:
+    dependencies:
+      '@types/validator': 13.15.2
+      libphonenumber-js: 1.12.10
+      validator: 13.15.15
+
+  libphonenumber-js@1.12.10: {}
+
+  reflect-metadata@0.2.2: {}
+
+  uuid@11.1.0: {}
+
+  validator@13.15.15: {}
