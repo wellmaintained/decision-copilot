@@ -18,4 +18,17 @@ env:
       - BUILD
       - RUNTIME
 
+  # Firebase Configuration overrides for staging (only environment-specific values)
+  - variable: NEXT_PUBLIC_FIREBASE_APP_ID
+    value: 1:698337109435:web:ef8fcb4a853619869bd09e
+    availability:
+      - BUILD
+      - RUNTIME
+
+  - variable: NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID
+    value: G-307WQS3HWL
+    availability:
+      - BUILD
+      - RUNTIME
+
   # DO NOT set NODE_ENV here - let it default to 'production' for builds

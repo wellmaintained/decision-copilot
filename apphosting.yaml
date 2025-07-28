@@ -53,9 +53,9 @@ env:
   # - variable: MY_SECRET
   #   secret: mySecretRef
 
-  # Firebase Configuration (shared between staging and production environments)
+  # Firebase Configuration (shared values - can be overridden in staging/prod files)
   - variable: NEXT_PUBLIC_FIREBASE_API_KEY
-    value: AIzaSyCdxfhEXgjcvIFF5GUUnFwnAscUj4HNsMY
+    value: AIzaSyC8BwpEonG8QVyOxqmVYQj7XU_2UoHvt_o
     availability:
       - BUILD
       - RUNTIME
@@ -84,14 +84,6 @@ env:
       - BUILD
       - RUNTIME
 
-  - variable: NEXT_PUBLIC_FIREBASE_APP_ID
-    value: 1:698337109435:web:1c6a069dcf70a3469bd09e
-    availability:
-      - BUILD
-      - RUNTIME
-
-  - variable: NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID
-    value: G-FVPGZL8NDE
-    availability:
-      - BUILD
-      - RUNTIME
+  # Environment-specific values (overridden in staging/prod files)
+  # NEXT_PUBLIC_FIREBASE_APP_ID
+  # NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID
