@@ -9,17 +9,15 @@ scripts:
 outputFiles:
   serverApp:
     include: [
-      "apps/webapp/.next",           # Compiled Next.js build
-      "apps/webapp/public",          # Static assets  
-      "apps/webapp/package.json",    # Runtime dependencies & scripts
-      "apps/webapp/node_modules",    # Symlinks to dependencies & workspace packages
-      "node_modules",                # Root pnpm store with actual packages
-      "packages/domain/dist",        # Compiled workspace packages
-      "packages/infrastructure/dist",
-      "packages/ui/dist", 
-      "packages/*/package.json",     # Package metadata for workspace packages
-      "package.json",                # Root workspace config
-      "pnpm-lock.yaml"              # Dependency resolution
+      "apps/webapp/.next",        # Compiled Next.js build
+      "apps/webapp/public",       # Static assets  
+      "apps/webapp/package.json", # Runtime dependencies & scripts
+      "apps/webapp/node_modules", # Symlinks to dependencies & workspace packages
+      "node_modules",             # Root pnpm store with actual packages
+      "packages/*/dist",          # Compiled workspace packages
+      "packages/*/package.json",  # Package metadata for workspace packages
+      "package.json",             # Root workspace config
+      "pnpm-lock.yaml"            # Dependency resolution
     ]
 
 runConfig:
@@ -40,7 +38,6 @@ env:
     availability:
       - BUILD
 
-
   # Set NODE_ENV to production for optimized builds
   # Firebase App Hosting is purely for building deployable assets
   # Testing and linting are handled in separate CI pipeline (GitHub Actions)
@@ -51,9 +48,14 @@ env:
       - BUILD
       - RUNTIME
 
+  # Grant access to secrets in Cloud Secret Manager.
+  # See https://firebase.google.com/docs/app-hosting/configure#secret-parameters
+  # - variable: MY_SECRET
+  #   secret: mySecretRef
+
   # Firebase Configuration (shared between staging and production environments)
   - variable: NEXT_PUBLIC_FIREBASE_API_KEY
-    value: AIzaSyC8BwpEonG8QVyOxqmVYQj7XU_2UoHvt_o
+    value: AIzaSyCdxfhEXgjcvIFF5GUUnFwnAscUj4HNsMY
     availability:
       - BUILD
       - RUNTIME
@@ -83,19 +85,13 @@ env:
       - RUNTIME
 
   - variable: NEXT_PUBLIC_FIREBASE_APP_ID
-    value: 1:698337109435:web:f3f7b895abc5f39c9bd09e
+    value: 1:698337109435:web:1c6a069dcf70a3469bd09e
     availability:
       - BUILD
       - RUNTIME
 
   - variable: NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID
-    value: ""
+    value: G-FVPGZL8NDE
     availability:
       - BUILD
       - RUNTIME
-
-  # Grant access to secrets in Cloud Secret Manager.
-  # See https://firebase.google.com/docs/app-hosting/configure#secret-parameters
-  # - variable: MY_SECRET
-  #   secret: mySecretRef
-
