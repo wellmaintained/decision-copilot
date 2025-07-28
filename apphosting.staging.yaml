@@ -3,8 +3,13 @@
 #####################################
 # Settings for Backend (on Cloud Run).
 # See https://firebase.google.com/docs/app-hosting/configure#cloud-run
-runConfig:
+
+# Custom build and run scripts for monorepo
+scripts:
+  buildCommand: pnpm build:webapp
   runCommand: pnpm start:webapp
+
+runConfig:
   minInstances: 0
   # maxInstances: 100
   # concurrency: 80
@@ -28,17 +33,6 @@ env:
       - BUILD
       - RUNTIME
 
-  # Override the default build command to use our monorepo build script
-  - variable: GOOGLE_NODE_RUN_SCRIPTS
-    value: build:webapp
-    availability:
-      - BUILD
-
-  # Override the default start command to use our monorepo start script
-  - variable: GOOGLE_NODE_START_SCRIPT
-    value: start:webapp
-    availability:
-      - RUNTIME
 
   # Set NODE_ENV to production for optimized builds
   # Firebase App Hosting is purely for building deployable assets
