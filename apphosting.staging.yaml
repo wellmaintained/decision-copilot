@@ -34,6 +34,12 @@ env:
     availability:
       - BUILD
 
+  # Override the default start command to use our monorepo start script
+  - variable: GOOGLE_NODE_START_SCRIPT
+    value: start:webapp
+    availability:
+      - RUNTIME
+
   - variable: NEXT_PUBLIC_BASE_URL
     value: https://decision-copilot.staging.wellmaintained.org
     availability:
