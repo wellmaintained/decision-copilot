@@ -3,7 +3,7 @@
 
 # Custom run script for monorepo (keeps framework optimizations)
 scripts:
-  runCommand: cd apps/webapp && next start --port ${PORT:-8080}
+  runCommand: sh -c "cd apps/webapp && pnpm start"
 
 runConfig:
   minInstances: 0
