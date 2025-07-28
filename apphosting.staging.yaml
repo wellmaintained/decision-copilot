@@ -20,13 +20,13 @@ env:
 
   # Firebase Configuration overrides for staging (only environment-specific values)
   - variable: NEXT_PUBLIC_FIREBASE_APP_ID
-    value: 1:698337109435:web:ef8fcb4a853619869bd09e
+    value: 1:698337109435:web:f3f7b895abc5f39c9bd09e
     availability:
       - BUILD
       - RUNTIME
 
   - variable: NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID
-    value: G-307WQS3HWL
+    value: G-8ZSRF1K6J9
     availability:
       - BUILD
       - RUNTIME

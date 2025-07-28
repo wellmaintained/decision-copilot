@@ -20,13 +20,13 @@ env:
 
   # Firebase Configuration overrides for production (only environment-specific values)
   - variable: NEXT_PUBLIC_FIREBASE_APP_ID
-    value: 1:698337109435:web:aa0e799427e399d29bd09e
+    value: 1:698337109435:web:188c4202cbe1a6fd9bd09e
     availability:
       - BUILD
       - RUNTIME
 
   - variable: NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID
-    value: G-PYHZ6W68EC
+    value: G-PV9XH7SN80
     availability:
       - BUILD
       - RUNTIME
